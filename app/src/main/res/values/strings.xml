@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Rent Calendar</string>
+    <string name="name">Name</string>
+    <string name="booked">Booked</string>
+    <string name="new_flat">New Flat</string>
+    <string name="number_placeholder">1,2,3...</string>
+    <string name="err_msg_empty_flat">Flat name can\'t be empty!</string>
+    <string name="err_msg_duplicate_name">Duplicate name!</string>
+    <string name="msg_success_status">Success!</string>
+    <string name="err_msg_unknown_error">Unknown error!</string>
+    <string name="all">All</string>
+    <string name="this_month">This Month</string>
+    <string name="schedule">Schedule</string>
+    <string name="expenses">Expenses</string>
+    <string name="book">Book</string>
+</resources>
