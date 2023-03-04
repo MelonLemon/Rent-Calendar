@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +54,7 @@ fun NameValueInputPlus(
     modifier: Modifier = Modifier,
     name: String = "",
     onNameChanged: (String) -> Unit,
-    number: String = "",
+    number: Int,
     onNumberChanged: (String) -> Unit,
     onAddButtonClicked: () -> Unit
 ) {
@@ -69,7 +71,7 @@ fun NameValueInputPlus(
             modifier = Modifier.weight(1f)
         )
         OutlinedTextField(
-            value = number,
+            value = if(number==0) "" else "$number",
             onValueChange = onNumberChanged,
             placeholder = { Text(text= stringResource(R.string.number_placeholder)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -133,5 +135,55 @@ fun InputContainer(
             content()
         }
 
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NameCommentFields(
+    modifier: Modifier = Modifier,
+    name: String = "",
+    comment: String = "",
+    onNameChange: (String) -> Unit,
+    onCommentChange: (String) -> Unit
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        OutlinedTextField(
+            value = name,
+            onValueChange = onNameChange,
+            placeholder = { Text(text= stringResource(R.string.name)) },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                textColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
+        OutlinedTextField(
+            modifier = Modifier.height(70.dp),
+            value = comment,
+            onValueChange = onCommentChange,
+            placeholder = { Text(text= stringResource(R.string.comment)) },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                textColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
+    }
+}
+
+
+
+@Preview(showBackground = true)
+@Composable
+fun NameCommentFieldsPreview() {
+    RentCalendarTheme {
+        NameCommentFields(
+            onNameChange = { },
+            onCommentChange = { }
+        )
     }
 }

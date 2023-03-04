@@ -13,4 +13,22 @@
     <string name="schedule">Schedule</string>
     <string name="expenses">Expenses</string>
     <string name="book">Book</string>
+    <string name="days">days</string>
+    <string name="new_category">New Category</string>
+    <string name="regular_btn">Regular</string>
+    <string name="irregular_btn">Irregular</string>
+    <string name="amount">Amount</string>
+    <string name="fixed_amount">Fixed</string>
+    <string name="variable_amount">Variable</string>
+    <string name="no_categories">No Categories</string>
+    <string name="title_exp_cat">Active</string>
+    <string name="comment">Comment</string>
+    <string name="payment">Payment</string>
+    <string name="nights">Nights</string>
+    <string name="for_all_nights">For All Nights</string>
+    <string name="for_one_night">For 1 night</string>
+    <string name="add_btn">ADD</string>
+    <string name="booked_err_msg_dates">Choose dates!</string>
+    <string name="booked_err_msg_name">Add name!</string>
+    <string name="booked_err_msg_pay">Add payment!</string>
 </resources>

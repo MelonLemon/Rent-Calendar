@@ -135,10 +135,7 @@ fun ArchiveCard(
     }
 }
 
-@Composable
-fun RentCard() {
-    
-}
+
 
 @Preview(showBackground = true)
 @Composable

@@ -17,23 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.data.HomeRepositoryImpl
-import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
-import com.melonlemon.rentcalendar.core.presentation.components.InputContainer
-import com.melonlemon.rentcalendar.core.presentation.components.NameInputPlus
-import com.melonlemon.rentcalendar.core.presentation.components.SectionButton
-import com.melonlemon.rentcalendar.feature_home.domain.use_cases.AddNewFlat
-import com.melonlemon.rentcalendar.feature_home.domain.use_cases.GetAllFlats
-import com.melonlemon.rentcalendar.feature_home.domain.use_cases.GetFinResults
-import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
+import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
+import com.melonlemon.rentcalendar.core.presentation.components.*
+import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.FinanceResultWidget
-import com.melonlemon.rentcalendar.feature_home.presentation.util.CheckStatusNewFlat
-import com.melonlemon.rentcalendar.feature_home.presentation.util.HomePages
-import com.melonlemon.rentcalendar.feature_home.presentation.util.HomeScreenEvents
+import com.melonlemon.rentcalendar.feature_home.presentation.components.PaymentWidget
+import com.melonlemon.rentcalendar.feature_home.presentation.components.RentCard
+import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.YearMonth
 
@@ -45,19 +40,30 @@ fun HomeScreen(
 ) {
     val finResults by viewModel.finResults.collectAsStateWithLifecycle()
     val flatsState by viewModel.flatsState.collectAsStateWithLifecycle()
-    val selectedFlatId by viewModel.selectedFlatId.collectAsStateWithLifecycle()
     val homeScreenState by viewModel.homeScreenState.collectAsStateWithLifecycle()
+    val rentList by viewModel.rentList.collectAsStateWithLifecycle()
+    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
+    val expensesCategoriesState by viewModel.expensesCategoriesState.collectAsStateWithLifecycle()
+    val displayExpCategories by viewModel.displayExpCategories.collectAsStateWithLifecycle()
+    val newBookedState by viewModel.newBookedState.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = mapOf(
-        CheckStatusNewFlat.BlankFailStatus to stringResource(R.string.err_msg_empty_flat),
-        CheckStatusNewFlat.DuplicateFailStatus to stringResource(R.string.err_msg_duplicate_name),
-        CheckStatusNewFlat.SuccessStatus to stringResource(R.string.msg_success_status),
-        CheckStatusNewFlat.UnKnownFailStatus to  stringResource(R.string.err_msg_unknown_error)
+        CheckStatusStr.BlankFailStatus to stringResource(R.string.err_msg_empty_flat),
+        CheckStatusStr.DuplicateFailStatus to stringResource(R.string.err_msg_duplicate_name),
+        CheckStatusStr.SuccessStatus to stringResource(R.string.msg_success_status),
+        CheckStatusStr.UnKnownFailStatus to  stringResource(R.string.err_msg_unknown_error)
+    )
+    val errorMessagesBooked = mapOf(
+        CheckStatusBooked.BlankDatesFailStatus to stringResource(R.string.booked_err_msg_dates),
+        CheckStatusBooked.BlankNameFailStatus to stringResource(R.string.booked_err_msg_name),
+        CheckStatusBooked.BlankPaymentFailStatus to stringResource(R.string.booked_err_msg_pay),
+        CheckStatusBooked.SuccessStatus to stringResource(R.string.msg_success_status),
+        CheckStatusBooked.UnKnownFailStatus to stringResource(R.string.err_msg_unknown_error),
     )
     val errorStatus = stringResource(R.string.err_msg_unknown_error)
 
-    if(flatsState.checkStatusNewFlat!= CheckStatusNewFlat.UnCheckedStatus){
+    if(flatsState.checkStatusNewFlat!= CheckStatusStr.UnCheckedStatus){
 
         LaunchedEffect(flatsState.checkStatusNewFlat){
 
@@ -65,9 +71,34 @@ fun HomeScreen(
                 message = errorMessages[flatsState.checkStatusNewFlat]?: errorStatus,
                 actionLabel = null
             )
+            viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewExpCatComplete)
+        }
+    }
+
+    if(expensesCategoriesState.checkStatusNewCat!= CheckStatusStr.UnCheckedStatus){
+
+        LaunchedEffect(expensesCategoriesState.checkStatusNewCat){
+
+            snackbarHostState.showSnackbar(
+                message = errorMessages[expensesCategoriesState.checkStatusNewCat]?: errorStatus,
+                actionLabel = null
+            )
             viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
         }
     }
+
+    if(newBookedState.checkStatusNewBooked!= CheckStatusBooked.UnCheckedStatus){
+
+        LaunchedEffect(newBookedState.checkStatusNewBooked){
+
+            snackbarHostState.showSnackbar(
+                message = errorMessagesBooked[newBookedState.checkStatusNewBooked]?: errorStatus,
+                actionLabel = null
+            )
+            viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
+        }
+    }
+
 
     Scaffold(
         snackbarHost = {
@@ -123,7 +154,7 @@ fun HomeScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.all),
-                            isSelected = selectedFlatId == -1,
+                            isSelected = filterState.selectedFlatId == -1,
                             onBtnClick = {
                                   viewModel.homeScreenEvents(HomeScreenEvents.OnFlatClick(-1))
                             },
@@ -138,7 +169,7 @@ fun HomeScreen(
                     ) { item ->
                         FilterButton(
                             text = item.name,
-                            isSelected = selectedFlatId == item.id,
+                            isSelected = filterState.selectedFlatId == item.id,
                             onBtnClick = {
                                 viewModel.homeScreenEvents(HomeScreenEvents.OnFlatClick(item.id))
                             },
@@ -150,9 +181,9 @@ fun HomeScreen(
             val currentYearMonth = YearMonth.now()
             item{
                 Text(
-                    text = if(homeScreenState.yearMonth == currentYearMonth)
-                        stringResource(R.string.this_month) + ": ${homeScreenState.yearMonth.month.name} ${homeScreenState.yearMonth.year}"
-                else "${homeScreenState.yearMonth.month.name}${homeScreenState.yearMonth.year}",
+                    text = if(filterState.yearMonth == currentYearMonth)
+                        stringResource(R.string.this_month) + ": ${filterState.yearMonth.month.name} ${filterState.yearMonth.year}"
+                else "${filterState.yearMonth.month.name}${filterState.yearMonth.year}",
                     style = MaterialTheme.typography.titleSmall
                 )
             }
@@ -188,12 +219,183 @@ fun HomeScreen(
                 }
             }
             if(homeScreenState.page == HomePages.SchedulePage){
-
+                itemsIndexed(rentList){ index, rent ->
+                    RentCard(
+                        name=rent.name,
+                        description=rent.description,
+                        periodStart=rent.periodStart,
+                        periodEnd= rent.periodEnd,
+                        amount=rent.amount,
+                        isPaid = rent.isPaid,
+                        onPaidChange = { isPaid ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnRentPaidChange(
+                                    id = rent.id,
+                                    isPaid = isPaid
+                                ))
+                        }
+                    )
+                }
             }
             if(homeScreenState.page == HomePages.ExpensesPage){
+                item {
+                    SegmentedTwoBtns(
+                        firstBtnName = stringResource(R.string.regular_btn),
+                        secondBtnName = stringResource(R.string.irregular_btn),
+                        isFirstBtnSelected = expensesCategoriesState.isRegularMF,
+                        onBtnClick = { isRegularSelected ->
+                            viewModel.homeScreenEvents(HomeScreenEvents.OnMoneyFlowChanged(
+                                isRegularMF = isRegularSelected,
+                                isFixedMF = expensesCategoriesState.isFixedMF
+                            ))
+                        }
+                    )
+                    Text(
+                        text= stringResource(R.string.amount),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                    SegmentedTwoBtns(
+                        firstBtnName = stringResource(R.string.fixed_amount),
+                        secondBtnName = stringResource(R.string.variable_amount),
+                        isFirstBtnSelected = expensesCategoriesState.isFixedMF,
+                        onBtnClick = { isFixedAmountSelected ->
+                            viewModel.homeScreenEvents(HomeScreenEvents.OnMoneyFlowChanged(
+                                isRegularMF = expensesCategoriesState.isRegularMF,
+                                isFixedMF = isFixedAmountSelected
+                            ))
+                        }
+                    )
+                }
+                item{
+                    InputContainer(
+                        icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
+                        title = stringResource(R.string.new_category)
+                    ){
+                        if(expensesCategoriesState.isFixedMF){
+                            NameValueInputPlus(
+                                name = expensesCategoriesState.newCategoryName,
+                                number = expensesCategoriesState.newCategoryAmount,
+                                onNumberChanged = { amount ->
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnNewAmountExpCatChanged(
+                                            amount.toIntOrNull() ?:0
+                                        ))
+                                },
+                                onNameChanged = { name ->
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnNewNameExpCatChanged(name))
+                                },
+                                onAddButtonClicked = {
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnAddNewExpCatBtnClick)
+                                }
+                            )
+                        } else {
+                            NameInputPlus(
+                                name = expensesCategoriesState.newCategoryName,
+                                onNameChanged = {name ->
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnNewNameExpCatChanged(name))
 
+                                },
+                                onAddButtonClicked = {
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnAddNewExpCatBtnClick)
+                                }
+                            )
+                        }
+                    }
+                }
+                item{
+                    Text(text= stringResource(R.string.title_exp_cat))
+                    Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+                }
+                if(displayExpCategories.isEmpty()){
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.no_categories),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.Center
+                        )
+                        //image
+                    }
+                } else {
+                    itemsIndexed(displayExpCategories){ index, item ->
+                        InfoCardInput(
+                            textFirstR = item.header,
+                            textSecondR = { Text(text = item.subHeader)},
+                            onNumberChanged = { amountString ->
+
+                            },
+                            inputNumber = item.amount.toString(),
+                            onAddButtonClicked = {
+
+                            },
+                            content = { }
+                        )
+                    }
+                }
             }
             if(homeScreenState.page == HomePages.BookPage){
+                item {
+                    DateRange(
+                        startDate = newBookedState.startDate,
+                        endDate = newBookedState.endDate,
+                        onCalendarBtnClick = {
+                            viewModel.homeScreenEvents(HomeScreenEvents.OnCalendarBtnClick)
+                        }
+                    )
+                }
+                item {
+                    NameCommentFields(
+                        name = newBookedState.name,
+                        comment = newBookedState.comment,
+                        onNameChange = { name ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnNameBookedChanged(name))
+                        },
+                        onCommentChange = { comment ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnCommentBookedChanged(comment))
+                        }
+                    )
+                }
+                item{
+                    PaymentWidget(
+                        nights = newBookedState.nights,
+                        oneNightMoney = newBookedState.oneNightMoney,
+                        allMoney = newBookedState.allMoney,
+                        onAllMoneyChange = { moneyString ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnAllMoneyChange(
+                                    moneyString.toIntOrNull() ?:0
+                                )
+                            )
+                        },
+                        onNightMChange = { moneyString ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnOneNightMoneyChange(
+                                    moneyString.toIntOrNull() ?:0
+                                )
+                            )
+                        }
+                    )
+                }
+                item{
+                    SectionButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text= stringResource(R.string.add_btn),
+                        isSelected = true,
+                        onBtnClick = {
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnAddNewBookedBtnClick)
+                        }
+                    )
+                }
 
             }
 
@@ -201,6 +403,8 @@ fun HomeScreen(
     }
 
 }
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
@@ -211,7 +415,13 @@ fun HomeScreenPreview() {
         val useCases = HomeUseCases(
             getFinResults = GetFinResults(repository),
             addNewFlat = AddNewFlat(repository),
-            getAllFlats = GetAllFlats(repository)
+            getAllFlats = GetAllFlats(repository),
+            updatePaidStatus = UpdatePaidStatus(repository),
+            getRentList = GetRentList(repository),
+            getSchedulePageState = GetSchedulePageState(),
+            addNewExpCat = AddNewExpCat(repository),
+            getExpCategories = GetExpCategories(repository),
+            addNewBooked = AddNewBooked(repository)
         )
         val viewModel = HomeViewModel(useCases)
         HomeScreen(viewModel)

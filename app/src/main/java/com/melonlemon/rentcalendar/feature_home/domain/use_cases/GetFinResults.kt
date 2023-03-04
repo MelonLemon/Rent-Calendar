@@ -13,7 +13,7 @@ class GetFinResults(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend operator fun invoke(flatId: Int): List<FinResultsDisplay> {
 
-        val finResults = if(flatId!=-1) repository.getFinResultsAllFlatsCurrentYear() else
+        val finResults = if(flatId==-1) repository.getFinResultsAllFlatsCurrentYear() else
             repository.getFinResultsCurrentYear(flatId)
         if(finResults.isNotEmpty()){
             val emptyFinResults = FinResultsDisplay(

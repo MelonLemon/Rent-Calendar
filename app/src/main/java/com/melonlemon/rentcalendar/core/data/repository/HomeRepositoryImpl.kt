@@ -1,11 +1,18 @@
-package com.melonlemon.rentcalendar.core.data
+package com.melonlemon.rentcalendar.core.data.repository
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.core.domain.util.TestData
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
+import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
+import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
+import com.melonlemon.rentcalendar.feature_home.presentation.util.NewBookedState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import java.time.YearMonth
 
 class HomeRepositoryImpl: HomeRepository {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -27,5 +34,25 @@ class HomeRepositoryImpl: HomeRepository {
     override suspend fun getAllFlats(): List<CategoryInfo> {
         val testData = TestData()
         return testData.allflats
+    }
+
+    override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {
+
+    }
+
+    override suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory) {
+
+    }
+
+    override fun getExpCategories(moneyFlowCategory: MoneyFlowCategory):Flow<List<ExpensesCategoryInfo>> {
+        return flowOf()
+    }
+
+    override fun getRentList(yearMonth: YearMonth, flatId: Int): Flow<List<RentInfo>> {
+        return flowOf()
+    }
+
+    override suspend fun addNewRent(newBookedState: NewBookedState) {
+
     }
 }
