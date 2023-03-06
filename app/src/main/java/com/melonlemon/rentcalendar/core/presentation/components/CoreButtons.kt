@@ -76,6 +76,33 @@ fun FilterButton(
 }
 
 @Composable
+fun SearchFilterButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    isSelected: Boolean,
+    onBtnClick: (Boolean) -> Unit
+) {
+    Button(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(isSelected) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp),
+            contentColor = if(isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+            else MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        border = BorderStroke(width = 1.dp, color = if(isSelected) MaterialTheme.colorScheme.secondaryContainer
+        else MaterialTheme.colorScheme.outlineVariant),
+        onClick = { onBtnClick(!isSelected) }
+    ) {
+        Text(
+            text=text,
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+@Composable
 fun SegmentedTwoBtns(
     firstBtnName: String,
     secondBtnName: String,

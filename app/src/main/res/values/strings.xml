@@ -31,4 +31,27 @@
     <string name="booked_err_msg_dates">Choose dates!</string>
     <string name="booked_err_msg_name">Add name!</string>
     <string name="booked_err_msg_pay">Add payment!</string>
+    <string name="search">Search</string>
+    <string name="income">Income</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="report_cash_flow">Cash Flow</string>
+    <string name="report_balance_sheet">Balance Sheet</string>
+    <string name="report_income_st">Income Statement</string>
+    <string name="report_fin_snapshot">Fin. Snapshot</string>
+    <string name="total_purchase_price">TOTAL PURCHASE PRICE</string>
+    <string name="yearly_gross_rent">YEARLY GROSS RENT</string>
+    <string name="grm_description">\"The higher the GRM, the less attractive an investment property becomes.\"</string>
+    <string name="grm">Gross Rent Multiplier</string>
+    <string name="one_per_rule">The 1% Rule</string>
+    <string name="years">years</string>
+    <string name="cap_rate">Cap Rate</string>
+    <string name="noi_year">NET OPERATING INCOME(YEAR)</string>
+    <string name="cap_rate_desc">The higher cap rate is better.</string>
+    <string name="your_gross_rent_monthly">Your Monthly Gross Rent</string>
+    <string name="good_gross_rent_monthly">Good Monthly Gross Rent</string>
+    <string name="fifty_rule">The 50% Rule</string>
+    <string name="monthly_gross_rent">Monthly Gross Rent</string>
+    <string name="your_noi">Your Net Operating Income</string>
+    <string name="good_noi">Good Net Operating Income</string>
 </resources>
