@@ -54,4 +54,15 @@
     <string name="monthly_gross_rent">Monthly Gross Rent</string>
     <string name="your_noi">Your Net Operating Income</string>
     <string name="good_noi">Good Net Operating Income</string>
+    <string name="booked_report">Booked Report</string>
+    <string name="invest_return">Investment Return</string>
+    <string name="net_income">Net Income</string>
+    <string name="revenue">Revenue</string>
+    <string name="direct_cost">Direct Cost</string>
+    <string name="indir_cost">Indirect Cost</string>
+    <string name="cash_flow">Cash Flow</string>
+    <string name="average_booked">Average Booked</string>
+    <string name="aver_day_rent">Average Day Rent</string>
+    <string name="best_booked_days">Best Booked days of Week:</string>
+    <string name="best_month">Best Month</string>
 </resources>

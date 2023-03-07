@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,9 +23,7 @@ import com.melonlemon.rentcalendar.core.data.repository.TransactionRepositoryImp
 import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.GetCashFlowInfo
-import com.melonlemon.rentcalendar.feature_analytics.presentation.components.CompareVariant
-import com.melonlemon.rentcalendar.feature_analytics.presentation.components.FinSnapShotContainer
-import com.melonlemon.rentcalendar.feature_analytics.presentation.components.PaybackVariant
+import com.melonlemon.rentcalendar.feature_analytics.presentation.components.*
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.AnalyticsScreenEvents
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.Reports
 import com.melonlemon.rentcalendar.feature_home.presentation.util.HomeScreenEvents
@@ -41,7 +40,13 @@ fun AnalyticsScreen(
     viewModel: AnalyticsViewModel
 ) {
     val analyticsFilterState by viewModel.analyticsFilterState.collectAsStateWithLifecycle()
+    val chosenReport by viewModel.chosenReport.collectAsStateWithLifecycle()
     val finSnapshotState by viewModel.finSnapshotState.collectAsStateWithLifecycle()
+    val listOfFlats by viewModel.listOfFlats.collectAsStateWithLifecycle()
+    val incomeStatementState by viewModel.incomeStatementState.collectAsStateWithLifecycle()
+    val cashFlowState by viewModel.cashFlowState.collectAsStateWithLifecycle()
+    val bookedReportState by viewModel.bookedReportState.collectAsStateWithLifecycle()
+
 
     Scaffold() { it ->
         LazyColumn(
@@ -53,21 +58,10 @@ fun AnalyticsScreen(
                     modifier = Modifier,
                     contentPadding = PaddingValues(horizontal = 8.dp)
                 ){
-
-                    item{
-                        FilterButton(
-                            text = stringResource(R.string.report_fin_snapshot),
-                            isSelected = analyticsFilterState.chosenReport == Reports.FinSnapShot,
-                            onBtnClick = {
-                                viewModel.analyticsScreenEvents(
-                                    AnalyticsScreenEvents.OnReportChange(Reports.FinSnapShot))
-                            },
-                        )
-                    }
                     item{
                         FilterButton(
                             text = stringResource(R.string.report_income_st),
-                            isSelected = analyticsFilterState.chosenReport == Reports.IncomeStatement,
+                            isSelected = chosenReport == Reports.IncomeStatement,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.IncomeStatement))
@@ -78,16 +72,119 @@ fun AnalyticsScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.report_cash_flow),
-                            isSelected = analyticsFilterState.chosenReport == Reports.CashFlow,
+                            isSelected = chosenReport == Reports.CashFlow,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.CashFlow))
                             },
                         )
                     }
+                    item{
+                        FilterButton(
+                            text = stringResource(R.string.booked_report),
+                            isSelected = chosenReport == Reports.BookedReport,
+                            onBtnClick = {
+                                viewModel.analyticsScreenEvents(
+                                    AnalyticsScreenEvents.OnReportChange(Reports.BookedReport))
+                            },
+                        )
+                    }
+
+                    item{
+                        FilterButton(
+                            text = stringResource(R.string.invest_return),
+                            isSelected = chosenReport == Reports.InvestmentReturn,
+                            onBtnClick = {
+                                viewModel.analyticsScreenEvents(
+                                    AnalyticsScreenEvents.OnReportChange(Reports.InvestmentReturn))
+                            },
+                        )
+                    }
                 }
             }
-            if(analyticsFilterState.chosenReport == Reports.FinSnapShot){
+
+            item{
+                LazyRow(
+                    modifier = Modifier,
+                    contentPadding = PaddingValues(horizontal = 8.dp)
+                ){
+                    item{
+                        FilterButton(
+                            text = stringResource(R.string.all),
+                            isSelected = analyticsFilterState.selectedFlatId == -1,
+                            onBtnClick = {
+                                viewModel.analyticsScreenEvents(
+                                    AnalyticsScreenEvents.OnFlatClick(-1))
+                            },
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    items(
+                        items = listOfFlats,
+                        key = { item ->
+                            item.id
+                        }
+                    ) { item ->
+                        FilterButton(
+                            text = item.name,
+                            isSelected = analyticsFilterState.selectedFlatId == item.id,
+                            onBtnClick = {
+                                viewModel.analyticsScreenEvents(
+                                    AnalyticsScreenEvents.OnFlatClick(item.id))
+                            },
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+            }
+
+            if(chosenReport == Reports.IncomeStatement){
+                item{
+                    FinSnapShotContainer(
+                        modifier = Modifier.fillParentMaxWidth(),
+                        title = stringResource(R.string.net_income),
+                    ){
+                        IncomeStatementReport(
+                            netIncome = incomeStatementState.currentMonth.netIncome,
+                            revenue = incomeStatementState.currentMonth.revenue,
+                            directCost = incomeStatementState.currentMonth.directCost,
+                            indirectCost = incomeStatementState.currentMonth.inDirectCost
+                        )
+                    }
+                }
+            }
+            if(chosenReport == Reports.CashFlow){
+                item{
+                    FinSnapShotContainer(
+                        modifier = Modifier.fillParentMaxWidth(),
+                        title = stringResource(R.string.cash_flow),
+                    ){
+                        CashFlowReport(
+                            netCashFlow = cashFlowState.currentCashFlow.netCashFlow,
+                            rent = cashFlowState.currentCashFlow.netCashFlow,
+                            listOfExpenses = cashFlowState.currentCashFlow.expenses
+                        )
+                    }
+                }
+            }
+            if(chosenReport == Reports.BookedReport){
+                item{
+                    FinSnapShotContainer(
+                        modifier = Modifier.fillParentMaxWidth(),
+                        title = stringResource(R.string.booked),
+                    ){
+                        BookedReport(
+                            averageBookedPer = bookedReportState.averageBooked,
+                            averageDayRent = bookedReportState.averageDayRent,
+                            bestBookedDays = bookedReportState.bestBookedDays,
+                            bestMonth = bookedReportState.bestMonth,
+                            valueBestMonth = "${bookedReportState.bestMonthBooked}% " +
+                                    "- ${bookedReportState.bestMonthIncome}"
+                        )
+                    }
+                }
+            }
+            if(chosenReport == Reports.InvestmentReturn){
                 item{
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),

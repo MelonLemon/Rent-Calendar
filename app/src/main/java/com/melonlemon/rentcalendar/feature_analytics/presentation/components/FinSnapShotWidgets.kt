@@ -192,7 +192,9 @@ fun CompareVariant(
                 contentDescription = "Multiply",
                 tint = MaterialTheme.colorScheme.primary)
             Text(
-                modifier = modifier.weight(1f).padding(top = 4.dp),
+                modifier = modifier
+                    .weight(1f)
+                    .padding(top = 4.dp),
                 text = "$secondValue%",
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onSurface
@@ -224,6 +226,40 @@ fun TextWithTitle(
             textAlign = TextAlign.Center
         )
     }
+}
+
+
+
+@Composable
+fun TitleAmountRow(
+    title: String,
+    valueString: String,
+    isPos: Boolean = false
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Text(
+            text = title.uppercase(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Left
+        )
+        Text(
+            text = valueString,
+            style = MaterialTheme.typography.titleLarge,
+            color = if(isPos) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onError,
+            textAlign = TextAlign.Right
+        )
+    }
+}
+
+@Composable
+fun SegmentedBarchart() {
+    
 }
 
 @Preview(showBackground = true)
