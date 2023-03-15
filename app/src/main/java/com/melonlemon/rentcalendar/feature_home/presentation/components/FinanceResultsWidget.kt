@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,9 @@ fun FinanceResultWidget(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ){
@@ -63,6 +66,7 @@ fun FinanceResultWidget(
                     name = stringResource(R.string.booked)
                 )
                 Column(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.End
                 ) {
@@ -74,29 +78,25 @@ fun FinanceResultWidget(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Column(
-                        modifier = Modifier.width(IntrinsicSize.Min),
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.End
                     ) {
                         val finResult = income - expenses
                         Text(
-                            text = if(finResult>0) "+$finResult$currencySign"
+                            text = if(finResult>0) "+${String.format("% d",finResult)}$currencySign"
                             else "-$finResult$currencySign",
                             style = MaterialTheme.typography.titleLarge,
                             color = if(finResult>0) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Divider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.outline
+                            else MaterialTheme.colorScheme.onSecondaryContainer,
+                            textDecoration = TextDecoration.Underline
                         )
                         Text(
-                            text = "+ $income$currencySign",
+                            text = "+ ${String.format("% d",income)}$currencySign",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "- $expenses$currencySign",
+                            text = "- ${String.format("% d",expenses)}$currencySign",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )

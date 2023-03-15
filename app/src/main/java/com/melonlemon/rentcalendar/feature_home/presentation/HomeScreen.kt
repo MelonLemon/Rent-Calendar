@@ -8,10 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -24,10 +21,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
 import com.melonlemon.rentcalendar.core.presentation.components.*
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
-import com.melonlemon.rentcalendar.feature_home.presentation.components.FinanceResultWidget
-import com.melonlemon.rentcalendar.feature_home.presentation.components.PaymentWidget
-import com.melonlemon.rentcalendar.feature_home.presentation.components.RentCard
+import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.YearMonth
@@ -46,10 +42,11 @@ fun HomeScreen(
     val expensesCategoriesState by viewModel.expensesCategoriesState.collectAsStateWithLifecycle()
     val displayExpCategories by viewModel.displayExpCategories.collectAsStateWithLifecycle()
     val newBookedState by viewModel.newBookedState.collectAsStateWithLifecycle()
+    val currencySign by viewModel.currencySign.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = mapOf(
-        CheckStatusStr.BlankFailStatus to stringResource(R.string.err_msg_empty_flat),
+        CheckStatusStr.BlankFailStatus to stringResource(R.string.err_msg_empty),
         CheckStatusStr.DuplicateFailStatus to stringResource(R.string.err_msg_duplicate_name),
         CheckStatusStr.SuccessStatus to stringResource(R.string.msg_success_status),
         CheckStatusStr.UnKnownFailStatus to  stringResource(R.string.err_msg_unknown_error)
@@ -99,6 +96,11 @@ fun HomeScreen(
         }
     }
 
+    val currencyDialog = remember{ mutableStateOf(false) }
+    val changeFixAmountDialog = remember{ mutableStateOf(false) }
+    val fixAmountCategory = remember{ mutableStateOf(ExpensesCategoryInfo(
+        id=-1, header="", subHeader = "", amount = 0
+    )) }
 
     Scaffold(
         snackbarHost = {
@@ -112,18 +114,29 @@ fun HomeScreen(
             horizontalAlignment = Alignment.Start
         ){
             item{
-                LazyRow(){
+                LazyRow(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ){
                     itemsIndexed(finResults){ index, monthResults ->
                         FinanceResultWidget(
+                            modifier = Modifier.fillParentMaxWidth(),
                             flatName=monthResults.flatName,
                             month= monthResults.yearMonth,
                             bookedPercent=monthResults.percentBooked,
                             income=monthResults.income,
                             expenses=monthResults.expenses,
-                            currencySign = "$" // currency sign?
+                            currencySign = currencySign
                         )
                     }
 
+                }
+            }
+            item{
+                Button(onClick = {
+                    currencyDialog.value = true
+                }) {
+                    Text(text= stringResource(R.string.currency_sign))
                 }
             }
 
@@ -188,34 +201,41 @@ fun HomeScreen(
                 )
             }
             item{
-                Row(
+                LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    SectionButton(
-                        text = stringResource(R.string.schedule),
-                        isSelected = homeScreenState.page == HomePages.SchedulePage,
-                        onBtnClick = {
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.SchedulePage))
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    SectionButton(
-                        text = stringResource(R.string.expenses),
-                        isSelected = homeScreenState.page == HomePages.ExpensesPage,
-                        onBtnClick = {
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.ExpensesPage))
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    SectionButton(
-                        text = stringResource(R.string.book),
-                        isSelected = homeScreenState.page == HomePages.BookPage,
-                        onBtnClick = {
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.BookPage))
-                        }
-                    )
+                    item{
+                        SectionButton(
+                            text = stringResource(R.string.schedule),
+                            isSelected = homeScreenState.page == HomePages.SchedulePage,
+                            onBtnClick = {
+                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.SchedulePage))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    item{
+                        SectionButton(
+                            text = stringResource(R.string.expenses),
+                            isSelected = homeScreenState.page == HomePages.ExpensesPage,
+                            onBtnClick = {
+                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.ExpensesPage))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    item{
+                        SectionButton(
+                            text = stringResource(R.string.book),
+                            isSelected = homeScreenState.page == HomePages.BookPage,
+                            onBtnClick = {
+                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.BookPage))
+                            }
+                        )
+                    }
+
                 }
             }
             if(homeScreenState.page == HomePages.SchedulePage){
@@ -324,20 +344,42 @@ fun HomeScreen(
                         //image
                     }
                 } else {
-                    itemsIndexed(displayExpCategories){ index, item ->
-                        InfoCardInput(
-                            textFirstR = item.header,
-                            textSecondR = { Text(text = item.subHeader)},
-                            onNumberChanged = { amountString ->
-
+                    displayExpCategories.forEach{(yearMonth, categories) ->
+                        expensesCategory(
+                            title = "${yearMonth.month.name} ${yearMonth.year}",
+                            displayExpCategories = categories,
+                            onAmountChange = { amountString, index ->
+                                val amountInt = amountString.toIntOrNull() ?: 0
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnAmountExpChanged(
+                                        yearMonth = yearMonth,
+                                        index = index,
+                                        amount = amountInt
+                                    )
+                                )
+                                if(expensesCategoriesState.isFixedMF && expensesCategoriesState.isRegularMF && amountInt!=0){
+                                    fixAmountCategory.value = categories[index].copy(
+                                        amount = amountInt
+                                    )
+                                    changeFixAmountDialog.value = true
+                                }
                             },
-                            inputNumber = item.amount.toString(),
-                            onAddButtonClicked = {
+                            onAddButtonClicked = { index ->
+                                if(categories[index].amount!=0){
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnExpensesAdd(
+                                            yearMonth = yearMonth,
+                                            id = categories[index].id,
+                                            amount = categories[index].amount
+                                        )
+                                    )
+                                }
 
-                            },
-                            content = { }
+                            }
                         )
+
                     }
+
                 }
             }
             if(homeScreenState.page == HomePages.BookPage){
@@ -400,30 +442,62 @@ fun HomeScreen(
             }
 
         }
+        if(currencyDialog.value){
+            CurrencyDialog(
+                currencySign = currencySign,
+                onCancel = {
+                    currencyDialog.value = false
+                },
+                onSave = { sign ->
+                    viewModel.homeScreenEvents(
+                        HomeScreenEvents.OnCurrencySignChanged(sign))
+                    currencyDialog.value = false
+                }
+            )
+        }
+        if(changeFixAmountDialog.value){
+            FixAmountDialog(
+                expensesCategoryInfo = fixAmountCategory.value,
+                onCancel = {
+                    changeFixAmountDialog.value = false
+                },
+                onAgree = {
+                    viewModel.homeScreenEvents(
+                        HomeScreenEvents.OnFixedAmountCatChange(
+                            id = fixAmountCategory.value.id,
+                            amount = fixAmountCategory.value.id
+                        )
+                    )
+                    changeFixAmountDialog.value = false
+                }
+            )
+        }
     }
 
 }
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    RentCalendarTheme {
-        val repository = HomeRepositoryImpl()
-        val useCases = HomeUseCases(
-            getFinResults = GetFinResults(repository),
-            addNewFlat = AddNewFlat(repository),
-            getAllFlats = GetAllFlats(repository),
-            updatePaidStatus = UpdatePaidStatus(repository),
-            getRentList = GetRentList(repository),
-            getSchedulePageState = GetSchedulePageState(),
-            addNewExpCat = AddNewExpCat(repository),
-            getExpCategories = GetExpCategories(repository),
-            addNewBooked = AddNewBooked(repository)
-        )
-        val viewModel = HomeViewModel(useCases)
-        HomeScreen(viewModel)
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview(showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    RentCalendarTheme {
+//        val repository = HomeRepositoryImpl()
+//        val useCases = HomeUseCases(
+//            getFinResults = GetFinResults(repository),
+//            addNewFlat = AddNewFlat(repository),
+//            getAllFlats = GetAllFlats(repository),
+//            updatePaidStatus = UpdatePaidStatus(repository),
+//            getRentList = GetRentList(repository),
+//            getSchedulePageState = GetSchedulePageState(),
+//            addNewExpCat = AddNewExpCat(repository),
+//            getExpCategories = GetExpCategories(repository),
+//            addNewBooked = AddNewBooked(repository),
+//            updateFixAmountCat = UpdateFixAmountCat(repository),
+//            addExpenses = AddExpenses(repository)
+//        )
+//        val viewModel = HomeViewModel(useCases)
+//        HomeScreen(viewModel)
+//    }
+//}

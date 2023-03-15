@@ -251,16 +251,12 @@ fun TitleAmountRow(
             text = valueString,
             style = MaterialTheme.typography.titleLarge,
             color = if(isPos) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onError,
+            else MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Right
         )
     }
 }
 
-@Composable
-fun SegmentedBarchart() {
-    
-}
 
 @Preview(showBackground = true)
 @Composable

@@ -32,8 +32,9 @@ class GetFinResults(
                     yearMonthFirst = yearMonthFirst.plusMonths(1)
                 }
             }
+
             finResults.forEach { finResult ->
-                var yearMonthLast = finalList.last().yearMonth.plusMonths(1)
+                var yearMonthLast = if(finalList.isEmpty()) yearMonthFirst else  finalList.last().yearMonth.plusMonths(1)
                 if(yearMonthLast != finResult.yearMonth){
                     while(yearMonthLast != finResult.yearMonth){
                         finalList.add(emptyFinResults.copy(yearMonth = yearMonthLast))

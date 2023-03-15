@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionListItem
 
 
-fun LazyListScope.TransactionDay(
+fun LazyListScope.transactionDay(
     title:String,
     listOfItems: List<TransactionListItem>
 ){

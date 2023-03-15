@@ -51,28 +51,38 @@ class HomeViewModel(
     )
 
 
-    private val _moneyFlowCategory = MutableStateFlow(MoneyFlowCategory.RegularFixed)
+    private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.RegularFixed)
     val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val _displayExpCategories = moneyFlowCategory.flatMapLatest{ moneyFlowCategory ->
-        useCases.getExpCategories(moneyFlowCategory)
-    }
-    val displayExpCategories  = _displayExpCategories.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        emptyList<ExpensesCategoryInfo>()
-    )
+    private val _displayExpCategories = MutableStateFlow<Map<YearMonth, List<ExpensesCategoryInfo>>>(emptyMap())
+    val displayExpCategories  = _displayExpCategories.asStateFlow()
+
+
+    private val _currencySign = MutableStateFlow("")
+    val currencySign  = _currencySign.asStateFlow()
 
     init {
         viewModelScope.launch {
             _finResults.value = useCases.getFinResults(filterState.value.selectedFlatId)
-
+            val allFlats = useCases.getAllFlats()
+            _flatsState.value = flatsState.value.copy(
+                listOfFlats = allFlats
+            )
+            _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
         }
     }
 
     fun homeScreenEvents(event: HomeScreenEvents){
         when(event) {
+            is HomeScreenEvents.OnYearMonthChange -> {
+                _filterState.value = filterState.value.copy(
+                    yearMonth = event.yearMonth
+                )
+                viewModelScope.launch {
+                    _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
+                }
+            }
+
             is HomeScreenEvents.OnNewFlatChanged -> {
                 _flatsState.value = flatsState.value.copy(
                     newFlat = event.name
@@ -104,9 +114,14 @@ class HomeViewModel(
                 )
             }
             is HomeScreenEvents.OnFlatClick -> {
-                _filterState.value = filterState.value.copy(
-                    selectedFlatId = event.id
-                )
+                if(filterState.value.selectedFlatId!=event.id){
+                    _filterState.value = filterState.value.copy(
+                        selectedFlatId = event.id
+                    )
+                    viewModelScope.launch {
+                        _finResults.value = useCases.getFinResults(filterState.value.selectedFlatId)
+                    }
+                }
             }
 
             //Home Screen State
@@ -133,6 +148,25 @@ class HomeViewModel(
                    isRegularMF = event.isRegularMF,
                     isFixedMF = event.isFixedMF
                 )
+                when(event.isRegularMF to event.isFixedMF) {
+                    true to true -> {
+                        _moneyFlowCategory.value = MoneyFlowCategory.RegularFixed
+                    }
+                    true to false -> {
+                        _moneyFlowCategory.value = MoneyFlowCategory.RegularVariable
+                    }
+                    false to true -> {
+                        _moneyFlowCategory.value = MoneyFlowCategory.IrregularFixed
+                    }
+                    false to false -> {
+                        _moneyFlowCategory.value = MoneyFlowCategory.IrregularVariable
+                    }
+                }
+                viewModelScope.launch {
+                    _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
+                }
+
+
             }
             is HomeScreenEvents.OnNewNameExpCatChanged -> {
                 _expensesCategoriesState.value = expensesCategoriesState.value.copy(
@@ -150,7 +184,7 @@ class HomeViewModel(
                     val status = useCases.addNewExpCat(
                         name = expensesCategoriesState.value.newCategoryName,
                         amount = expensesCategoriesState.value.newCategoryAmount,
-                        categories = displayExpCategories.value,
+                        categories = displayExpCategories.value[YearMonth.now()]?: emptyList(),
                         moneyFlowCategory = moneyFlowCategory.value
                     )
                     if(status== CheckStatusStr.SuccessStatus){
@@ -159,6 +193,9 @@ class HomeViewModel(
                             newCategoryAmount = 0,
                             checkStatusNewCat = status
                         )
+
+                        _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
+
                     } else {
                         _expensesCategoriesState.value = expensesCategoriesState.value.copy(
                             checkStatusNewCat = status
@@ -172,10 +209,39 @@ class HomeViewModel(
                 )
             }
             is HomeScreenEvents.OnAmountExpChanged -> {
-                
+                val newExpCatInfo = displayExpCategories.value[event.yearMonth]?.get(event.index)
+                    ?.copy(
+                        amount = event.amount
+                    )
+
+                val newList = displayExpCategories.value[event.yearMonth]?.toMutableList().apply {
+                    this!![event.index] = newExpCatInfo!!
+                }
+                val newMap = displayExpCategories.value.toMutableMap()
+                newMap[event.yearMonth] = newList!!.toList()
+                _displayExpCategories.value = newMap
+
+            }
+            is HomeScreenEvents.OnFixedAmountCatChange -> {
+                viewModelScope.launch {
+                    useCases.updateFixAmountCat(
+                        yearMonth = filterState.value.yearMonth,
+                        flatId = filterState.value.selectedFlatId,
+                        catId = event.id,
+                        amount = event.amount
+                    )
+                }
+
             }
             is HomeScreenEvents.OnExpensesAdd -> {
-
+                viewModelScope.launch {
+                    useCases.addExpenses(
+                        yearMonth = event.yearMonth,
+                        flatId = filterState.value.selectedFlatId,
+                        catId = event.id,
+                        amount = event.amount
+                    )
+                }
             }
             // New Booked Events
             is HomeScreenEvents.OnCalendarBtnClick -> {
@@ -245,6 +311,10 @@ class HomeViewModel(
                 )
             }
 
+            //Currency dialog
+            is HomeScreenEvents.OnCurrencySignChanged -> {
+                _currencySign.value = event.sign
+            }
         }
     }
 }

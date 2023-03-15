@@ -1,6 +1,6 @@
 package com.melonlemon.rentcalendar.feature_analytics.domain.model
 
-import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import java.time.YearMonth
 
 data class IncomeStatementInfo(
@@ -11,15 +11,30 @@ data class IncomeStatementInfo(
     val inDirectCost: Int
 )
 
-data class ExpensesInfo(
+data class DisplayInfo(
     val id: Int,
     val name: String,
     val amount: Int
 )
 
+data class ChartItem(
+    val name: String,
+    val color: Color,
+    val value: Int
+)
+
+data class BarchartData(
+    val name: String,
+    val color: Color,
+    val values: List<Int>
+) {
+    fun BarchartItem(index: Int):ChartItem{
+        return ChartItem(name = name, color = color, value = values.getOrNull(index)?:0)
+    }
+}
 data class CashFlowInfo(
     val yearMonth: YearMonth,
     val netCashFlow: Int,
     val rent: Int,
-    val expenses: List<ExpensesInfo>
+    val expenses: List<DisplayInfo>
 )

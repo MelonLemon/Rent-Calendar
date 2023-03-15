@@ -16,7 +16,7 @@ import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetFilte
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetTransactions
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.SearchFilterWidget
-import com.melonlemon.rentcalendar.feature_transaction.presentation.components.TransactionDay
+import com.melonlemon.rentcalendar.feature_transaction.presentation.components.transactionDay
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionScreenEvents
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.format.DateTimeFormatter
@@ -88,7 +88,7 @@ fun TransactionScreen(
                 val pattern = "dd.MM"
                 val format = DateTimeFormatter.ofPattern(pattern)
                 month.daysList.forEach { days ->
-                    TransactionDay(
+                    transactionDay(
                         title = days.date.format(format) ?: pattern,
                         listOfItems = days.transactions
                     )
@@ -100,17 +100,17 @@ fun TransactionScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    RentCalendarTheme {
-        val repository = TransactionRepositoryImpl()
-        val useCases = TransactionsUseCases(
-            getTransactions = GetTransactions(repository),
-            getFilteredTransactions = GetFilteredTransactions()
-        )
-        val viewModel = TransactionViewModel(useCases)
-        TransactionScreen(viewModel)
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview(showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    RentCalendarTheme {
+//        val repository = TransactionRepositoryImpl()
+//        val useCases = TransactionsUseCases(
+//            getTransactions = GetTransactions(repository),
+//            getFilteredTransactions = GetFilteredTransactions()
+//        )
+//        val viewModel = TransactionViewModel(useCases)
+//        TransactionScreen(viewModel)
+//    }
+//}

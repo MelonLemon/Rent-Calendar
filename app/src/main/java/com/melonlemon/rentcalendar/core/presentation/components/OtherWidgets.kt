@@ -47,12 +47,14 @@ fun DateRange(
             onValueChange = { },
             readOnly = true,
             placeholder = { Text(text= pattern) },
+            modifier = Modifier.weight(1f)
         )
         OutlinedTextField(
             value = endDate?.format(format) ?: pattern,
             onValueChange = { },
             readOnly = true,
             placeholder = { Text(text= pattern) },
+            modifier = Modifier.weight(1f)
         )
 
     }

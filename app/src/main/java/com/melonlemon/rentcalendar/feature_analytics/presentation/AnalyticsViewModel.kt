@@ -27,14 +27,8 @@ class AnalyticsViewModel(
     private val _incomeStatementState = MutableStateFlow(IncomeStatementState())
     val incomeStatementState  = _incomeStatementState.asStateFlow()
 
-    private val _listOfIncomeStInfo = MutableStateFlow<List<IncomeStatementInfo>>(emptyList())
-    val listOfIncomeStInfo  = _listOfIncomeStInfo.asStateFlow()
-
     private val _cashFlowState = MutableStateFlow(CashFlowState())
     val cashFlowState  = _cashFlowState.asStateFlow()
-
-    private val _listOfCashFlowInfo = MutableStateFlow<List<CashFlowState>>(emptyList())
-    val listOfCashFlowInfo  = _listOfCashFlowInfo.asStateFlow()
 
     private val _bookedReportState = MutableStateFlow(BookedReportState())
     val bookedReportState  = _bookedReportState.asStateFlow()

@@ -9,5 +9,7 @@ data class HomeUseCases(
     val getSchedulePageState: GetSchedulePageState,
     val addNewExpCat: AddNewExpCat,
     val getExpCategories: GetExpCategories,
-    val addNewBooked: AddNewBooked
+    val addNewBooked: AddNewBooked,
+    val updateFixAmountCat: UpdateFixAmountCat,
+    val addExpenses: AddExpenses
 )

@@ -1,7 +1,6 @@
 package com.melonlemon.rentcalendar.feature_analytics.presentation.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,9 +9,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.ExpensesInfo
+import com.melonlemon.rentcalendar.feature_analytics.domain.model.ChartItem
+import com.melonlemon.rentcalendar.feature_analytics.domain.model.DisplayInfo
+import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun IncomeStatementReport(
@@ -28,6 +30,7 @@ fun IncomeStatementReport(
         horizontalArrangement = Arrangement.SpaceBetween
     ){
         Column(
+            modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.Start
         ){
             Text(
@@ -56,7 +59,21 @@ fun IncomeStatementReport(
                 )
             }
         }
-        SegmentedBarchart()
+        val listSegments = listOf(
+            ChartItem(name = stringResource(R.string.direct_cost), value = directCost, color = MaterialTheme.colorScheme.tertiaryContainer),
+            ChartItem(name = stringResource(R.string.indir_cost), value = indirectCost, color = MaterialTheme.colorScheme.primary),
+            ChartItem(name = stringResource(R.string.net_income), value = netIncome, color = MaterialTheme.colorScheme.primaryContainer),
+        )
+        if(revenue!=0){
+            Spacer(modifier = Modifier.width(16.dp))
+            SegmentedBarchart(
+                modifier = Modifier
+                    .width(40.dp)
+                    .fillMaxHeight(),
+                listSegments = listSegments
+            )
+        }
+
     }
 }
 
@@ -65,7 +82,7 @@ fun CashFlowReport(
     modifier: Modifier=Modifier,
     netCashFlow: Int,
     rent: Int,
-    listOfExpenses: List<ExpensesInfo>
+    listOfExpenses: List<DisplayInfo>
 ){
     var expended by remember { mutableStateOf(false) }
     Column(
@@ -172,5 +189,19 @@ fun BookedReport(
             )
         }
 
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun IncomeStatementReportPreview() {
+    RentCalendarTheme {
+        IncomeStatementReport(
+            netIncome = 700,
+            revenue = 1000,
+            directCost = 200,
+            indirectCost = 100
+        )
     }
 }

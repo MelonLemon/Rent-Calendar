@@ -44,8 +44,8 @@ class HomeRepositoryImpl: HomeRepository {
 
     }
 
-    override fun getExpCategories(moneyFlowCategory: MoneyFlowCategory):Flow<List<ExpensesCategoryInfo>> {
-        return flowOf()
+    override suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth):Map<YearMonth, List<ExpensesCategoryInfo>> {
+        return emptyMap()
     }
 
     override fun getRentList(yearMonth: YearMonth, flatId: Int): Flow<List<RentInfo>> {

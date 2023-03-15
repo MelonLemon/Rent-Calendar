@@ -5,11 +5,12 @@ import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInf
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
 import kotlinx.coroutines.flow.Flow
+import java.time.YearMonth
 
 class GetExpCategories(
     private val repository: HomeRepository
 ) {
-    suspend operator fun invoke(moneyFlowCategory: MoneyFlowCategory): Flow<List<ExpensesCategoryInfo>> {
-        return repository.getExpCategories(moneyFlowCategory)
+    suspend operator fun invoke(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth): Map<YearMonth, List<ExpensesCategoryInfo>> {
+        return repository.getExpCategories(moneyFlowCategory, yearMonth)
     }
 }
