@@ -1,6 +1,6 @@
 package com.melonlemon.rentcalendar.feature_home.domain.repository
 
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
+import com.melonlemon.rentcalendar.core.domain.model.*
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
 import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
@@ -11,13 +11,17 @@ import java.time.YearMonth
 
 interface HomeRepository {
 
-    suspend fun getFinResultsCurrentYear(flatId: Int): List<FinResultsDisplay>
-    suspend fun getFinResultsAllFlatsCurrentYear(): List<FinResultsDisplay>
-    suspend fun addNewFlat(name: String)
-    suspend fun getAllFlats(): List<CategoryInfo>
+    suspend fun getIncomeGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
+    suspend fun getExpensesGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
+    suspend fun getAllIncomeGroupByMY(year: Int): List<AmountGroupBy>
+    suspend fun getAllExpensesGroupByMY(year: Int): List<AmountGroupBy>
+    suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
+    suspend fun getAvgBookedNightsGroupByMY(year: Int): List<AmountGroupBy>
+    suspend fun addUpdateFlat(flat: Flats)
+    suspend fun getAllFlats(): List<Flats>
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)
-    suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth): Map<YearMonth, List<ExpensesCategoryInfo>>
-    fun getRentList(yearMonth: YearMonth, flatId: Int): Flow<List<RentInfo>>
-    suspend fun addNewRent(newBookedState: NewBookedState)
+    suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category>
+    fun getRentList(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>>
+    suspend fun addNewRent(person: Person, payments: List<Payment>, schedules: List<Schedule>)
 }

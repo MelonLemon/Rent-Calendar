@@ -10,14 +10,17 @@ import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
 import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
+import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val useCases: HomeUseCases
 ): ViewModel() {
 

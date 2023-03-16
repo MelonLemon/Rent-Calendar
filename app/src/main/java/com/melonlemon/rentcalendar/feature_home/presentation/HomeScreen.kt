@@ -478,26 +478,3 @@ fun HomeScreen(
 
 
 
-//@RequiresApi(Build.VERSION_CODES.O)
-//@Preview(showBackground = true)
-//@Composable
-//fun HomeScreenPreview() {
-//    RentCalendarTheme {
-//        val repository = HomeRepositoryImpl()
-//        val useCases = HomeUseCases(
-//            getFinResults = GetFinResults(repository),
-//            addNewFlat = AddNewFlat(repository),
-//            getAllFlats = GetAllFlats(repository),
-//            updatePaidStatus = UpdatePaidStatus(repository),
-//            getRentList = GetRentList(repository),
-//            getSchedulePageState = GetSchedulePageState(),
-//            addNewExpCat = AddNewExpCat(repository),
-//            getExpCategories = GetExpCategories(repository),
-//            addNewBooked = AddNewBooked(repository),
-//            updateFixAmountCat = UpdateFixAmountCat(repository),
-//            addExpenses = AddExpenses(repository)
-//        )
-//        val viewModel = HomeViewModel(useCases)
-//        HomeScreen(viewModel)
-//    }
-//}

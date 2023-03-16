@@ -100,17 +100,3 @@ fun TransactionScreen(
     }
 }
 
-//@RequiresApi(Build.VERSION_CODES.O)
-//@Preview(showBackground = true)
-//@Composable
-//fun HomeScreenPreview() {
-//    RentCalendarTheme {
-//        val repository = TransactionRepositoryImpl()
-//        val useCases = TransactionsUseCases(
-//            getTransactions = GetTransactions(repository),
-//            getFilteredTransactions = GetFilteredTransactions()
-//        )
-//        val viewModel = TransactionViewModel(useCases)
-//        TransactionScreen(viewModel)
-//    }
-//}

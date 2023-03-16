@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionScreenEvents
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
+import javax.inject.Inject
 
-class TransactionViewModel(
+@HiltViewModel
+class TransactionViewModel @Inject constructor(
     private val useCases: TransactionsUseCases
 ): ViewModel() {
 

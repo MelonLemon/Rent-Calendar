@@ -72,4 +72,7 @@
     <string name="change_fix_amount">Change fixed amount to</string>
     <string name="for_category">for category</string>
     <string name="agree">Agree</string>
+    <string name="home_route">Home</string>
+    <string name="analytics_route">Analytics</string>
+    <string name="transaction_route">Transactions</string>
 </resources>

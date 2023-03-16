@@ -2,7 +2,8 @@ package com.melonlemon.rentcalendar.core.data.repository
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
+import com.melonlemon.rentcalendar.core.data.data_source.RentDao
+import com.melonlemon.rentcalendar.core.domain.model.*
 import com.melonlemon.rentcalendar.core.domain.util.TestData
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
@@ -14,45 +15,100 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import java.time.YearMonth
 
-class HomeRepositoryImpl: HomeRepository {
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getFinResultsCurrentYear(flatId: Int): List<FinResultsDisplay> {
-        val testData = TestData()
-        return testData.finResults[flatId]?: emptyList()
+class HomeRepositoryImpl(
+    private val dao: RentDao
+): HomeRepository {
+    override suspend fun getIncomeGroupByMY(flatId: Int, year: Int): List<AmountGroupBy> {
+        return dao.getPaymentGroupByMY(flatId = flatId, year = year, isPaid = true)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getFinResultsAllFlatsCurrentYear(): List<FinResultsDisplay> {
-        val testData = TestData()
-        return testData.finResultsAllFlats
+    override suspend fun getExpensesGroupByMY(flatId: Int, year: Int): List<AmountGroupBy> {
+        return dao.getExpensesGroupByMY(flatId = flatId, year = year)
     }
 
-    override suspend fun addNewFlat(name: String) {
-
+    override suspend fun getAllIncomeGroupByMY(year: Int): List<AmountGroupBy> {
+        return dao.getAllPaymentGroupByMY(year = year, isPaid = true)
     }
 
-    override suspend fun getAllFlats(): List<CategoryInfo> {
-        val testData = TestData()
-        return testData.allflats
+    override suspend fun getAllExpensesGroupByMY(year: Int): List<AmountGroupBy> {
+        return dao.getAllExpensesGroupByMY(year = year)
+    }
+
+    override suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int): List<AmountGroupBy> {
+        return dao.getBookedNightsGroupByMY(flatId = flatId, year = year)
+    }
+
+    override suspend fun getAvgBookedNightsGroupByMY(year: Int): List<AmountGroupBy> {
+        return dao.getAvgBookedNightsGroupByMY(year = year)
+    }
+
+    override suspend fun addUpdateFlat(flat: Flats) {
+        dao.addFlat(flat = flat)
+    }
+
+    override suspend fun getAllFlats(): List<Flats> {
+        return dao.getFlats()
     }
 
     override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {
-
+        dao.updatePaymentStatus(id = id, isPaid = isPaid)
     }
 
     override suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory) {
-
+        val typeId = when(moneyFlowCategory){
+            MoneyFlowCategory.RegularFixed -> {
+                111
+            }
+            MoneyFlowCategory.RegularVariable -> {
+                110
+            }
+            MoneyFlowCategory.IrregularFixed -> {
+                101
+            }
+            MoneyFlowCategory.IrregularVariable -> {
+                100
+            }
+        }
+        dao.addCategory(Category(
+            id = null,
+            typeId = typeId,
+            name = name,
+            fixedAmount = amount,
+            active = true
+        ))
     }
 
-    override suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth):Map<YearMonth, List<ExpensesCategoryInfo>> {
-        return emptyMap()
+    override suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category> {
+        val typeId = when(moneyFlowCategory){
+            MoneyFlowCategory.RegularFixed -> {
+                111
+            }
+            MoneyFlowCategory.RegularVariable -> {
+                110
+            }
+            MoneyFlowCategory.IrregularFixed -> {
+                101
+            }
+            MoneyFlowCategory.IrregularVariable -> {
+                100
+            }
+        }
+        return dao.getCategoriesByTypeId(typeId)
     }
 
-    override fun getRentList(yearMonth: YearMonth, flatId: Int): Flow<List<RentInfo>> {
-        return flowOf()
+    override fun getRentList(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>> {
+        return dao.getFullRentInfoByYM(
+            year = year,
+            month = month,
+            flatId = flatId
+        )
     }
 
-    override suspend fun addNewRent(newBookedState: NewBookedState) {
-
+    override suspend fun addNewRent(person: Person, payments: List<Payment>, schedules: List<Schedule>) {
+        dao.addSchedules(
+            person = person,
+            payments = payments,
+            schedules = schedules
+        )
     }
 }

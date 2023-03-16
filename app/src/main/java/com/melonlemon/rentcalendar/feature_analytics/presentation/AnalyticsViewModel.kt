@@ -5,10 +5,13 @@ import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 
-class AnalyticsViewModel(
+@HiltViewModel
+class AnalyticsViewModel @Inject constructor(
     private  val useCases: AnalyticsUseCases
 ): ViewModel() {
 

@@ -283,16 +283,3 @@ fun AnalyticsScreen(
 
 }
 
-//@RequiresApi(Build.VERSION_CODES.O)
-//@Preview(showBackground = true)
-//@Composable
-//fun AnalyticsScreenPreview() {
-//    RentCalendarTheme {
-//        val repository = AnalyticsRepositoryImpl()
-//        val useCases = AnalyticsUseCases(
-//            getCashFlowInfo = GetCashFlowInfo(repository)
-//        )
-//        val viewModel = AnalyticsViewModel(useCases)
-//        AnalyticsScreen(viewModel)
-//    }
-//}
