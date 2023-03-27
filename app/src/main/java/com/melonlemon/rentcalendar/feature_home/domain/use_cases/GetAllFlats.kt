@@ -7,6 +7,10 @@ class GetAllFlats(
     private val repository: HomeRepository
 ) {
     suspend operator fun invoke(): List<CategoryInfo>{
-        return repository.getAllFlats()
+        val flats = repository.getAllFlats().filter { it.active }
+        return flats.map { CategoryInfo(
+            id = it.id!!,
+            name = it.name
+        ) }
     }
 }

@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -49,9 +52,13 @@ class MainActivity : ComponentActivity() {
                         BottomNavigation {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
                             val currentDestination = navBackStackEntry?.destination
-                            items.forEach { screen ->
+                            val iconsList = listOf<ImageVector>(
+                                Icons.Filled.Home,
+                                ImageVector.vectorResource(id = R.drawable.ic_baseline_assignment_24),
+                                ImageVector.vectorResource(id = R.drawable.ic_baseline_assessment_24))
+                            items.forEachIndexed { index, screen ->
                                 BottomNavigationItem(
-                                    icon = { Icon(screen.icon, contentDescription = null) },
+                                    icon = { Icon(iconsList[index], contentDescription = null) },
                                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                                     onClick = {
                                         navController.navigate(screen.route) {

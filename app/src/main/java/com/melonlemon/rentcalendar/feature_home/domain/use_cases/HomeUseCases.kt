@@ -11,5 +11,7 @@ data class HomeUseCases(
     val getExpCategories: GetExpCategories,
     val addNewBooked: AddNewBooked,
     val updateFixAmountCat: UpdateFixAmountCat,
-    val addExpenses: AddExpenses
+    val addExpenses: AddExpenses,
+    val getExpensesByYM: GetExpensesByYM,
+    val updateExpenses: UpdateExpenses
 )

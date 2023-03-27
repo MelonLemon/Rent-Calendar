@@ -6,8 +6,13 @@ import java.time.YearMonth
 class AddExpenses (
     private val repository: HomeRepository
 ) {
-    operator fun invoke(yearMonth: YearMonth, flatId: Int, catId: Int, amount: Int)  {
-
-
+    suspend operator fun invoke(yearMonth: YearMonth, flatId: Int, catId: Int, amount: Int, comment: String)  {
+        repository.addExpenses(
+            yearMonth = yearMonth,
+            flatId = flatId,
+            catId = catId,
+            amount = amount,
+            comment = comment
+        )
     }
 }

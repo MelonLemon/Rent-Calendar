@@ -25,7 +25,15 @@ data class RentInfo(
 
 data class ExpensesCategoryInfo(
     val id: Int,
-    val header: String,
+    val name: String,
     val subHeader: String,
+    val amount: Int
+)
+
+data class ExpensesInfo(
+    val id: Int,
+    val categoryId: Int,
+    val categoryName: String,
+    val paymentDate: LocalDate,
     val amount: Int
 )

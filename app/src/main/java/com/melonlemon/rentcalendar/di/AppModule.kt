@@ -2,6 +2,8 @@ package com.melonlemon.rentcalendar.di
 
 import android.app.Application
 import androidx.room.Room
+import com.melonlemon.rentcalendar.core.data.data_source.DatabaseInitializer
+import com.melonlemon.rentcalendar.core.data.data_source.RentDao
 import com.melonlemon.rentcalendar.core.data.data_source.RentDatabase
 import com.melonlemon.rentcalendar.core.data.repository.AnalyticsRepositoryImpl
 import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
@@ -19,6 +21,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -27,13 +30,23 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRentDatabase(app: Application): RentDatabase {
+    fun provideRentDatabase(
+        app: Application,
+        catalogueProvider: Provider<RentDao>,
+    ): RentDatabase {
         return Room.databaseBuilder(
             app,
             RentDatabase::class.java,
             RentDatabase.DATABASE_NAME
+        ).addCallback(
+            DatabaseInitializer(catalogueProvider)
         ).build()
     }
+
+    @Provides
+    @Singleton
+    fun provideRentDao(db: RentDatabase): RentDao = db.rentDao
+
     @Provides
     @Singleton
     fun provideHomeRepository(db: RentDatabase): HomeRepository {
@@ -50,6 +63,8 @@ object AppModule {
         return TransactionRepositoryImpl(db.rentDao)
     }
 
+    @Provides
+    @Singleton
     fun provideHomeUseCases(repository: HomeRepository): HomeUseCases {
         return HomeUseCases(
             getFinResults = GetFinResults(repository),
@@ -62,16 +77,22 @@ object AppModule {
             getExpCategories = GetExpCategories(repository),
             addNewBooked = AddNewBooked(repository),
             updateFixAmountCat = UpdateFixAmountCat(repository),
-            addExpenses = AddExpenses(repository)
+            addExpenses = AddExpenses(repository),
+            getExpensesByYM = GetExpensesByYM(repository),
+            updateExpenses = UpdateExpenses(repository)
         )
     }
 
+    @Provides
+    @Singleton
     fun provideAnalyticsUseCases(repository: AnalyticsRepository): AnalyticsUseCases {
         return AnalyticsUseCases(
             getCashFlowInfo = GetCashFlowInfo(repository)
         )
     }
 
+    @Provides
+    @Singleton
     fun provideTransactionsUseCases(repository: TransactionsRepository): TransactionsUseCases {
         return TransactionsUseCases(
             getTransactions = GetTransactions(repository),

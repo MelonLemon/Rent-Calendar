@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
 import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
@@ -14,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -53,13 +55,56 @@ class HomeViewModel @Inject constructor(
         emptyList<RentInfo>()
     )
 
+    private val _selectedExpenses = MutableStateFlow(
+        ExpensesInfo(
+            id = -1,
+            categoryId = -1,
+            categoryName = "",
+            paymentDate = LocalDate.now(),
+            amount = 0)
+    )
+    val selectedExpenses  = _selectedExpenses.asStateFlow()
 
-    private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.RegularFixed)
+    private val _updateExpensesStatus = MutableStateFlow<SimpleStatusOperation>(
+        SimpleStatusOperation.OperationUnChecked)
+    val updateExpensesStatus  = _updateExpensesStatus.asStateFlow()
+
+
+
+    private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.Regular)
     val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
 
-    private val _displayExpCategories = MutableStateFlow<Map<YearMonth, List<ExpensesCategoryInfo>>>(emptyMap())
+    private val _displayExpCategories = MutableStateFlow<Pair<List<ExpensesCategoryInfo>, List<ExpensesCategoryInfo>>>(
+        Pair(emptyList(), emptyList()))
     val displayExpCategories  = _displayExpCategories.asStateFlow()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _displayExpensesReg = filterState.flatMapLatest{ filterState ->
+        useCases.getExpensesByYM(
+            yearMonth = filterState.yearMonth,
+            flatId = filterState.selectedFlatId,
+            moneyFlowCategory = MoneyFlowCategory.Regular
+        )
+    }
+    val displayExpensesReg = _displayExpensesReg.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _displayExpensesIr = filterState.flatMapLatest{ filterState ->
+        useCases.getExpensesByYM(
+            yearMonth = filterState.yearMonth,
+            flatId = filterState.selectedFlatId,
+            moneyFlowCategory = MoneyFlowCategory.Irregular
+        )
+    }
+    val displayExpensesIr= _displayExpensesIr.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
     private val _currencySign = MutableStateFlow("")
     val currencySign  = _currencySign.asStateFlow()
@@ -71,7 +116,7 @@ class HomeViewModel @Inject constructor(
             _flatsState.value = flatsState.value.copy(
                 listOfFlats = allFlats
             )
-            _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
+            _displayExpCategories.value = useCases.getExpCategories()
         }
     }
 
@@ -81,9 +126,7 @@ class HomeViewModel @Inject constructor(
                 _filterState.value = filterState.value.copy(
                     yearMonth = event.yearMonth
                 )
-                viewModelScope.launch {
-                    _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
-                }
+
             }
 
             is HomeScreenEvents.OnNewFlatChanged -> {
@@ -148,29 +191,24 @@ class HomeViewModel @Inject constructor(
             //Expenses Category
             is HomeScreenEvents.OnMoneyFlowChanged -> {
                 _expensesCategoriesState.value = expensesCategoriesState.value.copy(
-                   isRegularMF = event.isRegularMF,
-                    isFixedMF = event.isFixedMF
-                )
-                when(event.isRegularMF to event.isFixedMF) {
-                    true to true -> {
-                        _moneyFlowCategory.value = MoneyFlowCategory.RegularFixed
-                    }
-                    true to false -> {
-                        _moneyFlowCategory.value = MoneyFlowCategory.RegularVariable
-                    }
-                    false to true -> {
-                        _moneyFlowCategory.value = MoneyFlowCategory.IrregularFixed
-                    }
-                    false to false -> {
-                        _moneyFlowCategory.value = MoneyFlowCategory.IrregularVariable
-                    }
-                }
-                viewModelScope.launch {
-                    _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
-                }
+                   isRegularMF = event.isRegularMF)
+                _moneyFlowCategory.value = if(event.isRegularMF) MoneyFlowCategory.Regular else MoneyFlowCategory.Irregular
+
 
 
             }
+            is HomeScreenEvents.OnYearExpCatChanged -> {
+                _filterState.value = filterState.value.copy(
+                    yearMonth = YearMonth.of(event.year, filterState.value.yearMonth.monthValue)
+                )
+
+            }
+            is HomeScreenEvents.OnMonthClickExpCat -> {
+                _filterState.value = filterState.value.copy(
+                    yearMonth = YearMonth.of(filterState.value.yearMonth.year, event.monthInt)
+                )
+            }
+
             is HomeScreenEvents.OnNewNameExpCatChanged -> {
                 _expensesCategoriesState.value = expensesCategoriesState.value.copy(
                     newCategoryName = event.name
@@ -187,7 +225,7 @@ class HomeViewModel @Inject constructor(
                     val status = useCases.addNewExpCat(
                         name = expensesCategoriesState.value.newCategoryName,
                         amount = expensesCategoriesState.value.newCategoryAmount,
-                        categories = displayExpCategories.value[YearMonth.now()]?: emptyList(),
+                        categories = displayExpCategories.value.first,
                         moneyFlowCategory = moneyFlowCategory.value
                     )
                     if(status== CheckStatusStr.SuccessStatus){
@@ -197,7 +235,7 @@ class HomeViewModel @Inject constructor(
                             checkStatusNewCat = status
                         )
 
-                        _displayExpCategories.value = useCases.getExpCategories(moneyFlowCategory.value, filterState.value.yearMonth)
+                        _displayExpCategories.value = useCases.getExpCategories()
 
                     } else {
                         _expensesCategoriesState.value = expensesCategoriesState.value.copy(
@@ -212,37 +250,56 @@ class HomeViewModel @Inject constructor(
                 )
             }
             is HomeScreenEvents.OnAmountExpChanged -> {
-                val newExpCatInfo = displayExpCategories.value[event.yearMonth]?.get(event.index)
-                    ?.copy(
+                if(expensesCategoriesState.value.isRegularMF){
+                    val newList = displayExpCategories.value.first.toMutableList()
+                    newList[event.index] = newList[event.index].copy(
                         amount = event.amount
                     )
-
-                val newList = displayExpCategories.value[event.yearMonth]?.toMutableList().apply {
-                    this!![event.index] = newExpCatInfo!!
+                    _displayExpCategories.value = displayExpCategories.value.copy(
+                        first = newList
+                    )
+                } else {
+                    val newList = displayExpCategories.value.second.toMutableList()
+                    newList[event.index] = newList[event.index].copy(
+                        amount = event.amount
+                    )
+                    _displayExpCategories.value = displayExpCategories.value.copy(
+                        second = newList
+                    )
                 }
-                val newMap = displayExpCategories.value.toMutableMap()
-                newMap[event.yearMonth] = newList!!.toList()
-                _displayExpCategories.value = newMap
 
             }
-            is HomeScreenEvents.OnFixedAmountCatChange -> {
+            is HomeScreenEvents.OnSelectExpensesChange -> {
+                _selectedExpenses.value = event.expensesInfo
+            }
+
+            is HomeScreenEvents.OnExpensesAmountChange -> {
                 viewModelScope.launch {
-                    useCases.updateFixAmountCat(
-                        yearMonth = filterState.value.yearMonth,
-                        flatId = filterState.value.selectedFlatId,
-                        catId = event.id,
+                    val result = useCases.updateExpenses(
+                        id = event.expensesId,
                         amount = event.amount
                     )
+                    if (result == SimpleStatusOperation.OperationSuccess){
+
+                    } else {
+
+                    }
                 }
 
             }
+            is HomeScreenEvents.OnExpensesUpdateComplete -> {
+                _updateExpensesStatus.value = SimpleStatusOperation.OperationUnChecked
+            }
+
+
             is HomeScreenEvents.OnExpensesAdd -> {
                 viewModelScope.launch {
                     useCases.addExpenses(
-                        yearMonth = event.yearMonth,
+                        yearMonth = filterState.value.yearMonth,
                         flatId = filterState.value.selectedFlatId,
-                        catId = event.id,
-                        amount = event.amount
+                        catId = event.catId,
+                        amount = event.amount,
+                        comment = event.categoryName
                     )
                 }
             }
@@ -288,7 +345,10 @@ class HomeViewModel @Inject constructor(
             }
             is HomeScreenEvents.OnAddNewBookedBtnClick -> {
                 viewModelScope.launch {
-                    val result = useCases.addNewBooked(newBookedState.value)
+                    val result = useCases.addNewBooked(
+                        newBookedState = newBookedState.value,
+                        flatId = filterState.value.selectedFlatId
+                    )
                     if (result==CheckStatusBooked.SuccessStatus){
                         _newBookedState.value = newBookedState.value.copy(
                             startDate = null,

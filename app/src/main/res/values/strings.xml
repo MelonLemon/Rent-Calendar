@@ -15,7 +15,7 @@
     <string name="book">Book</string>
     <string name="days">days</string>
     <string name="new_category">New Category</string>
-    <string name="regular_btn">Regular</string>
+    <string name="regular_btn">Monthly</string>
     <string name="irregular_btn">Irregular</string>
     <string name="amount">Amount</string>
     <string name="fixed_amount">Fixed</string>
@@ -69,7 +69,7 @@
     <string name="currency_sign">Currency Sign</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
-    <string name="change_fix_amount">Change fixed amount to</string>
+    <string name="change_fix_amount">Change amount at</string>
     <string name="for_category">for category</string>
     <string name="agree">Agree</string>
     <string name="home_route">Home</string>

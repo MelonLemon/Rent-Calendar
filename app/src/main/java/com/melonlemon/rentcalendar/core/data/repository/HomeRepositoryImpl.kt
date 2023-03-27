@@ -3,6 +3,7 @@ package com.melonlemon.rentcalendar.core.data.repository
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.melonlemon.rentcalendar.core.data.data_source.RentDao
+import com.melonlemon.rentcalendar.core.data.util.*
 import com.melonlemon.rentcalendar.core.domain.model.*
 import com.melonlemon.rentcalendar.core.domain.util.TestData
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
@@ -13,6 +14,7 @@ import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCateg
 import com.melonlemon.rentcalendar.feature_home.presentation.util.NewBookedState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import java.time.LocalDate
 import java.time.YearMonth
 
 class HomeRepositoryImpl(
@@ -56,17 +58,11 @@ class HomeRepositoryImpl(
 
     override suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory) {
         val typeId = when(moneyFlowCategory){
-            MoneyFlowCategory.RegularFixed -> {
-                111
+            MoneyFlowCategory.Regular -> {
+                REGULAR_EXP
             }
-            MoneyFlowCategory.RegularVariable -> {
-                110
-            }
-            MoneyFlowCategory.IrregularFixed -> {
-                101
-            }
-            MoneyFlowCategory.IrregularVariable -> {
-                100
+            MoneyFlowCategory.Irregular -> {
+                IRREGULAR_EXP
             }
         }
         dao.addCategory(Category(
@@ -80,20 +76,42 @@ class HomeRepositoryImpl(
 
     override suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category> {
         val typeId = when(moneyFlowCategory){
-            MoneyFlowCategory.RegularFixed -> {
-                111
+            MoneyFlowCategory.Regular -> {
+                REGULAR_EXP
             }
-            MoneyFlowCategory.RegularVariable -> {
-                110
-            }
-            MoneyFlowCategory.IrregularFixed -> {
-                101
-            }
-            MoneyFlowCategory.IrregularVariable -> {
-                100
+            MoneyFlowCategory.Irregular-> {
+                IRREGULAR_EXP
             }
         }
         return dao.getCategoriesByTypeId(typeId)
+    }
+
+    override fun getExpensesByYM(
+        moneyFlowCategory: MoneyFlowCategory,
+        yearMonth: YearMonth,
+        flatId: Int
+    ): Flow<List<Expenses>> {
+        val typeId = when(moneyFlowCategory){
+            MoneyFlowCategory.Regular -> {
+                REGULAR_EXP
+            }
+            MoneyFlowCategory.Irregular-> {
+                IRREGULAR_EXP
+            }
+        }
+        return dao.getExpensesByTypeId(
+            flatId = flatId,
+            year = yearMonth.year,
+            month = yearMonth.monthValue,
+            typeId = typeId
+        )
+    }
+
+    override suspend fun updateExpenses(id: Int, amount: Int) {
+        dao.updateExpenses(
+            id = id,
+            amount = amount
+        )
     }
 
     override fun getRentList(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>> {
@@ -109,6 +127,21 @@ class HomeRepositoryImpl(
             person = person,
             payments = payments,
             schedules = schedules
+        )
+    }
+
+    override suspend fun addExpenses(yearMonth: YearMonth, flatId: Int, catId: Int, amount: Int, comment: String) {
+        dao.addExpenses(
+            Expenses(
+                id = null,
+                flatId = flatId,
+                year = yearMonth.year,
+                month = yearMonth.monthValue,
+                categoryId = catId,
+                amount = amount,
+                paymentDate = LocalDate.now(),
+                comment = comment
+            )
         )
     }
 }

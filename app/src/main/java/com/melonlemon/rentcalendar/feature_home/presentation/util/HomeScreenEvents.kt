@@ -1,5 +1,6 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.util
 
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -15,13 +16,17 @@ sealed class HomeScreenEvents{
     data class OnRentPaidChange(val id: Int, val isPaid: Boolean): HomeScreenEvents()
     data class OnYearMonthChange(val yearMonth: YearMonth): HomeScreenEvents()
     //Change Category Expenses
-    data class OnMoneyFlowChanged(val isRegularMF: Boolean, val isFixedMF: Boolean): HomeScreenEvents()
+    data class OnMoneyFlowChanged(val isRegularMF: Boolean): HomeScreenEvents()
     data class OnNewNameExpCatChanged(val name: String): HomeScreenEvents()
     data class OnNewAmountExpCatChanged(val amount: Int): HomeScreenEvents()
+    data class OnYearExpCatChanged(val year: Int): HomeScreenEvents()
+    data class OnMonthClickExpCat(val monthInt: Int): HomeScreenEvents()
     object OnAddNewExpCatBtnClick: HomeScreenEvents()
     object OnAddNewExpCatComplete: HomeScreenEvents()
-    data class OnAmountExpChanged(val yearMonth: YearMonth, val index: Int, val amount: Int): HomeScreenEvents()
-    data class OnExpensesAdd(val id: Int, val yearMonth: YearMonth, val amount: Int): HomeScreenEvents()
+    data class OnAmountExpChanged(val index: Int, val amount: Int): HomeScreenEvents()
+    data class OnExpensesAdd(val catId: Int, val amount: Int, val categoryName: String): HomeScreenEvents()
+    data class OnSelectExpensesChange(val expensesInfo: ExpensesInfo): HomeScreenEvents()
+    object OnExpensesUpdateComplete: HomeScreenEvents()
     //New Booked
     object OnCalendarBtnClick: HomeScreenEvents()
     data class OnNameBookedChanged(val name: String): HomeScreenEvents()
@@ -33,5 +38,5 @@ sealed class HomeScreenEvents{
     object OnAddNewBookedComplete: HomeScreenEvents()
     //Dialogs
     data class OnCurrencySignChanged(val sign: String): HomeScreenEvents()
-    data class OnFixedAmountCatChange(val id: Int, val amount: Int): HomeScreenEvents()
+    data class OnExpensesAmountChange(val expensesId: Int, val amount: Int): HomeScreenEvents()
 }

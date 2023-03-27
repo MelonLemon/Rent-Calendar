@@ -22,6 +22,9 @@ interface HomeRepository {
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)
     suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category>
+    fun getExpensesByYM(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth, flatId: Int): Flow<List<Expenses>>
+    suspend fun updateExpenses(id: Int, amount: Int)
     fun getRentList(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>>
     suspend fun addNewRent(person: Person, payments: List<Payment>, schedules: List<Schedule>)
+    suspend fun addExpenses(yearMonth: YearMonth, flatId: Int, catId: Int, amount: Int, comment: String)
 }

@@ -11,7 +11,7 @@ import com.melonlemon.rentcalendar.core.domain.util.Converters
     entities = [Flats::class, Schedule::class, Person::class, Payment::class,
         Expenses::class, Category::class, CategoryType::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class RentDatabase: RoomDatabase() {

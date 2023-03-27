@@ -15,17 +15,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
 import com.melonlemon.rentcalendar.core.presentation.components.*
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.YearMonth
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -43,6 +40,11 @@ fun HomeScreen(
     val displayExpCategories by viewModel.displayExpCategories.collectAsStateWithLifecycle()
     val newBookedState by viewModel.newBookedState.collectAsStateWithLifecycle()
     val currencySign by viewModel.currencySign.collectAsStateWithLifecycle()
+    val displayExpensesReg by viewModel.displayExpensesReg.collectAsStateWithLifecycle()
+    val displayExpensesIr by viewModel.displayExpensesIr.collectAsStateWithLifecycle()
+    val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
+    val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
+
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorMessages = mapOf(
@@ -59,6 +61,7 @@ fun HomeScreen(
         CheckStatusBooked.UnKnownFailStatus to stringResource(R.string.err_msg_unknown_error),
     )
     val errorStatus = stringResource(R.string.err_msg_unknown_error)
+    val successStatus = stringResource(R.string.msg_success_status)
 
     if(flatsState.checkStatusNewFlat!= CheckStatusStr.UnCheckedStatus){
 
@@ -96,11 +99,21 @@ fun HomeScreen(
         }
     }
 
+    if(updateExpensesStatus != SimpleStatusOperation.OperationUnChecked){
+
+        LaunchedEffect(updateExpensesStatus){
+
+            snackbarHostState.showSnackbar(
+                message = if(updateExpensesStatus==SimpleStatusOperation.OperationSuccess) successStatus else errorStatus,
+                actionLabel = null
+            )
+            viewModel.homeScreenEvents(HomeScreenEvents.OnExpensesUpdateComplete)
+        }
+    }
+
     val currencyDialog = remember{ mutableStateOf(false) }
     val changeFixAmountDialog = remember{ mutableStateOf(false) }
-    val fixAmountCategory = remember{ mutableStateOf(ExpensesCategoryInfo(
-        id=-1, header="", subHeader = "", amount = 0
-    )) }
+
 
     Scaffold(
         snackbarHost = {
@@ -265,9 +278,7 @@ fun HomeScreen(
                         isFirstBtnSelected = expensesCategoriesState.isRegularMF,
                         onBtnClick = { isRegularSelected ->
                             viewModel.homeScreenEvents(HomeScreenEvents.OnMoneyFlowChanged(
-                                isRegularMF = isRegularSelected,
-                                isFixedMF = expensesCategoriesState.isFixedMF
-                            ))
+                                isRegularMF = isRegularSelected))
                         }
                     )
                     Text(
@@ -275,112 +286,165 @@ fun HomeScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.outline
                     )
-                    SegmentedTwoBtns(
-                        firstBtnName = stringResource(R.string.fixed_amount),
-                        secondBtnName = stringResource(R.string.variable_amount),
-                        isFirstBtnSelected = expensesCategoriesState.isFixedMF,
-                        onBtnClick = { isFixedAmountSelected ->
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnMoneyFlowChanged(
-                                isRegularMF = expensesCategoriesState.isRegularMF,
-                                isFixedMF = isFixedAmountSelected
-                            ))
-                        }
-                    )
                 }
                 item{
                     InputContainer(
                         icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
                         title = stringResource(R.string.new_category)
                     ){
-                        if(expensesCategoriesState.isFixedMF){
-                            NameValueInputPlus(
-                                name = expensesCategoriesState.newCategoryName,
-                                number = expensesCategoriesState.newCategoryAmount,
-                                onNumberChanged = { amount ->
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnNewAmountExpCatChanged(
-                                            amount.toIntOrNull() ?:0
-                                        ))
-                                },
-                                onNameChanged = { name ->
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnNewNameExpCatChanged(name))
-                                },
-                                onAddButtonClicked = {
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnAddNewExpCatBtnClick)
-                                }
-                            )
-                        } else {
-                            NameInputPlus(
-                                name = expensesCategoriesState.newCategoryName,
-                                onNameChanged = {name ->
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnNewNameExpCatChanged(name))
-
-                                },
-                                onAddButtonClicked = {
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnAddNewExpCatBtnClick)
-                                }
-                            )
-                        }
+                        NameValueInputPlus(
+                            name = expensesCategoriesState.newCategoryName,
+                            number = expensesCategoriesState.newCategoryAmount,
+                            onNumberChanged = { amount ->
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnNewAmountExpCatChanged(
+                                        amount.toIntOrNull() ?:0
+                                    ))
+                            },
+                            onNameChanged = { name ->
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnNewNameExpCatChanged(name))
+                            },
+                            onAddButtonClicked = {
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnAddNewExpCatBtnClick)
+                            }
+                        )
                     }
                 }
                 item{
                     Text(text= stringResource(R.string.title_exp_cat))
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
-                if(displayExpCategories.isEmpty()){
-                    item {
-                        Spacer(modifier = Modifier.height(32.dp))
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.no_categories),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.outline,
-                            textAlign = TextAlign.Center
-                        )
-                        //image
+
+                item{
+                    YearMonthRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        chosenMonthNum = filterState.yearMonth.monthValue,
+                        year = filterState.yearMonth.year,
+                        onYearChange = { yearString ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnYearExpCatChanged(
+                                    year = yearString.toIntOrNull() ?: 0
+                                )
+                            )
+                        },
+                        onMonthClick = { monthInt ->
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnMonthClickExpCat(
+                                    monthInt = monthInt
+                                )
+                            )
+                        }
+                    )
+                }
+
+                if(expensesCategoriesState.isRegularMF){
+                    if(displayExpCategories.first.isEmpty()){
+                        item {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(R.string.no_categories),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                textAlign = TextAlign.Center
+                            )
+                            //image
+                        }
+                    } else {
+                        itemsIndexed(displayExpCategories.first){ index, item ->
+                            //if categoryId in Expenses Transactions do not show
+                            if(item.id !in displayExpensesReg.map { it.categoryId }){
+                                InfoCardInput(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textFirstR = item.name,
+                                    textSecondR = { Text(item.subHeader) },
+                                    inputNumber = if(item.amount!=0) item.amount.toString() else "",
+                                    onNumberChanged = { numberString ->
+                                        viewModel.homeScreenEvents(
+                                            HomeScreenEvents.OnAmountExpChanged(
+                                                index = index,
+                                                amount = numberString.toIntOrNull() ?:0
+                                            )
+                                        )
+                                    },
+                                    onAddButtonClicked = {
+
+                                    },
+                                    content = {}
+                                )
+                            }
+
+                        }
                     }
                 } else {
-                    displayExpCategories.forEach{(yearMonth, categories) ->
-                        expensesCategory(
-                            title = "${yearMonth.month.name} ${yearMonth.year}",
-                            displayExpCategories = categories,
-                            onAmountChange = { amountString, index ->
-                                val amountInt = amountString.toIntOrNull() ?: 0
-                                viewModel.homeScreenEvents(
-                                    HomeScreenEvents.OnAmountExpChanged(
-                                        yearMonth = yearMonth,
-                                        index = index,
-                                        amount = amountInt
-                                    )
-                                )
-                                if(expensesCategoriesState.isFixedMF && expensesCategoriesState.isRegularMF && amountInt!=0){
-                                    fixAmountCategory.value = categories[index].copy(
-                                        amount = amountInt
-                                    )
-                                    changeFixAmountDialog.value = true
-                                }
-                            },
-                            onAddButtonClicked = { index ->
-                                if(categories[index].amount!=0){
+                    if(displayExpCategories.second.isEmpty()){
+                        item {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(R.string.no_categories),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                textAlign = TextAlign.Center
+                            )
+                            //image
+                        }
+                    } else {
+                        itemsIndexed(displayExpCategories.second){ index, category ->
+                            InfoCardInput(
+                                modifier = Modifier.fillMaxWidth(),
+                                textFirstR = category.name,
+                                textSecondR = { Text(category.subHeader) },
+                                inputNumber = if(category.amount!=0) category.amount.toString() else "",
+                                onNumberChanged = { numberString ->
                                     viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnExpensesAdd(
-                                            yearMonth = yearMonth,
-                                            id = categories[index].id,
-                                            amount = categories[index].amount
+                                        HomeScreenEvents.OnAmountExpChanged(
+                                            index = index,
+                                            amount = numberString.toIntOrNull() ?:0
                                         )
                                     )
-                                }
+                                },
+                                onAddButtonClicked = {
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnExpensesAdd(
+                                            catId = category.id,
+                                            amount = category.amount,
+                                            categoryName = category.name
+                                        )
+                                    )
 
-                            }
-                        )
-
+                                },
+                                content = {}
+                            )
+                        }
                     }
-
                 }
+
+                item{
+                    Text(text= stringResource(R.string.expenses))
+                    Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
+                }
+
+                itemsIndexed(
+                    if(expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
+                ){ index, item ->
+                    ArchiveCard(
+                        textFirstR = item.categoryName,
+                        textSecondR = "${item.paymentDate} - ${item.amount}",
+                        onDoubleTap = {
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnSelectExpensesChange(
+                                    expensesInfo = item
+                                )
+                            )
+                            changeFixAmountDialog.value = true
+                        }
+                    )
+                }
+
+
             }
             if(homeScreenState.page == HomePages.BookPage){
                 item {
@@ -456,20 +520,22 @@ fun HomeScreen(
             )
         }
         if(changeFixAmountDialog.value){
-            FixAmountDialog(
-                expensesCategoryInfo = fixAmountCategory.value,
+            ExpensesDialog(
                 onCancel = {
                     changeFixAmountDialog.value = false
                 },
-                onAgree = {
+                onAgree = { amount ->
                     viewModel.homeScreenEvents(
-                        HomeScreenEvents.OnFixedAmountCatChange(
-                            id = fixAmountCategory.value.id,
-                            amount = fixAmountCategory.value.id
+                        HomeScreenEvents.OnExpensesAmountChange(
+                            expensesId = selectedExpenses.id,
+                            amount = amount
                         )
                     )
                     changeFixAmountDialog.value = false
-                }
+                },
+                name = selectedExpenses.categoryName,
+                paymentDate = selectedExpenses.paymentDate,
+                amount = selectedExpenses.amount
             )
         }
     }

@@ -11,6 +11,11 @@ data class Flats(
     val active: Boolean
 )
 
+@Entity
+data class Currency(
+    val currency: String
+)
+
 @Entity(
     tableName = "schedule",
     foreignKeys = [
@@ -46,7 +51,7 @@ data class Schedule(
     val endDate: LocalDate,
     @ColumnInfo(name = "person_id")  val personId: Int,
     @ColumnInfo(name = "payment_id")  val paymentId: Int,
-    val comment: Int
+    val comment: String
 )
 
 @Entity(tableName = "person")
@@ -74,6 +79,7 @@ data class Payment(
     val nights: Int,
     val paymentSingleNight: Int,
     val paymentAllNights: Int,
+    val paymentDate: LocalDate?=null,
     val isPaid: Boolean
 )
 
@@ -102,7 +108,8 @@ data class Expenses(
     val month: Int,
     @ColumnInfo(name = "category_id") val categoryId: Int,
     val amount: Int,
-    val comment: Int
+    val paymentDate: LocalDate,
+    val comment: String
 )
 
 @Entity(tableName = "category",
@@ -126,8 +133,7 @@ data class Category(
 @Entity(tableName = "categoryType")
 data class CategoryType(
     @PrimaryKey val id: Int,
-    val isRegular: Boolean,
-    val isFixed: Boolean
+    val isRegular: Boolean
 )
 
 //Supported classes
@@ -135,6 +141,13 @@ data class AmountGroupBy(
     val year: Int,
     val month: Int,
     val amount: Int
+)
+
+data class TransactionsMonth(
+    val month: Int,
+    val paymentDate: LocalDate,
+    val amount: Int,
+    val comment: String
 )
 
 data class FullRentInfo(
