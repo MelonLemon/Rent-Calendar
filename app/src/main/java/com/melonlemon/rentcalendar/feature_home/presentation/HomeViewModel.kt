@@ -44,6 +44,9 @@ class HomeViewModel @Inject constructor(
     private val _newBookedState = MutableStateFlow(NewBookedState())
     val newBookedState  = _newBookedState.asStateFlow()
 
+    private val _baseOption = MutableStateFlow(false)
+    val baseOption  = _baseOption.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _rentList = filterState.flatMapLatest{ filterState ->
         useCases.getRentList(yearMonth = filterState.yearMonth, flatId = filterState.selectedFlatId)
@@ -111,17 +114,25 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _finResults.value = useCases.getFinResults(filterState.value.selectedFlatId)
+            _finResults.value = useCases.getFinResults(
+                flatId = filterState.value.selectedFlatId,
+                year = filterState.value.yearMonth.year)
             val allFlats = useCases.getAllFlats()
             _flatsState.value = flatsState.value.copy(
                 listOfFlats = allFlats
             )
             _displayExpCategories.value = useCases.getExpCategories()
+            _baseOption.value = flatsState.value.listOfFlats.isEmpty()
         }
     }
 
     fun homeScreenEvents(event: HomeScreenEvents){
         when(event) {
+
+            is HomeScreenEvents.OnBaseOptionSave -> {
+
+
+            }
             is HomeScreenEvents.OnYearMonthChange -> {
                 _filterState.value = filterState.value.copy(
                     yearMonth = event.yearMonth
@@ -165,7 +176,9 @@ class HomeViewModel @Inject constructor(
                         selectedFlatId = event.id
                     )
                     viewModelScope.launch {
-                        _finResults.value = useCases.getFinResults(filterState.value.selectedFlatId)
+                        _finResults.value = useCases.getFinResults(
+                            flatId = filterState.value.selectedFlatId,
+                            year = filterState.value.yearMonth.year)
                     }
                 }
             }
@@ -279,14 +292,20 @@ class HomeViewModel @Inject constructor(
                         id = event.expensesId,
                         amount = event.amount
                     )
-                    if (result == SimpleStatusOperation.OperationSuccess){
+                    _updateExpensesStatus.value = result
 
-                    } else {
-
-                    }
                 }
 
             }
+            is HomeScreenEvents.OnCategoriesChanged -> {
+                viewModelScope.launch {
+                    val result = useCases.updateCategories(
+                        categories = event.listChangedCategories
+                    )
+                }
+
+            }
+
             is HomeScreenEvents.OnExpensesUpdateComplete -> {
                 _updateExpensesStatus.value = SimpleStatusOperation.OperationUnChecked
             }

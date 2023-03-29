@@ -114,6 +114,10 @@ class HomeRepositoryImpl(
         )
     }
 
+    override suspend fun updateCategories(categories: List<CategoryShortInfo>) {
+        dao.updateCategories(categories=categories)
+    }
+
     override fun getRentList(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>> {
         return dao.getFullRentInfoByYM(
             year = year,

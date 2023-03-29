@@ -76,7 +76,7 @@ object AppModule {
             addNewExpCat = AddNewExpCat(repository),
             getExpCategories = GetExpCategories(repository),
             addNewBooked = AddNewBooked(repository),
-            updateFixAmountCat = UpdateFixAmountCat(repository),
+            updateCategories = UpdateCategories(repository),
             addExpenses = AddExpenses(repository),
             getExpensesByYM = GetExpensesByYM(repository),
             updateExpenses = UpdateExpenses(repository)

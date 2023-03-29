@@ -51,28 +51,48 @@ interface RentDao {
         }
     }
 
+    //UPDATE CATEGORIES NAME AND FIX AMOUNT
+    @Query("UPDATE category SET name =:name AND fix_amount =:amount WHERE id=:id")
+    suspend fun updateCategory(id: Int, name: String, amount: Int)
+
+    @Transaction
+    suspend fun updateCategories(categories: List<CategoryShortInfo>){
+        categories.forEach { category ->
+            updateCategory(
+                id = category.id,
+                name = category.name,
+                amount = category.amount
+            )
+        }
+    }
     //GET FULL RENT INFO BY YEAR&MONTH AND FLAT ID
     @Transaction
     @Query("SELECT * FROM schedule WHERE flat_id=:flatId AND year=:year AND month=:month")
     fun getFullRentInfoByYM(year: Int, month: Int, flatId: Int): Flow<List<FullRentInfo>>
 
     //GET INCOME GROUP BY MONTH, FILTER YEAR, FLAT AND IS PAID
-    @Query("SELECT year, month, SUM(paymentAllNights) AS amount FROM payment WHERE flat_id=:flatId AND year=:year AND isPaid=:isPaid GROUP BY year AND month")
+    @Query("SELECT year, month, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE flat_id=:flatId AND year=:year AND isPaid=:isPaid " +
+            "GROUP BY year AND month ORDER BY month ASC")
     suspend fun getPaymentGroupByMY(flatId: Int, year: Int, isPaid: Boolean):List<AmountGroupBy>
 
     //GET ALL INCOME GROUP BY MONTH, FILTER YEAR AND IS PAID
-    @Query("SELECT year, month, SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND isPaid=:isPaid GROUP BY year AND month")
+    @Query("SELECT year, month, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE year=:year AND isPaid=:isPaid " +
+            "GROUP BY year AND month ORDER BY month ASC")
     suspend fun getAllPaymentGroupByMY(year: Int, isPaid: Boolean):List<AmountGroupBy>
 
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR
-    @Query("SELECT year, month, SUM(nights) AS amount FROM payment WHERE flat_id=:flatId AND year=:year GROUP BY year AND month")
+    @Query("SELECT year, month, SUM(nights) AS amount " +
+            "FROM payment WHERE flat_id=:flatId AND year=:year " +
+            "GROUP BY year AND month ORDER BY month ASC")
     suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int):List<AmountGroupBy>
 
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR
     @Query("WITH bookedNights (" +
             "SELECT flat_id, year, month, SUM(nights) AS amount " +
             "FROM payment WHERE year=:year GROUP BY flat_id AND year AND month)" +
-            "SELECT year, month AVG(amount) AS amount FROM bookedNights GROUP BY year AND month")
+            "SELECT year, month AVG(amount) AS amount FROM bookedNights GROUP BY year AND month ORDER BY month ASC")
     suspend fun getAvgBookedNightsGroupByMY(year: Int):List<AmountGroupBy>
 
     //ADD EXPENSES
@@ -80,11 +100,11 @@ interface RentDao {
     suspend fun addExpenses(expenses: Expenses)
 
     //GET EXPENSES GROUP BY MONTH, FILTER YEAR AND FLAT
-    @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE flat_id=:flatId AND year=:year GROUP BY year AND month")
+    @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE flat_id=:flatId AND year=:year GROUP BY year AND month ORDER BY month ASC")
     suspend fun getExpensesGroupByMY(flatId: Int, year: Int):List<AmountGroupBy>
 
     //GET ALL EXPENSES GROUP BY MONTH, FILTER YEAR
-    @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE year=:year GROUP BY year AND month")
+    @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE year=:year GROUP BY year AND month ORDER BY month ASC")
     suspend fun getAllExpensesGroupByMY(year: Int):List<AmountGroupBy>
 
     //ADD/UPDATE CATEGORY
@@ -144,8 +164,6 @@ interface RentDao {
     @Query("SELECT month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
             "WHERE flat_id=:flatId AND year=:year AND month IN (:months) GROUP BY month, paymentDate")
     fun getExpensesTransactionsByFlatIdM(flatId: Int, year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
-
-
 
     //GET ALL TRANSACTIONS BY PAYMENT DAY
     @Query("SELECT month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +

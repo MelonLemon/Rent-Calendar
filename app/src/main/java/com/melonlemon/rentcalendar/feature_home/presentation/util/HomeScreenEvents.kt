@@ -1,10 +1,18 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.util
 
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import java.time.LocalDate
 import java.time.YearMonth
 
 sealed class HomeScreenEvents{
+    //On Base Save
+    data class OnBaseOptionSave(
+        val flats: List<String>,
+        val MonthlyExpCat: List<ExpensesCategoryInfo>,
+        val IrregExpCat: List<ExpensesCategoryInfo>,
+    ): HomeScreenEvents()
+
     //New Flat
     data class OnNewFlatChanged(val name: String): HomeScreenEvents()
     object OnAddNewFlatBtnClick: HomeScreenEvents()
@@ -27,6 +35,7 @@ sealed class HomeScreenEvents{
     data class OnExpensesAdd(val catId: Int, val amount: Int, val categoryName: String): HomeScreenEvents()
     data class OnSelectExpensesChange(val expensesInfo: ExpensesInfo): HomeScreenEvents()
     object OnExpensesUpdateComplete: HomeScreenEvents()
+    data class OnCategoriesChanged(val listChangedCategories: List<ExpensesCategoryInfo>): HomeScreenEvents()
     //New Booked
     object OnCalendarBtnClick: HomeScreenEvents()
     data class OnNameBookedChanged(val name: String): HomeScreenEvents()

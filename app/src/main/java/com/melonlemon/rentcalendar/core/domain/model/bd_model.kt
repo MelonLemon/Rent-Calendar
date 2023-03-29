@@ -126,7 +126,7 @@ data class Category(
     @PrimaryKey(autoGenerate = true) val id: Int?,
     @ColumnInfo(name = "type_id") val typeId: Int,
     val name: String,
-    val fixedAmount: Int,
+    @ColumnInfo(name = "fix_amount") val fixedAmount: Int,
     val active: Boolean
 )
 
@@ -162,4 +162,10 @@ data class FullRentInfo(
         entityColumn = "id"
     )
     val payment: Payment
+)
+
+data class CategoryShortInfo(
+    val id: Int,
+    val name: String,
+    val amount: Int
 )

@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
@@ -44,6 +47,8 @@ fun HomeScreen(
     val displayExpensesIr by viewModel.displayExpensesIr.collectAsStateWithLifecycle()
     val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
     val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
+    val baseOption by viewModel.baseOption.collectAsStateWithLifecycle()
+
 
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -112,77 +117,107 @@ fun HomeScreen(
     }
 
     val currencyDialog = remember{ mutableStateOf(false) }
-    val changeFixAmountDialog = remember{ mutableStateOf(false) }
+    val changeFixAmountDialog = remember{ mutableStateOf(false)}
+    val allExpCategories = remember{ mutableStateOf(false) }
 
+    val flatName = remember { derivedStateOf { flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name } }
+
+    val listBaseFlat = listOf(stringResource(R.string.main_flat))
+    val listMonthlyExpCat = listOf(
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+    )
+    val listIrregExpCat = listOf(
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+    )
 
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState)
         }
     ) { it ->
+        if (baseOption) {
+            WelcomeFirstPage(
+                modifier = Modifier
+                    .padding(it),
+                listBaseFlat = listBaseFlat,
+                listMonthlyExpCat = listMonthlyExpCat,
+                listIrregExpCat = listIrregExpCat,
+                onSave = { flats, monthlyCat, IrregCat ->
+
+                }
+            )
+        } else {
         LazyColumn(
             modifier = Modifier
                 .padding(it),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start
-        ){
-            item{
+        ) {
+
+            item {
                 LazyRow(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ){
-                    itemsIndexed(finResults){ index, monthResults ->
+                ) {
+                    itemsIndexed(finResults) { index, monthResults ->
                         FinanceResultWidget(
                             modifier = Modifier.fillParentMaxWidth(),
-                            flatName=monthResults.flatName,
-                            month= monthResults.yearMonth,
-                            bookedPercent=monthResults.percentBooked,
-                            income=monthResults.income,
-                            expenses=monthResults.expenses,
+                            flatName = if (filterState.selectedFlatId == -1) stringResource(R.string.all)
+                            else flatName.value,
+                            month = monthResults.yearMonth,
+                            bookedPercent = monthResults.percentBooked,
+                            income = monthResults.income,
+                            expenses = monthResults.expenses,
                             currencySign = currencySign
                         )
                     }
 
                 }
             }
-            item{
+            item {
                 Button(onClick = {
                     currencyDialog.value = true
                 }) {
-                    Text(text= stringResource(R.string.currency_sign))
+                    Text(text = stringResource(R.string.currency_sign))
                 }
             }
 
             item {
                 InputContainer(
-                  icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
+                    icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
                     title = stringResource(R.string.new_flat)
-                ){
+                ) {
                     NameInputPlus(
                         name = flatsState.newFlat,
                         onNameChanged = { name ->
-                                 viewModel.homeScreenEvents(
-                                     HomeScreenEvents.OnNewFlatChanged(name))
+                            viewModel.homeScreenEvents(
+                                HomeScreenEvents.OnNewFlatChanged(name)
+                            )
                         },
                         onAddButtonClicked = {
                             viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnAddNewFlatBtnClick)
+                                HomeScreenEvents.OnAddNewFlatBtnClick
+                            )
                         }
                     )
                 }
             }
 
-            item{
+            item {
                 LazyRow(
                     modifier = Modifier,
                     contentPadding = PaddingValues(horizontal = 8.dp)
-                ){
-                    item{
+                ) {
+                    item {
                         FilterButton(
                             text = stringResource(R.string.all),
                             isSelected = filterState.selectedFlatId == -1,
                             onBtnClick = {
-                                  viewModel.homeScreenEvents(HomeScreenEvents.OnFlatClick(-1))
+                                viewModel.homeScreenEvents(HomeScreenEvents.OnFlatClick(-1))
                             },
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -205,21 +240,21 @@ fun HomeScreen(
                 }
             }
             val currentYearMonth = YearMonth.now()
-            item{
+            item {
                 Text(
-                    text = if(filterState.yearMonth == currentYearMonth)
+                    text = if (filterState.yearMonth == currentYearMonth)
                         stringResource(R.string.this_month) + ": ${filterState.yearMonth.month.name} ${filterState.yearMonth.year}"
-                else "${filterState.yearMonth.month.name}${filterState.yearMonth.year}",
+                    else "${filterState.yearMonth.month.name}${filterState.yearMonth.year}",
                     style = MaterialTheme.typography.titleSmall
                 )
             }
-            item{
+            item {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    item{
+                    item {
                         SectionButton(
                             text = stringResource(R.string.schedule),
                             isSelected = homeScreenState.page == HomePages.SchedulePage,
@@ -229,7 +264,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
-                    item{
+                    item {
                         SectionButton(
                             text = stringResource(R.string.expenses),
                             isSelected = homeScreenState.page == HomePages.ExpensesPage,
@@ -239,7 +274,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
-                    item{
+                    item {
                         SectionButton(
                             text = stringResource(R.string.book),
                             isSelected = homeScreenState.page == HomePages.BookPage,
@@ -251,73 +286,88 @@ fun HomeScreen(
 
                 }
             }
-            if(homeScreenState.page == HomePages.SchedulePage){
-                itemsIndexed(rentList){ index, rent ->
+            if (homeScreenState.page == HomePages.SchedulePage) {
+                itemsIndexed(rentList) { index, rent ->
                     RentCard(
-                        name=rent.name,
-                        description=rent.description,
-                        periodStart=rent.periodStart,
-                        periodEnd= rent.periodEnd,
-                        amount=rent.amount,
+                        name = rent.name,
+                        description = rent.description,
+                        periodStart = rent.periodStart,
+                        periodEnd = rent.periodEnd,
+                        amount = rent.amount,
                         isPaid = rent.isPaid,
                         onPaidChange = { isPaid ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnRentPaidChange(
                                     id = rent.id,
                                     isPaid = isPaid
-                                ))
+                                )
+                            )
                         }
                     )
                 }
             }
-            if(homeScreenState.page == HomePages.ExpensesPage){
+            if (homeScreenState.page == HomePages.ExpensesPage) {
                 item {
-                    SegmentedTwoBtns(
-                        firstBtnName = stringResource(R.string.regular_btn),
-                        secondBtnName = stringResource(R.string.irregular_btn),
-                        isFirstBtnSelected = expensesCategoriesState.isRegularMF,
-                        onBtnClick = { isRegularSelected ->
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnMoneyFlowChanged(
-                                isRegularMF = isRegularSelected))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SegmentedTwoBtns(
+                            firstBtnName = stringResource(R.string.regular_btn),
+                            secondBtnName = stringResource(R.string.irregular_btn),
+                            isFirstBtnSelected = expensesCategoriesState.isRegularMF,
+                            onBtnClick = { isRegularSelected ->
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnMoneyFlowChanged(
+                                        isRegularMF = isRegularSelected
+                                    )
+                                )
+                            }
+                        )
+                        IconButton(onClick = {
+                            allExpCategories.value = true
+                        }) {
+                            Icon(imageVector = Icons.Default.List, contentDescription = null)
                         }
-                    )
-                    Text(
-                        text= stringResource(R.string.amount),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.outline
-                    )
+
+                    }
+
                 }
-                item{
+                item {
                     InputContainer(
                         icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
                         title = stringResource(R.string.new_category)
-                    ){
+                    ) {
                         NameValueInputPlus(
                             name = expensesCategoriesState.newCategoryName,
                             number = expensesCategoriesState.newCategoryAmount,
                             onNumberChanged = { amount ->
                                 viewModel.homeScreenEvents(
                                     HomeScreenEvents.OnNewAmountExpCatChanged(
-                                        amount.toIntOrNull() ?:0
-                                    ))
+                                        amount.toIntOrNull() ?: 0
+                                    )
+                                )
                             },
                             onNameChanged = { name ->
                                 viewModel.homeScreenEvents(
-                                    HomeScreenEvents.OnNewNameExpCatChanged(name))
+                                    HomeScreenEvents.OnNewNameExpCatChanged(name)
+                                )
                             },
                             onAddButtonClicked = {
                                 viewModel.homeScreenEvents(
-                                    HomeScreenEvents.OnAddNewExpCatBtnClick)
+                                    HomeScreenEvents.OnAddNewExpCatBtnClick
+                                )
                             }
                         )
                     }
                 }
-                item{
-                    Text(text= stringResource(R.string.title_exp_cat))
+                item {
+                    Text(text = stringResource(R.string.title_exp_cat))
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
-                item{
+                item {
                     YearMonthRow(
                         modifier = Modifier.fillMaxWidth(),
                         chosenMonthNum = filterState.yearMonth.monthValue,
@@ -339,8 +389,8 @@ fun HomeScreen(
                     )
                 }
 
-                if(expensesCategoriesState.isRegularMF){
-                    if(displayExpCategories.first.isEmpty()){
+                if (expensesCategoriesState.isRegularMF) {
+                    if (displayExpCategories.first.isEmpty()) {
                         item {
                             Spacer(modifier = Modifier.height(32.dp))
                             Text(
@@ -353,19 +403,20 @@ fun HomeScreen(
                             //image
                         }
                     } else {
-                        itemsIndexed(displayExpCategories.first){ index, item ->
+                        itemsIndexed(displayExpCategories.first) { index, item ->
                             //if categoryId in Expenses Transactions do not show
-                            if(item.id !in displayExpensesReg.map { it.categoryId }){
+                            //Monthly categories means you have only 1 payment for month
+                            if (item.id !in displayExpensesReg.map { it.categoryId }) {
                                 InfoCardInput(
                                     modifier = Modifier.fillMaxWidth(),
                                     textFirstR = item.name,
                                     textSecondR = { Text(item.subHeader) },
-                                    inputNumber = if(item.amount!=0) item.amount.toString() else "",
+                                    inputNumber = if (item.amount != 0) item.amount.toString() else "",
                                     onNumberChanged = { numberString ->
                                         viewModel.homeScreenEvents(
                                             HomeScreenEvents.OnAmountExpChanged(
                                                 index = index,
-                                                amount = numberString.toIntOrNull() ?:0
+                                                amount = numberString.toIntOrNull() ?: 0
                                             )
                                         )
                                     },
@@ -379,7 +430,7 @@ fun HomeScreen(
                         }
                     }
                 } else {
-                    if(displayExpCategories.second.isEmpty()){
+                    if (displayExpCategories.second.isEmpty()) {
                         item {
                             Spacer(modifier = Modifier.height(32.dp))
                             Text(
@@ -392,17 +443,17 @@ fun HomeScreen(
                             //image
                         }
                     } else {
-                        itemsIndexed(displayExpCategories.second){ index, category ->
+                        itemsIndexed(displayExpCategories.second) { index, category ->
                             InfoCardInput(
                                 modifier = Modifier.fillMaxWidth(),
                                 textFirstR = category.name,
                                 textSecondR = { Text(category.subHeader) },
-                                inputNumber = if(category.amount!=0) category.amount.toString() else "",
+                                inputNumber = if (category.amount != 0) category.amount.toString() else "",
                                 onNumberChanged = { numberString ->
                                     viewModel.homeScreenEvents(
                                         HomeScreenEvents.OnAmountExpChanged(
                                             index = index,
-                                            amount = numberString.toIntOrNull() ?:0
+                                            amount = numberString.toIntOrNull() ?: 0
                                         )
                                     )
                                 },
@@ -422,14 +473,14 @@ fun HomeScreen(
                     }
                 }
 
-                item{
-                    Text(text= stringResource(R.string.expenses))
+                item {
+                    Text(text = stringResource(R.string.expenses))
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
                 itemsIndexed(
-                    if(expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
-                ){ index, item ->
+                    if (expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
+                ) { index, item ->
                     ArchiveCard(
                         textFirstR = item.categoryName,
                         textSecondR = "${item.paymentDate} - ${item.amount}",
@@ -446,7 +497,7 @@ fun HomeScreen(
 
 
             }
-            if(homeScreenState.page == HomePages.BookPage){
+            if (homeScreenState.page == HomePages.BookPage) {
                 item {
                     DateRange(
                         startDate = newBookedState.startDate,
@@ -462,15 +513,17 @@ fun HomeScreen(
                         comment = newBookedState.comment,
                         onNameChange = { name ->
                             viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnNameBookedChanged(name))
+                                HomeScreenEvents.OnNameBookedChanged(name)
+                            )
                         },
                         onCommentChange = { comment ->
                             viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnCommentBookedChanged(comment))
+                                HomeScreenEvents.OnCommentBookedChanged(comment)
+                            )
                         }
                     )
                 }
-                item{
+                item {
                     PaymentWidget(
                         nights = newBookedState.nights,
                         oneNightMoney = newBookedState.oneNightMoney,
@@ -478,33 +531,34 @@ fun HomeScreen(
                         onAllMoneyChange = { moneyString ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnAllMoneyChange(
-                                    moneyString.toIntOrNull() ?:0
+                                    moneyString.toIntOrNull() ?: 0
                                 )
                             )
                         },
                         onNightMChange = { moneyString ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnOneNightMoneyChange(
-                                    moneyString.toIntOrNull() ?:0
+                                    moneyString.toIntOrNull() ?: 0
                                 )
                             )
                         }
                     )
                 }
-                item{
+                item {
                     SectionButton(
                         modifier = Modifier.fillMaxWidth(),
-                        text= stringResource(R.string.add_btn),
+                        text = stringResource(R.string.add_btn),
                         isSelected = true,
                         onBtnClick = {
                             viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnAddNewBookedBtnClick)
+                                HomeScreenEvents.OnAddNewBookedBtnClick
+                            )
                         }
                     )
                 }
 
             }
-
+        }
         }
         if(currencyDialog.value){
             CurrencyDialog(
@@ -519,6 +573,23 @@ fun HomeScreen(
                 }
             )
         }
+
+        if(allExpCategories.value){
+            AllExpCategoriesDialog(
+                regularCategories = displayExpCategories.second,
+                irregularCategories = displayExpCategories.second,
+                onCancel = {
+                    allExpCategories.value = false
+                },
+                onAgree = { listCategoriesChanged ->
+                    viewModel.homeScreenEvents(
+                        HomeScreenEvents.OnCategoriesChanged(listCategoriesChanged)
+                    )
+                    allExpCategories.value = false
+                }
+            )
+        }
+
         if(changeFixAmountDialog.value){
             ExpensesDialog(
                 onCancel = {

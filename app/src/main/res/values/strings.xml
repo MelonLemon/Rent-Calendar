@@ -75,4 +75,11 @@
     <string name="home_route">Home</string>
     <string name="analytics_route">Analytics</string>
     <string name="transaction_route">Transactions</string>
+    <string name="all_categories">All Categories</string>
+    <string name="main_flat">Main Flat</string>
+    <string name="welcome_app">Welcome to Rent-y!</string>
+    <string name="welcome_add_flat">Firstly, let\'s add flat!</string>
+    <string name="welcome_add_categories">Time for expenses categories!</string>
+    <string name="welcome_categories_desc">We have 2 type of categories - monthly and irregular. Monthly expenses means you pay  them every month and you can have only 1 payment at month. You can add fix amount for your convenience.</string>
+    <string name="duplicate">Duplicate</string>
 </resources>

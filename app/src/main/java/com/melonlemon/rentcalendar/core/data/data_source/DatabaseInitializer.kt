@@ -4,6 +4,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.melonlemon.rentcalendar.core.data.util.*
 import com.melonlemon.rentcalendar.core.domain.model.CategoryType
+import com.melonlemon.rentcalendar.core.domain.model.Flats
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,5 +40,7 @@ class DatabaseInitializer(
                 isRegular = false,
             ))
     }
+
+
 
 }

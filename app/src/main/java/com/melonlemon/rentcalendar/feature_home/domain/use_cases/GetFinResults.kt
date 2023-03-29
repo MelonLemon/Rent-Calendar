@@ -11,40 +11,52 @@ class GetFinResults(
     private val repository: HomeRepository
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend operator fun invoke(flatId: Int): List<FinResultsDisplay> {
+    suspend operator fun invoke(flatId: Int, year: Int): List<FinResultsDisplay> {
 
-//        val finResults = if(flatId==-1) repository.getFinResultsAllFlatsCurrentYear() else
-//            repository.getFinResultsCurrentYear(flatId)
-//        if(finResults.isNotEmpty()){
-//            val emptyFinResults = FinResultsDisplay(
-//                flatId = finResults[0].flatId,
-//                flatName = finResults[0].flatName,
-//                yearMonth = YearMonth.now(),
-//                income = 0,
-//                expenses = 0,
-//                percentBooked = 0f
-//            )
-//            val finalList = mutableListOf<FinResultsDisplay>()
-//            var yearMonthFirst = YearMonth.of(YearMonth.now().year, 1)
-//            if(yearMonthFirst != finResults[0].yearMonth){
-//                while(yearMonthFirst != finResults[0].yearMonth){
-//                    finalList.add(emptyFinResults.copy(yearMonth = yearMonthFirst))
-//                    yearMonthFirst = yearMonthFirst.plusMonths(1)
-//                }
-//            }
-//
-//            finResults.forEach { finResult ->
-//                var yearMonthLast = if(finalList.isEmpty()) yearMonthFirst else  finalList.last().yearMonth.plusMonths(1)
-//                if(yearMonthLast != finResult.yearMonth){
-//                    while(yearMonthLast != finResult.yearMonth){
-//                        finalList.add(emptyFinResults.copy(yearMonth = yearMonthLast))
-//                        yearMonthLast = yearMonthFirst.plusMonths(1)
-//                    }
-//                }
-//                finalList.add(finResult)
-//            }
-//            return finalList
-//        } else return finResults
-        return emptyList()
-    }
+        var expensesGrouped = if(flatId==-1)  repository.getAllExpensesGroupByMY(year=year).toMutableList()
+        else repository.getExpensesGroupByMY(flatId=flatId, year=year).toMutableList()
+        var incomeGrouped = if(flatId==-1)  repository.getAllIncomeGroupByMY(year=year).toMutableList()
+        else repository.getIncomeGroupByMY(flatId=flatId, year=year).toMutableList()
+        var nights = if(flatId==-1)  repository.getAvgBookedNightsGroupByMY(year=year).toMutableList()
+        else repository.getBookedNightsGroupByMY(flatId=flatId, year=year).toMutableList()
+
+        // Create empty year List
+        val emptyMonth = FinResultsDisplay(
+            flatId = flatId,
+            yearMonth = YearMonth.of(year, 1),
+            income = 0,
+            expenses = 0,
+            percentBooked = 0f
+        )
+        //add 1 as index starts with 0
+        val emptyYear = MutableList(12) { month -> emptyMonth.copy(yearMonth=YearMonth.of(year, month+1))}
+
+        // goes through it and add data
+        val fullYear = emptyYear.mapIndexed { index, finResult ->
+            val daysInMonth = finResult.yearMonth.lengthOfMonth()
+            var income: Int = 0
+            var expenses: Int = 0
+            var percentBooked: Float = 0f
+
+            if(incomeGrouped.isNotEmpty() && incomeGrouped[0].month == finResult.yearMonth.monthValue) {
+                income = incomeGrouped[0].amount
+                incomeGrouped.removeAt(0)
+            }
+            if(expensesGrouped.isNotEmpty() && expensesGrouped[0].month == finResult.yearMonth.monthValue) {
+                expenses = expensesGrouped[0].amount
+                expensesGrouped.removeAt(0)
+            }
+            if(nights.isNotEmpty() && nights[0].month == finResult.yearMonth.monthValue) {
+                percentBooked = (nights[0].amount).toFloat()/daysInMonth
+                nights.removeAt(0)
+            }
+            finResult.copy(
+                income = income,
+                expenses = expenses,
+                percentBooked = percentBooked
+            )
+
+        }
+        return fullYear
+}
 }
