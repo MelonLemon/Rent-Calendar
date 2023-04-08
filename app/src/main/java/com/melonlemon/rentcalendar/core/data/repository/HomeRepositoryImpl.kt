@@ -56,6 +56,10 @@ class HomeRepositoryImpl(
         dao.updatePaymentStatus(id = id, isPaid = isPaid)
     }
 
+    override suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>) {
+        dao.saveBaseOption(flats=flats,categories=categories)
+    }
+
     override suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory) {
         val typeId = when(moneyFlowCategory){
             MoneyFlowCategory.Regular -> {

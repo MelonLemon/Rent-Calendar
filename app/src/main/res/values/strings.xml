@@ -82,4 +82,5 @@
     <string name="welcome_add_categories">Time for expenses categories!</string>
     <string name="welcome_categories_desc">We have 2 type of categories - monthly and irregular. Monthly expenses means you pay  them every month and you can have only 1 payment at month. You can add fix amount for your convenience.</string>
     <string name="duplicate">Duplicate</string>
+    <string name="calendar">Calendar</string>
 </resources>

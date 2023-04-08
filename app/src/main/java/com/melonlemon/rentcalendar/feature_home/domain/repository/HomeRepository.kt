@@ -20,6 +20,7 @@ interface HomeRepository {
     suspend fun addUpdateFlat(flat: Flats)
     suspend fun getAllFlats(): List<Flats>
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
+    suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>)
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)
     suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category>
     fun getExpensesByYM(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth, flatId: Int): Flow<List<Expenses>>

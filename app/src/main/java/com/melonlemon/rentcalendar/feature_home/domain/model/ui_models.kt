@@ -36,3 +36,9 @@ data class ExpensesInfo(
     val paymentDate: LocalDate,
     val amount: Int
 )
+
+data class YearWeek (
+    val year: Int,
+    val week: Int
+)
+

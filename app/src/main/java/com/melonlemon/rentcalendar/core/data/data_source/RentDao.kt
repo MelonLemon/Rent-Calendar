@@ -51,6 +51,17 @@ interface RentDao {
         }
     }
 
+    //ADD BASE OPTION
+    @Transaction
+    suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>){
+        flats.forEach { flat ->
+            addFlat(flat)
+        }
+        categories.forEach { category ->
+            addCategory(category)
+        }
+    }
+
     //UPDATE CATEGORIES NAME AND FIX AMOUNT
     @Query("UPDATE category SET name =:name AND fix_amount =:amount WHERE id=:id")
     suspend fun updateCategory(id: Int, name: String, amount: Int)

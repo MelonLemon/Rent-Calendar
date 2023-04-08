@@ -79,7 +79,8 @@ object AppModule {
             updateCategories = UpdateCategories(repository),
             addExpenses = AddExpenses(repository),
             getExpensesByYM = GetExpensesByYM(repository),
-            updateExpenses = UpdateExpenses(repository)
+            updateExpenses = UpdateExpenses(repository),
+            saveBaseOption = SaveBaseOption(repository)
         )
     }
 

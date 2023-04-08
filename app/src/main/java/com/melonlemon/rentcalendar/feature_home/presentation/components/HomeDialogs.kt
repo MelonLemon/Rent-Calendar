@@ -1,5 +1,7 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,16 +11,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.util.toRange
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.feature_home.domain.model.YearWeek
+import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.CustomCalendar
+import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.HeaderWeekView
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.LocalDate
+import java.time.temporal.ChronoField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -308,7 +316,9 @@ fun CategoryListItem(
     onNameChange: (String) -> Unit
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
@@ -338,6 +348,111 @@ fun CategoryListItem(
                 textColor = MaterialTheme.colorScheme.onSurface
             )
         )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomCalendarDialog(
+    modifier: Modifier = Modifier,
+    startDate: LocalDate?=null,
+    endDate: LocalDate?=null,
+    cellSize: Size,
+    onCancel: () -> Unit,
+    year: Int = LocalDate.now().year,
+    bookedDays: Map<YearWeek, List<LocalDate>>?=null,
+    onSave: (startDate: LocalDate?, endDate: LocalDate?) -> Unit
+) {
+
+    var tempStartDate by remember{ mutableStateOf(startDate) }
+    var tempEndDate by remember{ mutableStateOf(endDate) }
+
+
+    Dialog(
+        onDismissRequest = onCancel
+    ) {
+        Scaffold(
+            bottomBar = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+
+                ){
+                    FilterButton(
+                        text = stringResource(R.string.cancel),
+                        isSelected = false,
+                        onBtnClick = {
+                            onCancel()
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    FilterButton(
+                        text = stringResource(R.string.agree),
+                        isSelected = true,
+                        onBtnClick = {
+                            onSave(tempStartDate, tempEndDate)
+                        }
+
+                    )
+                }
+            }
+        ){ it ->
+            CustomCalendar(
+                modifier = modifier.padding(it),
+                tempStartDate=tempStartDate,
+                tempEndDate=tempEndDate,
+                cellSize=cellSize,
+                onDayClick = { date ->
+                    if(tempEndDate != null){
+                        tempStartDate = date
+                        tempEndDate = null
+                    } else {
+                        val newTempStartDate = if(date.isBefore(tempStartDate)) date else tempStartDate
+                        val newTempEndDate = if(date.isAfter(tempStartDate)) date else tempStartDate
+                        if(bookedDays==null){
+                            tempStartDate = newTempStartDate
+                            tempEndDate = newTempEndDate
+                        } else {
+                            val newStartWeekNumber = newTempStartDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                            val newEndWeekNumber = newTempEndDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                            var isOverlap = false
+                            val startYear = newTempStartDate.year
+                            val endYear = newTempEndDate.year
+                            (startYear..endYear).forEach { year ->
+                                val tempStartWeekNum =  if(year==startYear) newStartWeekNumber
+                                else LocalDate.of(year, 1, 1).get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                                val tempEndWeekNum =  if(year==endYear) newEndWeekNumber
+                                else LocalDate.of(year, 12, 31).get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                                (tempStartWeekNum..tempEndWeekNum).forEach{ week->
+                                    val currentYearWeek = YearWeek(year = year, week = week)
+                                    if(bookedDays.containsKey(currentYearWeek)){
+                                        run breaking@ {
+                                            bookedDays[currentYearWeek]?.forEach { day ->
+                                                if(day in newTempStartDate..newTempEndDate){
+                                                    isOverlap = true
+                                                    return@breaking
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            tempStartDate = if(isOverlap) date else  newTempStartDate
+                            tempEndDate = if(isOverlap) null else newTempEndDate
+                        }
+
+                    }
+
+                },
+                bookedDays = bookedDays,
+                year = year
+            )
+
+        }
+
     }
 }
 
