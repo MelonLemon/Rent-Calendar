@@ -361,7 +361,8 @@ fun CustomCalendarDialog(
     cellSize: Size,
     onCancel: () -> Unit,
     year: Int = LocalDate.now().year,
-    bookedDays: Map<YearWeek, List<LocalDate>>?=null,
+    onYearChanged: (Int) -> Unit,
+    bookedDays: Map<Int, List<LocalDate>>?=null,
     onSave: (startDate: LocalDate?, endDate: LocalDate?) -> Unit
 ) {
 
@@ -420,20 +421,14 @@ fun CustomCalendarDialog(
                             var isOverlap = false
                             val startYear = newTempStartDate.year
                             val endYear = newTempEndDate.year
-                            (startYear..endYear).forEach { year ->
-                                val tempStartWeekNum =  if(year==startYear) newStartWeekNumber
-                                else LocalDate.of(year, 1, 1).get(ChronoField.ALIGNED_WEEK_OF_YEAR)
-                                val tempEndWeekNum =  if(year==endYear) newEndWeekNumber
-                                else LocalDate.of(year, 12, 31).get(ChronoField.ALIGNED_WEEK_OF_YEAR)
-                                (tempStartWeekNum..tempEndWeekNum).forEach{ week->
-                                    val currentYearWeek = YearWeek(year = year, week = week)
-                                    if(bookedDays.containsKey(currentYearWeek)){
-                                        run breaking@ {
-                                            bookedDays[currentYearWeek]?.forEach { day ->
-                                                if(day in newTempStartDate..newTempEndDate){
-                                                    isOverlap = true
-                                                    return@breaking
-                                                }
+                            (newStartWeekNumber..newEndWeekNumber).forEach{ week->
+
+                                if(bookedDays.containsKey(week)){
+                                    run breaking@ {
+                                        bookedDays[week]?.forEach { day ->
+                                            if(day in newTempStartDate..newTempEndDate){
+                                                isOverlap = true
+                                                return@breaking
                                             }
                                         }
                                     }
@@ -448,7 +443,8 @@ fun CustomCalendarDialog(
 
                 },
                 bookedDays = bookedDays,
-                year = year
+                year = year,
+                onYearChanged = onYearChanged
             )
 
         }

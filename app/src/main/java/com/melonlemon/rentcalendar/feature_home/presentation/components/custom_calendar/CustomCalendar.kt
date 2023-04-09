@@ -30,7 +30,8 @@ fun CustomCalendar(
     tempStartDate: LocalDate?=null,
     tempEndDate: LocalDate?=null,
     cellSize: Size,
-    bookedDays: Map<YearWeek, List<LocalDate>>?=null,
+    bookedDays: Map<Int, List<LocalDate>>?=null,
+    onYearChanged: (Int) -> Unit,
     onDayClick: (LocalDate) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     year: Int
@@ -65,7 +66,7 @@ fun CustomCalendar(
         YearWidget(
             year = tempYear,
             onYearClick = { },
-            onYearChange = { }
+            onYearChange = onYearChanged
         )
         
         LazyColumn(
@@ -101,14 +102,14 @@ private fun getNumberOfMonths(yearMonth: YearMonth, weekFields: WeekFields): Int
 }
 
 @Composable
-fun YearWidget(year: Int, onYearClick: () -> Unit, onYearChange: () -> Unit) {
+fun YearWidget(year: Int, onYearClick: () -> Unit, onYearChange: (Int) -> Unit) {
 
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 private fun LazyListScope.itemsCalendarMonth(
     onDayClicked: (LocalDate) -> Unit,
-    bookedDays: Map<YearWeek, List<LocalDate>>?=null,
+    bookedDays: Map<Int, List<LocalDate>>?=null,
     cellSize: Size,
     yearMonth: YearMonth,
     contentModifier: Modifier
