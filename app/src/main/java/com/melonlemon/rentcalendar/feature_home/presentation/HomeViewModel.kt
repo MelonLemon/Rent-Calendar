@@ -4,11 +4,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
-import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +23,8 @@ import javax.inject.Inject
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val useCases: HomeUseCases
+    private val useCases: HomeUseCases,
+    private val coreUseCases: CoreRentUseCases
 ): ViewModel() {
 
     private val _finResults = MutableStateFlow<List<FinResultsDisplay>>(emptyList())
@@ -47,6 +48,12 @@ class HomeViewModel @Inject constructor(
     private val _baseOption = MutableStateFlow(false)
     val baseOption  = _baseOption.asStateFlow()
 
+    private val _failAttempt = MutableStateFlow(false)
+    val failAttempt  = _failAttempt.asStateFlow()
+
+    private val _calendarState = MutableStateFlow(CalendarState())
+    val calendarState  = _calendarState.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _rentList = filterState.flatMapLatest{ filterState ->
         useCases.getRentList(yearMonth = filterState.yearMonth, flatId = filterState.selectedFlatId)
@@ -55,7 +62,7 @@ class HomeViewModel @Inject constructor(
     val rentList  = _rentList.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        emptyList<RentInfo>()
+        emptyList()
     )
 
     private val _selectedExpenses = MutableStateFlow(
@@ -75,7 +82,7 @@ class HomeViewModel @Inject constructor(
 
 
     private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.Regular)
-    val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
+    private val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
 
     private val _displayExpCategories = MutableStateFlow<Pair<List<ExpensesCategoryInfo>, List<ExpensesCategoryInfo>>>(
         Pair(emptyList(), emptyList()))
@@ -117,7 +124,7 @@ class HomeViewModel @Inject constructor(
             _finResults.value = useCases.getFinResults(
                 flatId = filterState.value.selectedFlatId,
                 year = filterState.value.yearMonth.year)
-            val allFlats = useCases.getAllFlats()
+            val allFlats = coreUseCases.getAllFlats()
             _flatsState.value = flatsState.value.copy(
                 listOfFlats = allFlats
             )
@@ -130,14 +137,28 @@ class HomeViewModel @Inject constructor(
         when(event) {
 
             is HomeScreenEvents.OnBaseOptionSave -> {
-
+                viewModelScope.launch {
+                    val result = useCases.saveBaseOption(
+                        flats = event.flats,
+                        monthlyExpCat = event.monthlyExpCat,
+                        irregExpCat = event.irregExpCat
+                    )
+                    if(result == SimpleStatusOperation.OperationSuccess){
+                        _baseOption.value = true
+                    } else {
+                        _failAttempt.value = true
+                    }
+                }
 
             }
+            is HomeScreenEvents.RefreshFailAttempt -> {
+                _failAttempt.value = false
+            }
+
             is HomeScreenEvents.OnYearMonthChange -> {
                 _filterState.value = filterState.value.copy(
                     yearMonth = event.yearMonth
                 )
-
             }
 
             is HomeScreenEvents.OnNewFlatChanged -> {
@@ -152,7 +173,7 @@ class HomeViewModel @Inject constructor(
                         flatsState.value.listOfFlats
                     )
                     if(status== CheckStatusStr.SuccessStatus){
-                        val newFlatList = useCases.getAllFlats()
+                        val newFlatList = coreUseCases.getAllFlats()
                         _flatsState.value = flatsState.value.copy(
                             newFlat = "",
                             listOfFlats = newFlatList,
@@ -193,10 +214,8 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvents.OnRentPaidChange -> {
                 viewModelScope.launch {
                     val result = useCases.updatePaidStatus(id = event.id, isPaid = event.isPaid)
-                    if(result == SimpleStatusOperation.OperationSuccess){
-
-                    } else {
-
+                    if(result != SimpleStatusOperation.OperationSuccess){
+                        _failAttempt.value = true
                     }
                 }
             }
@@ -210,13 +229,13 @@ class HomeViewModel @Inject constructor(
 
 
             }
-            is HomeScreenEvents.OnYearExpCatChanged -> {
+            is HomeScreenEvents.OnYearChanged -> {
                 _filterState.value = filterState.value.copy(
                     yearMonth = YearMonth.of(event.year, filterState.value.yearMonth.monthValue)
                 )
 
             }
-            is HomeScreenEvents.OnMonthClickExpCat -> {
+            is HomeScreenEvents.OnMonthClick -> {
                 _filterState.value = filterState.value.copy(
                     yearMonth = YearMonth.of(filterState.value.yearMonth.year, event.monthInt)
                 )
@@ -302,6 +321,9 @@ class HomeViewModel @Inject constructor(
                     val result = useCases.updateCategories(
                         categories = event.listChangedCategories
                     )
+                    if(result != SimpleStatusOperation.OperationSuccess){
+                        _failAttempt.value = true
+                    }
                 }
 
             }
@@ -323,9 +345,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
             // New Booked Events
-            is HomeScreenEvents.OnCalendarBtnClick -> {
-
-            }
             is HomeScreenEvents.OnNameBookedChanged -> {
                 _newBookedState.value = newBookedState.value.copy(
                     name = event.name
@@ -336,6 +355,23 @@ class HomeViewModel @Inject constructor(
                     comment = event.comment
                 )
             }
+            is HomeScreenEvents.SetCalendarState -> {
+                viewModelScope.launch {
+                    val bookedDays = useCases.getBookedDays(year=event.year)
+                    val newStartDate = if((newBookedState.value.startDate?.year ?: 0) == event.year)
+                        newBookedState.value.startDate else null
+                    val newEndDate = if((newBookedState.value.endDate?.year ?: 0) == event.year)
+                        newBookedState.value.endDate else null
+                    _calendarState.value = CalendarState(
+                        year = event.year,
+                        bookedDays = bookedDays,
+                        startDate = newStartDate,
+                        endDate = newEndDate
+                    )
+                }
+
+            }
+
             is HomeScreenEvents.OnDateRangeChanged -> {
                 val nights = if(event.startDate!=null && event.endDate!=null)
                     ChronoUnit.DAYS.between(event.startDate, event.endDate).toInt() else 0

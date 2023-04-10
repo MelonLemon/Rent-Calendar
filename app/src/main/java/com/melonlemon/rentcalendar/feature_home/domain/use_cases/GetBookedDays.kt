@@ -2,15 +2,12 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
+import java.time.LocalDate
 
-class GetAllFlats(
+class GetBookedDays(
     private val repository: HomeRepository
 ) {
-    suspend operator fun invoke(): List<CategoryInfo>{
-        val flats = repository.getAllFlats().filter { it.active }
-        return flats.map { CategoryInfo(
-            id = it.id!!,
-            name = it.name
-        ) }
+    suspend operator fun invoke(year: Int): Map<Int, List<LocalDate>>?{
+        return null
     }
 }

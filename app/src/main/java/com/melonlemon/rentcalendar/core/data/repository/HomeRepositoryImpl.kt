@@ -48,10 +48,6 @@ class HomeRepositoryImpl(
         dao.addFlat(flat = flat)
     }
 
-    override suspend fun getAllFlats(): List<Flats> {
-        return dao.getFlats()
-    }
-
     override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {
         dao.updatePaymentStatus(id = id, isPaid = isPaid)
     }

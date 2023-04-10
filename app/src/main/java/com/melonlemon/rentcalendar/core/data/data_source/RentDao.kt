@@ -1,13 +1,11 @@
 package com.melonlemon.rentcalendar.core.data.data_source
 
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 import com.melonlemon.rentcalendar.core.domain.model.*
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
+@Dao
 interface RentDao {
 
     //ADD/UPDATE FLAT

@@ -51,9 +51,9 @@ fun PaybackVariant(
     result: String = "",
     description: String,
     firstValue: Int,
-    onFirstVChange: (String) -> Unit,
+    onFirstVChange: (String) -> Unit = { },
     secondValue: Int,
-    onSecondVChange: (String) -> Unit,
+    onSecondVChange: (String) -> Unit = { },
     nameFirstV: String,
     nameSecondV: String,
 ) {
@@ -152,7 +152,7 @@ fun CompareVariant(
     secondResult: Int,
     secondResTitle: String,
     firstValue: Int,
-    onFirstVChange: (String) -> Unit,
+    onFirstVChange: (String) -> Unit  = { },
     secondValue: Int,
     nameFirstV: String
 ) {

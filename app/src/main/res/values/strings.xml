@@ -7,7 +7,7 @@
     <string name="err_msg_empty">Name can\'t be empty!</string>
     <string name="err_msg_duplicate_name">Duplicate name!</string>
     <string name="msg_success_status">Success!</string>
-    <string name="err_msg_unknown_error">Unknown error!</string>
+    <string name="err_msg_unknown_error">Unknown error! Try again!</string>
     <string name="all">All</string>
     <string name="this_month">This Month</string>
     <string name="schedule">Schedule</string>
@@ -83,4 +83,12 @@
     <string name="welcome_categories_desc">We have 2 type of categories - monthly and irregular. Monthly expenses means you pay  them every month and you can have only 1 payment at month. You can add fix amount for your convenience.</string>
     <string name="duplicate">Duplicate</string>
     <string name="calendar">Calendar</string>
+    <string name="not_correct_year">Not correct year</string>
+    <string name="quater">quarter</string>
+    <string name="unchecked_status">Unchecked status</string>
+    <string name="monthly_cat_housing">Housing and communal services</string>
+    <string name="internet">Internet</string>
+    <string name="cleaning">Cleaning</string>
+    <string name="exp_cat_disposable">Disposable things</string>
+    <string name="exp_cat_renovation">Renovation</string>
 </resources>

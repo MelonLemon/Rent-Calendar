@@ -1,7 +1,6 @@
 package com.melonlemon.rentcalendar.feature_analytics.presentation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,25 +13,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.data.repository.AnalyticsRepositoryImpl
-import com.melonlemon.rentcalendar.core.data.repository.TransactionRepositoryImpl
 import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
-import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
-import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.GetCashFlowInfo
 import com.melonlemon.rentcalendar.feature_analytics.presentation.components.*
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.AnalyticsScreenEvents
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.Reports
-import com.melonlemon.rentcalendar.feature_home.presentation.util.HomeScreenEvents
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetFilteredTransactions
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetTransactions
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
-import com.melonlemon.rentcalendar.feature_transaction.presentation.TransactionScreen
-import com.melonlemon.rentcalendar.feature_transaction.presentation.TransactionViewModel
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +35,7 @@ fun AnalyticsScreen(
     val bookedReportState by viewModel.bookedReportState.collectAsStateWithLifecycle()
 
 
-    Scaffold() { it ->
+    Scaffold {
         LazyColumn(
             modifier = Modifier.padding(it),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -140,31 +127,59 @@ fun AnalyticsScreen(
 
             if(chosenReport == Reports.IncomeStatement){
                 item{
-                    FinSnapShotContainer(
-                        modifier = Modifier.fillParentMaxWidth(),
-                        title = stringResource(R.string.net_income),
+                    LazyRow(
+                        modifier = Modifier,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ){
-                        IncomeStatementReport(
-                            netIncome = incomeStatementState.currentMonth.netIncome,
-                            revenue = incomeStatementState.currentMonth.revenue,
-                            directCost = incomeStatementState.currentMonth.directCost,
-                            indirectCost = incomeStatementState.currentMonth.inDirectCost
-                        )
+                        items(
+                            items = incomeStatementState,
+                            key = { incomeStatement ->
+                                incomeStatement.quarter
+                            }
+                        ){ incomeStatement ->
+                            FinSnapShotContainer(
+                                modifier = Modifier.fillParentMaxWidth(),
+                                title = stringResource(R.string.net_income),
+                            ){
+                                Text(text = "${incomeStatement.quarter} " + stringResource(R.string.quater))
+                                IncomeStatementReport(
+                                    netIncome = incomeStatement.netIncome,
+                                    revenue = incomeStatement.revenue,
+                                    directCost = incomeStatement.directCost,
+                                    indirectCost = incomeStatement.inDirectCost
+                                )
+                            }
+                        }
                     }
+
                 }
             }
             if(chosenReport == Reports.CashFlow){
                 item{
-                    FinSnapShotContainer(
-                        modifier = Modifier.fillParentMaxWidth(),
-                        title = stringResource(R.string.cash_flow),
+                    LazyRow(
+                        modifier = Modifier,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ){
-                        CashFlowReport(
-                            netCashFlow = cashFlowState.currentCashFlow.netCashFlow,
-                            rent = cashFlowState.currentCashFlow.netCashFlow,
-                            listOfExpenses = cashFlowState.currentCashFlow.expenses
-                        )
+                        items(
+                            items = cashFlowState,
+                            key = { cashFlow ->
+                                cashFlow.quarter
+                            }
+                        ){cashFlow ->
+                            FinSnapShotContainer(
+                                modifier = Modifier.fillParentMaxWidth(),
+                                title = stringResource(R.string.cash_flow),
+                            ){
+                                Text(text = "${cashFlow.quarter} " + stringResource(R.string.quater))
+                                CashFlowReport(
+                                    netCashFlow = cashFlow.netCashFlow,
+                                    rent = cashFlow.rent,
+                                    listOfExpenses = cashFlow.expenses
+                                )
+                            }
+                        }
                     }
+
                 }
             }
             if(chosenReport == Reports.BookedReport){
@@ -210,7 +225,6 @@ fun AnalyticsScreen(
                                         )
                                     },
                                     secondValue = finSnapshotState.yearlyGrossRent,
-                                    onSecondVChange = { },
                                     nameFirstV = stringResource(R.string.total_purchase_price),
                                     nameSecondV = stringResource(R.string.yearly_gross_rent)
                                 )
@@ -227,7 +241,6 @@ fun AnalyticsScreen(
                                     secondResult=finSnapshotState.monthlyGrossRent,
                                     secondResTitle= stringResource(R.string.your_gross_rent_monthly),
                                     firstValue = finSnapshotState.totalPurchasePrice,
-                                    onFirstVChange = { },
                                     secondValue = 1,
                                     nameFirstV = stringResource(R.string.total_purchase_price)
                                 )
@@ -244,7 +257,6 @@ fun AnalyticsScreen(
                                     else "0%",
                                     description = stringResource(R.string.cap_rate_desc),
                                     firstValue = finSnapshotState.netOperatingIncomeY,
-                                    onFirstVChange = { },
                                     secondValue = finSnapshotState.totalPurchasePrice,
                                     onSecondVChange = {valueString ->
                                         viewModel.analyticsScreenEvents(
@@ -269,7 +281,6 @@ fun AnalyticsScreen(
                                     secondResult=finSnapshotState.netOperatingIncomeM,
                                     secondResTitle= stringResource(R.string.your_noi),
                                     firstValue = finSnapshotState.monthlyGrossRent,
-                                    onFirstVChange = { },
                                     secondValue = 50,
                                     nameFirstV = stringResource(R.string.monthly_gross_rent),
                                 )

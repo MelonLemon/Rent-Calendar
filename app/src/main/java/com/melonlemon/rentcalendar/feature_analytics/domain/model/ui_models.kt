@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import java.time.YearMonth
 
 data class IncomeStatementInfo(
-    val yearMonth: YearMonth,
+    val quarter: Int,
     val netIncome: Int,
     val revenue: Int,
     val directCost: Int,
@@ -33,7 +33,7 @@ data class BarchartData(
     }
 }
 data class CashFlowInfo(
-    val yearMonth: YearMonth,
+    val quarter: Int,
     val netCashFlow: Int,
     val rent: Int,
     val expenses: List<DisplayInfo>

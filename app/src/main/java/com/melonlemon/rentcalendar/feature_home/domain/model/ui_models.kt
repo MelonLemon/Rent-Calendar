@@ -37,8 +37,9 @@ data class ExpensesInfo(
     val amount: Int
 )
 
-data class YearWeek (
-    val year: Int,
-    val week: Int
+data class SelectedWeekInfo (
+    val index: Int,
+    val startDate: LocalDate,
+    val size: Int
 )
 

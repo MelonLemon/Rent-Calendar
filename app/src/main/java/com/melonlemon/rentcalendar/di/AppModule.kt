@@ -6,11 +6,14 @@ import com.melonlemon.rentcalendar.core.data.data_source.DatabaseInitializer
 import com.melonlemon.rentcalendar.core.data.data_source.RentDao
 import com.melonlemon.rentcalendar.core.data.data_source.RentDatabase
 import com.melonlemon.rentcalendar.core.data.repository.AnalyticsRepositoryImpl
+import com.melonlemon.rentcalendar.core.data.repository.CoreRentRepositoryImpl
 import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
 import com.melonlemon.rentcalendar.core.data.repository.TransactionRepositoryImpl
+import com.melonlemon.rentcalendar.core.domain.repository.CoreRentRepository
+import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
+import com.melonlemon.rentcalendar.core.domain.use_cases.GetAllFlats
 import com.melonlemon.rentcalendar.feature_analytics.domain.repository.AnalyticsRepository
-import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
-import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.GetCashFlowInfo
+import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_transaction.domain.repository.TransactionsRepository
@@ -49,6 +52,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideCoreRentRepository(db: RentDatabase): CoreRentRepository {
+        return CoreRentRepositoryImpl(db.rentDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideHomeRepository(db: RentDatabase): HomeRepository {
         return HomeRepositoryImpl(db.rentDao)
     }
@@ -69,7 +78,6 @@ object AppModule {
         return HomeUseCases(
             getFinResults = GetFinResults(repository),
             addNewFlat = AddNewFlat(repository),
-            getAllFlats = GetAllFlats(repository),
             updatePaidStatus = UpdatePaidStatus(repository),
             getRentList = GetRentList(repository),
             getSchedulePageState = GetSchedulePageState(),
@@ -80,15 +88,29 @@ object AppModule {
             addExpenses = AddExpenses(repository),
             getExpensesByYM = GetExpensesByYM(repository),
             updateExpenses = UpdateExpenses(repository),
-            saveBaseOption = SaveBaseOption(repository)
+            saveBaseOption = SaveBaseOption(repository),
+            getBookedDays = GetBookedDays(repository)
         )
     }
 
     @Provides
     @Singleton
+    fun provideCoreRentCases(repository: CoreRentRepository): CoreRentUseCases {
+        return CoreRentUseCases(
+            getAllFlats = GetAllFlats(repository)
+        )
+    }
+
+
+
+    @Provides
+    @Singleton
     fun provideAnalyticsUseCases(repository: AnalyticsRepository): AnalyticsUseCases {
         return AnalyticsUseCases(
-            getCashFlowInfo = GetCashFlowInfo(repository)
+            getCashFlowInfo = GetCashFlowInfo(repository),
+            getInvestmentReturn = GetInvestmentReturn(repository),
+            getIncomeStatement = GetIncomeStatement(repository),
+            getBookedReport = GetBookedReport(repository)
         )
     }
 

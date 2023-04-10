@@ -2,6 +2,7 @@ package com.melonlemon.rentcalendar.feature_home.presentation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,7 +14,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -26,7 +30,7 @@ import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInf
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
-import java.time.YearMonth
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,44 +52,40 @@ fun HomeScreen(
     val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
     val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
     val baseOption by viewModel.baseOption.collectAsStateWithLifecycle()
-
+    val calendarState by viewModel.calendarState.collectAsStateWithLifecycle()
+    val failAttempt by viewModel.failAttempt.collectAsStateWithLifecycle()
 
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessages = mapOf(
-        CheckStatusStr.BlankFailStatus to stringResource(R.string.err_msg_empty),
-        CheckStatusStr.DuplicateFailStatus to stringResource(R.string.err_msg_duplicate_name),
-        CheckStatusStr.SuccessStatus to stringResource(R.string.msg_success_status),
-        CheckStatusStr.UnKnownFailStatus to  stringResource(R.string.err_msg_unknown_error)
-    )
-    val errorMessagesBooked = mapOf(
-        CheckStatusBooked.BlankDatesFailStatus to stringResource(R.string.booked_err_msg_dates),
-        CheckStatusBooked.BlankNameFailStatus to stringResource(R.string.booked_err_msg_name),
-        CheckStatusBooked.BlankPaymentFailStatus to stringResource(R.string.booked_err_msg_pay),
-        CheckStatusBooked.SuccessStatus to stringResource(R.string.msg_success_status),
-        CheckStatusBooked.UnKnownFailStatus to stringResource(R.string.err_msg_unknown_error),
-    )
     val errorStatus = stringResource(R.string.err_msg_unknown_error)
     val successStatus = stringResource(R.string.msg_success_status)
 
     if(flatsState.checkStatusNewFlat!= CheckStatusStr.UnCheckedStatus){
-
+        val message = stringResource(flatsState.checkStatusNewFlat.message)
         LaunchedEffect(flatsState.checkStatusNewFlat){
-
             snackbarHostState.showSnackbar(
-                message = errorMessages[flatsState.checkStatusNewFlat]?: errorStatus,
+                message = message,
                 actionLabel = null
             )
             viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewExpCatComplete)
         }
     }
 
-    if(expensesCategoriesState.checkStatusNewCat!= CheckStatusStr.UnCheckedStatus){
-
-        LaunchedEffect(expensesCategoriesState.checkStatusNewCat){
-
+    if(failAttempt){
+        LaunchedEffect(failAttempt){
             snackbarHostState.showSnackbar(
-                message = errorMessages[expensesCategoriesState.checkStatusNewCat]?: errorStatus,
+                message = errorStatus,
+                actionLabel = null
+            )
+            viewModel.homeScreenEvents(HomeScreenEvents.RefreshFailAttempt)
+        }
+    }
+
+    if(expensesCategoriesState.checkStatusNewCat!= CheckStatusStr.UnCheckedStatus){
+        val message = stringResource(flatsState.checkStatusNewFlat.message)
+        LaunchedEffect(expensesCategoriesState.checkStatusNewCat){
+            snackbarHostState.showSnackbar(
+                message = message,
                 actionLabel = null
             )
             viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
@@ -93,11 +93,10 @@ fun HomeScreen(
     }
 
     if(newBookedState.checkStatusNewBooked!= CheckStatusBooked.UnCheckedStatus){
-
+        val message = stringResource(newBookedState.checkStatusNewBooked.message)
         LaunchedEffect(newBookedState.checkStatusNewBooked){
-
             snackbarHostState.showSnackbar(
-                message = errorMessagesBooked[newBookedState.checkStatusNewBooked]?: errorStatus,
+                message = message,
                 actionLabel = null
             )
             viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
@@ -117,22 +116,26 @@ fun HomeScreen(
     }
 
     val currencyDialog = remember{ mutableStateOf(false) }
-    val changeFixAmountDialog = remember{ mutableStateOf(false)}
+    val changeExpensesDialog = remember{ mutableStateOf(false)}
     val allExpCategories = remember{ mutableStateOf(false) }
+    val calendarDialog = remember{ mutableStateOf(false) }
 
     val flatName = remember { derivedStateOf { flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name } }
 
     val listBaseFlat = listOf(stringResource(R.string.main_flat))
     val listMonthlyExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.monthly_cat_housing), subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.internet), subHeader = "", amount = 0),
     )
     val listIrregExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name="", subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.cleaning), subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_disposable), subHeader = "", amount = 0),
+        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_renovation), subHeader = "", amount = 0),
     )
+
+    val listExpenses = remember(expensesCategoriesState.isRegularMF) {
+        if (expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
+    }
 
     Scaffold(
         snackbarHost = {
@@ -147,6 +150,13 @@ fun HomeScreen(
                 listMonthlyExpCat = listMonthlyExpCat,
                 listIrregExpCat = listIrregExpCat,
                 onSave = { flats, monthlyCat, IrregCat ->
+                    viewModel.homeScreenEvents(
+                        HomeScreenEvents.OnBaseOptionSave(
+                            flats = flats,
+                            monthlyExpCat = monthlyCat,
+                            irregExpCat = IrregCat
+                        )
+                    )
 
                 }
             )
@@ -163,7 +173,12 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    itemsIndexed(finResults) { index, monthResults ->
+                    items(
+                        items = finResults,
+                        key = { monthResults ->
+                            monthResults.yearMonth
+                        }
+                    ) { monthResults ->
                         FinanceResultWidget(
                             modifier = Modifier.fillParentMaxWidth(),
                             flatName = if (filterState.selectedFlatId == -1) stringResource(R.string.all)
@@ -239,13 +254,25 @@ fun HomeScreen(
                     }
                 }
             }
-            val currentYearMonth = YearMonth.now()
+
             item {
-                Text(
-                    text = if (filterState.yearMonth == currentYearMonth)
-                        stringResource(R.string.this_month) + ": ${filterState.yearMonth.month.name} ${filterState.yearMonth.year}"
-                    else "${filterState.yearMonth.month.name}${filterState.yearMonth.year}",
-                    style = MaterialTheme.typography.titleSmall
+                YearMonthRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    yearMonth = filterState.yearMonth,
+                    onYearChange = { yearString ->
+                        viewModel.homeScreenEvents(
+                            HomeScreenEvents.OnYearChanged(
+                                year = yearString.toIntOrNull() ?: 0
+                            )
+                        )
+                    },
+                    onMonthClick = { monthInt ->
+                        viewModel.homeScreenEvents(
+                            HomeScreenEvents.OnMonthClick(
+                                monthInt = monthInt
+                            )
+                        )
+                    }
                 )
             }
             item {
@@ -287,7 +314,12 @@ fun HomeScreen(
                 }
             }
             if (homeScreenState.page == HomePages.SchedulePage) {
-                itemsIndexed(rentList) { index, rent ->
+                items(
+                    items = rentList,
+                    key = { rent ->
+                        rent.id
+                    }
+                ) { rent ->
                     RentCard(
                         name = rent.name,
                         description = rent.description,
@@ -367,27 +399,7 @@ fun HomeScreen(
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
-                item {
-                    YearMonthRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        chosenMonthNum = filterState.yearMonth.monthValue,
-                        year = filterState.yearMonth.year,
-                        onYearChange = { yearString ->
-                            viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnYearExpCatChanged(
-                                    year = yearString.toIntOrNull() ?: 0
-                                )
-                            )
-                        },
-                        onMonthClick = { monthInt ->
-                            viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnMonthClickExpCat(
-                                    monthInt = monthInt
-                                )
-                            )
-                        }
-                    )
-                }
+
 
                 if (expensesCategoriesState.isRegularMF) {
                     if (displayExpCategories.first.isEmpty()) {
@@ -400,18 +412,25 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.outline,
                                 textAlign = TextAlign.Center
                             )
-                            //image
+                            Image(
+                                bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
+                                contentDescription = null)
                         }
                     } else {
-                        itemsIndexed(displayExpCategories.first) { index, item ->
+                        itemsIndexed(
+                            items = displayExpCategories.first,
+                            key = { _, category ->
+                                category.id
+                            }
+                        ) { index, category ->
                             //if categoryId in Expenses Transactions do not show
-                            //Monthly categories means you have only 1 payment for month
-                            if (item.id !in displayExpensesReg.map { it.categoryId }) {
-                                InfoCardInput(
+                            //Monthly categories can have only 1 payment for month
+                            if (category.id !in displayExpensesReg.map { it.categoryId }) {
+                                InputInfoCard(
                                     modifier = Modifier.fillMaxWidth(),
-                                    textFirstR = item.name,
-                                    textSecondR = { Text(item.subHeader) },
-                                    inputNumber = if (item.amount != 0) item.amount.toString() else "",
+                                    textFirstR = category.name,
+                                    textSecondR = { Text(category.subHeader) },
+                                    inputNumber = if (category.amount != 0) category.amount.toString() else "",
                                     onNumberChanged = { numberString ->
                                         viewModel.homeScreenEvents(
                                             HomeScreenEvents.OnAmountExpChanged(
@@ -421,7 +440,12 @@ fun HomeScreen(
                                         )
                                     },
                                     onAddButtonClicked = {
-
+                                        viewModel.homeScreenEvents(
+                                            HomeScreenEvents.OnExpensesAdd(
+                                                catId = category.id,
+                                                amount = category.amount,
+                                                categoryName = category.name
+                                            ))
                                     },
                                     content = {}
                                 )
@@ -440,11 +464,18 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.outline,
                                 textAlign = TextAlign.Center
                             )
-                            //image
+                            Image(
+                                bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
+                                contentDescription = null)
                         }
                     } else {
-                        itemsIndexed(displayExpCategories.second) { index, category ->
-                            InfoCardInput(
+                        itemsIndexed(
+                            items = displayExpCategories.second,
+                            key = { _, category ->
+                                category.id
+                            }
+                        ) { index, category ->
+                            InputInfoCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 textFirstR = category.name,
                                 textSecondR = { Text(category.subHeader) },
@@ -478,10 +509,15 @@ fun HomeScreen(
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
-                itemsIndexed(
-                    if (expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
-                ) { index, item ->
-                    ArchiveCard(
+
+
+                items(
+                    items = listExpenses,
+                    key = { expenses ->
+                        expenses.id
+                    }
+                ) { item ->
+                    DisplayInfoCard(
                         textFirstR = item.categoryName,
                         textSecondR = "${item.paymentDate} - ${item.amount}",
                         onDoubleTap = {
@@ -490,7 +526,7 @@ fun HomeScreen(
                                     expensesInfo = item
                                 )
                             )
-                            changeFixAmountDialog.value = true
+                            changeExpensesDialog.value = true
                         }
                     )
                 }
@@ -503,7 +539,7 @@ fun HomeScreen(
                         startDate = newBookedState.startDate,
                         endDate = newBookedState.endDate,
                         onCalendarBtnClick = {
-                            viewModel.homeScreenEvents(HomeScreenEvents.OnCalendarBtnClick)
+                            calendarDialog.value = true
                         }
                     )
                 }
@@ -590,10 +626,10 @@ fun HomeScreen(
             )
         }
 
-        if(changeFixAmountDialog.value){
+        if(changeExpensesDialog.value){
             ExpensesDialog(
                 onCancel = {
-                    changeFixAmountDialog.value = false
+                    changeExpensesDialog.value = false
                 },
                 onAgree = { amount ->
                     viewModel.homeScreenEvents(
@@ -602,13 +638,38 @@ fun HomeScreen(
                             amount = amount
                         )
                     )
-                    changeFixAmountDialog.value = false
+                    changeExpensesDialog.value = false
                 },
                 name = selectedExpenses.categoryName,
                 paymentDate = selectedExpenses.paymentDate,
                 amount = selectedExpenses.amount
             )
         }
+
+        if(calendarDialog.value){
+            CustomCalendarDialog(
+                startDate = calendarState.startDate,
+                endDate = calendarState.endDate,
+                cellSize = Size(48f, 48f),
+                onCancel = {
+                    calendarDialog.value = false
+                },
+                year = calendarState.year,
+                onYearChanged = { year ->
+                    viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(year))
+                },
+                bookedDays = calendarState.bookedDays,
+                onSave = { startDate, endDate ->
+                    viewModel.homeScreenEvents(HomeScreenEvents.OnDateRangeChanged(
+                        startDate = startDate,
+                        endDate = endDate
+                    ))
+                    calendarDialog.value = false
+                }
+            )
+        }
+
+
     }
 
 }

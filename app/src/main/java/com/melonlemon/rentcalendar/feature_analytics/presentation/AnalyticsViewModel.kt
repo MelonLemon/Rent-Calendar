@@ -1,17 +1,22 @@
 package com.melonlemon.rentcalendar.feature_analytics.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
+import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
+import com.melonlemon.rentcalendar.feature_analytics.domain.model.CashFlowInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AnalyticsViewModel @Inject constructor(
+    private val coreUseCases: CoreRentUseCases,
     private  val useCases: AnalyticsUseCases
 ): ViewModel() {
 
@@ -27,10 +32,10 @@ class AnalyticsViewModel @Inject constructor(
     private val _listOfFlats = MutableStateFlow<List<CategoryInfo>>(emptyList())
     val listOfFlats  = _listOfFlats.asStateFlow()
 
-    private val _incomeStatementState = MutableStateFlow(IncomeStatementState())
+    private val _incomeStatementState = MutableStateFlow<List<IncomeStatementInfo>>(emptyList())
     val incomeStatementState  = _incomeStatementState.asStateFlow()
 
-    private val _cashFlowState = MutableStateFlow(CashFlowState())
+    private val _cashFlowState = MutableStateFlow<List<CashFlowInfo>>(emptyList())
     val cashFlowState  = _cashFlowState.asStateFlow()
 
     private val _bookedReportState = MutableStateFlow(BookedReportState())
@@ -39,6 +44,14 @@ class AnalyticsViewModel @Inject constructor(
 
 
     init{
+        viewModelScope.launch {
+            _listOfFlats.value = coreUseCases.getAllFlats()
+            _finSnapshotState.value = useCases.getInvestmentReturn(flatId=analyticsFilterState.value.selectedFlatId)
+            _incomeStatementState.value = useCases.getIncomeStatement(flatId=analyticsFilterState.value.selectedFlatId)
+            _cashFlowState.value = useCases.getCashFlowInfo(flatId=analyticsFilterState.value.selectedFlatId)
+            _bookedReportState.value = useCases.getBookedReport(flatId=analyticsFilterState.value.selectedFlatId)
+        }
+
 
     }
 
@@ -48,9 +61,15 @@ class AnalyticsViewModel @Inject constructor(
                 _chosenReport.value = event.report
             }
             is AnalyticsScreenEvents.OnFlatClick -> {
-                _analyticsFilterState.value =  analyticsFilterState.value.copy(
-                    selectedFlatId = event.id
-                )
+                viewModelScope.launch {
+                    _analyticsFilterState.value =  analyticsFilterState.value.copy(
+                        selectedFlatId = event.id
+                    )
+                    _finSnapshotState.value = useCases.getInvestmentReturn(flatId=analyticsFilterState.value.selectedFlatId)
+                    _incomeStatementState.value = useCases.getIncomeStatement(flatId=analyticsFilterState.value.selectedFlatId)
+                    _cashFlowState.value = useCases.getCashFlowInfo(flatId=analyticsFilterState.value.selectedFlatId)
+                    _bookedReportState.value = useCases.getBookedReport(flatId=analyticsFilterState.value.selectedFlatId)
+                }
             }
 
             is AnalyticsScreenEvents.OnTotalPurchaseChange -> {

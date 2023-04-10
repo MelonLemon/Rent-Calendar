@@ -18,7 +18,7 @@ interface HomeRepository {
     suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
     suspend fun getAvgBookedNightsGroupByMY(year: Int): List<AmountGroupBy>
     suspend fun addUpdateFlat(flat: Flats)
-    suspend fun getAllFlats(): List<Flats>
+
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
     suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>)
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)

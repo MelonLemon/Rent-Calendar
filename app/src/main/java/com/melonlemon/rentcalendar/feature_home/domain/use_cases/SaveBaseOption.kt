@@ -3,7 +3,6 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 import com.melonlemon.rentcalendar.core.data.util.IRREGULAR_EXP
 import com.melonlemon.rentcalendar.core.data.util.REGULAR_EXP
 import com.melonlemon.rentcalendar.core.domain.model.Category
-import com.melonlemon.rentcalendar.core.domain.model.CategoryShortInfo
 import com.melonlemon.rentcalendar.core.domain.model.Flats
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
@@ -14,8 +13,8 @@ class SaveBaseOption(
 ) {
     suspend operator fun invoke(
         flats: List<String>,
-        MonthlyExpCat: List<ExpensesCategoryInfo>,
-        IrregExpCat: List<ExpensesCategoryInfo>
+        monthlyExpCat: List<ExpensesCategoryInfo>,
+        irregExpCat: List<ExpensesCategoryInfo>
     ): SimpleStatusOperation {
         try {
             val flatsList = flats.map{ flat ->
@@ -25,7 +24,7 @@ class SaveBaseOption(
                     active = true
                 )
             }
-            val monthlyCategoryList = MonthlyExpCat.map { category ->
+            val monthlyCategoryList = monthlyExpCat.map { category ->
                 Category(
                     id = -1,
                     typeId = REGULAR_EXP,
@@ -34,7 +33,7 @@ class SaveBaseOption(
                     active = true
                 )
             }
-            val irregCategoryList = IrregExpCat.map { category ->
+            val irregCategoryList = irregExpCat.map { category ->
                 Category(
                     id = -1,
                     typeId = IRREGULAR_EXP,

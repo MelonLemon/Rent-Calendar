@@ -104,7 +104,7 @@ fun CashFlowReport(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.Start
         ) {
-        val sizeList = listOfExpenses.size
+            val sizeList = listOfExpenses.size
             if(expended){
                 repeat(sizeList){ index ->
                     TitleAmountRow(

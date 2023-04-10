@@ -23,7 +23,12 @@ fun LazyListScope.transactionDay(
             style = MaterialTheme.typography.titleMedium
         )
     }
-    itemsIndexed(listOfItems){ index, item ->
+    itemsIndexed(
+        items = listOfItems,
+        key =  { index, item ->
+            item.id
+        }
+    ){ index, item ->
         TransactionRow(
             textFirstR = item.category,
             textSecondR = item.comment,

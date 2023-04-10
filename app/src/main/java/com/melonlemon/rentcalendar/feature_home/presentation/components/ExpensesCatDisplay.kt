@@ -4,7 +4,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.melonlemon.rentcalendar.core.presentation.components.InfoCardInput
+import com.melonlemon.rentcalendar.core.presentation.components.InputInfoCard
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 
 
@@ -21,7 +21,7 @@ fun LazyListScope.expensesCategory(
         )
     }
     itemsIndexed(displayExpCategories){ index, item ->
-        InfoCardInput(
+        InputInfoCard(
             textFirstR = item.name,
             textSecondR = { Text(text = item.subHeader)},
             onNumberChanged = { amountString ->

@@ -21,9 +21,9 @@ import androidx.core.util.toRange
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_home.domain.model.YearWeek
 import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.CustomCalendar
 import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.HeaderWeekView
+import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.getSelectedDatesList
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.LocalDate
 import java.time.temporal.ChronoField
@@ -368,7 +368,7 @@ fun CustomCalendarDialog(
 
     var tempStartDate by remember{ mutableStateOf(startDate) }
     var tempEndDate by remember{ mutableStateOf(endDate) }
-
+    var selectedWeeks by remember{ mutableStateOf(getSelectedDatesList(startDate=startDate, endDate=endDate)) }
 
     Dialog(
         onDismissRequest = onCancel
@@ -409,6 +409,7 @@ fun CustomCalendarDialog(
                     if(tempEndDate != null){
                         tempStartDate = date
                         tempEndDate = null
+                        selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                     } else {
                         val newTempStartDate = if(date.isBefore(tempStartDate)) date else tempStartDate
                         val newTempEndDate = if(date.isAfter(tempStartDate)) date else tempStartDate
@@ -419,8 +420,6 @@ fun CustomCalendarDialog(
                             val newStartWeekNumber = newTempStartDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
                             val newEndWeekNumber = newTempEndDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
                             var isOverlap = false
-                            val startYear = newTempStartDate.year
-                            val endYear = newTempEndDate.year
                             (newStartWeekNumber..newEndWeekNumber).forEach{ week->
 
                                 if(bookedDays.containsKey(week)){
@@ -437,14 +436,15 @@ fun CustomCalendarDialog(
 
                             tempStartDate = if(isOverlap) date else  newTempStartDate
                             tempEndDate = if(isOverlap) null else newTempEndDate
+                            selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                         }
-
                     }
 
                 },
                 bookedDays = bookedDays,
                 year = year,
-                onYearChanged = onYearChanged
+                onYearChanged = onYearChanged,
+                selectedDays = selectedWeeks
             )
 
         }

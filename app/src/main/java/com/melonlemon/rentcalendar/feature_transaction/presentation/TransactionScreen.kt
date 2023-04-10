@@ -1,24 +1,17 @@
 package com.melonlemon.rentcalendar.feature_transaction.presentation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.melonlemon.rentcalendar.core.data.repository.TransactionRepositoryImpl
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetFilteredTransactions
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetTransactions
-import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.SearchFilterWidget
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.transactionDay
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionScreenEvents
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +24,7 @@ fun TransactionScreen(
     val transactionsByMonth by viewModel.transactionsByMonth.collectAsStateWithLifecycle()
 
 
-    Scaffold() { it ->
+    Scaffold() {
         LazyColumn(
             modifier = Modifier.padding(it)
         ){
