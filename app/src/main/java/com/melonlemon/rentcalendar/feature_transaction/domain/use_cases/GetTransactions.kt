@@ -12,17 +12,7 @@ class GetTransactions(
     private val repository: TransactionsRepository
 ) {
     operator fun invoke(transFilterState: TransFilterState): Flow<List<TransactionMonth>> {
-//        if(transFilterState.year==0){
-//            return emptyFlow()
-//        }
-//        if(transFilterState.chosenPeriod == TransactionPeriod.MonthsPeriod &&
-//            transFilterState.chosenMonthsNum.isEmpty()){
-//            return emptyFlow()
-//        }
-//
-//        return repository.getTransactions(
-//            transactionIndex =
-//        )
+
         return flowOf()
 
     }

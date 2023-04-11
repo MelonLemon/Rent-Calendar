@@ -1,14 +1,13 @@
 package com.melonlemon.rentcalendar.feature_analytics.domain.model
 
 import androidx.compose.ui.graphics.Color
-import java.time.YearMonth
 
 data class IncomeStatementInfo(
     val quarter: Int,
     val netIncome: Int,
     val revenue: Int,
-    val directCost: Int,
-    val inDirectCost: Int
+    val monthlyExp: Int,
+    val irregExp: Int
 )
 
 data class DisplayInfo(

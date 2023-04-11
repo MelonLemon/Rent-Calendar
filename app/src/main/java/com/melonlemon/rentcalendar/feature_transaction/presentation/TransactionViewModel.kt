@@ -2,6 +2,8 @@ package com.melonlemon.rentcalendar.feature_transaction.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
+import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionScreenEvents
@@ -9,10 +11,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
+    private val coreUseCases: CoreRentUseCases,
     private val useCases: TransactionsUseCases
 ): ViewModel() {
 
@@ -43,6 +48,20 @@ class TransactionViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000),
             _transactionsByMonth.value
         )
+
+    init {
+        viewModelScope.launch {
+            val flats = coreUseCases.getAllFlats()
+            val years = coreUseCases.getActiveYears()
+            _transFilterState.value = transFilterState.value.copy(
+                flats = flats,
+                years = years,
+                selectedYearId = years[0].id,
+                selectedFlatsId = listOf(flats[0].id)
+            )
+        }
+
+    }
 
     fun transactionScreenEvents(event: TransactionScreenEvents){
         when(event){
@@ -77,9 +96,9 @@ class TransactionViewModel @Inject constructor(
 
 
             }
-            is TransactionScreenEvents.OnYearChange -> {
+            is TransactionScreenEvents.OnYearClick -> {
                 _transFilterState.value = transFilterState.value.copy(
-                    year = event.year
+                    selectedYearId = event.yearId
                 )
             }
             is TransactionScreenEvents.OnYearMonthClick -> {

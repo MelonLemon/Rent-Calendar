@@ -648,6 +648,7 @@ fun HomeScreen(
 
         if(calendarDialog.value){
             CustomCalendarDialog(
+                flatName = flatName.value,
                 startDate = calendarState.startDate,
                 endDate = calendarState.endDate,
                 cellSize = Size(48f, 48f),

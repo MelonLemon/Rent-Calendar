@@ -48,6 +48,10 @@ class HomeRepositoryImpl(
         dao.addFlat(flat = flat)
     }
 
+    override suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>? {
+        return dao.getBookedDaysByWeek(year = year, flatId=flatId)
+    }
+
     override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {
         dao.updatePaymentStatus(id = id, isPaid = isPaid)
     }

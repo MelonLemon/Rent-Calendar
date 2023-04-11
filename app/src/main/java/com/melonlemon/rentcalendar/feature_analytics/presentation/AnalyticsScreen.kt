@@ -33,6 +33,7 @@ fun AnalyticsScreen(
     val incomeStatementState by viewModel.incomeStatementState.collectAsStateWithLifecycle()
     val cashFlowState by viewModel.cashFlowState.collectAsStateWithLifecycle()
     val bookedReportState by viewModel.bookedReportState.collectAsStateWithLifecycle()
+    val listOfYears by viewModel.listOfYears.collectAsStateWithLifecycle()
 
 
     Scaffold {
@@ -124,6 +125,29 @@ fun AnalyticsScreen(
                     }
                 }
             }
+            item{
+                LazyRow(
+                    modifier = Modifier,
+                    contentPadding = PaddingValues(horizontal = 8.dp)
+                ){
+                    items(
+                        items = listOfYears,
+                        key = { item ->
+                            item.id
+                        }
+                    ) { item ->
+                        FilterButton(
+                            text = item.name,
+                            isSelected = analyticsFilterState.selectedYearId == item.id,
+                            onBtnClick = {
+                                viewModel.analyticsScreenEvents(
+                                    AnalyticsScreenEvents.OnFlatClick(item.id))
+                            },
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+            }
 
             if(chosenReport == Reports.IncomeStatement){
                 item{
@@ -145,8 +169,8 @@ fun AnalyticsScreen(
                                 IncomeStatementReport(
                                     netIncome = incomeStatement.netIncome,
                                     revenue = incomeStatement.revenue,
-                                    directCost = incomeStatement.directCost,
-                                    indirectCost = incomeStatement.inDirectCost
+                                    monthlyCost = incomeStatement.monthlyExp,
+                                    irregCost = incomeStatement.irregExp
                                 )
                             }
                         }

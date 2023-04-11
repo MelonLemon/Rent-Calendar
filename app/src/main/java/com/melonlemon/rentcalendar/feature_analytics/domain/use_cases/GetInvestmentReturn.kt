@@ -6,7 +6,12 @@ import com.melonlemon.rentcalendar.feature_analytics.presentation.util.Investmen
 class GetInvestmentReturn(
     private val repository: AnalyticsRepository
 ) {
-    suspend operator fun invoke(flatId: Int): InvestmentReturnState {
+    suspend operator fun invoke(year: Int, flatId: Int): InvestmentReturnState {
+        if(flatId==-1){
+
+        } else {
+
+        }
         return InvestmentReturnState()
     }
 }

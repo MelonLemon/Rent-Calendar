@@ -356,6 +356,7 @@ fun CategoryListItem(
 @Composable
 fun CustomCalendarDialog(
     modifier: Modifier = Modifier,
+    flatName: String,
     startDate: LocalDate?=null,
     endDate: LocalDate?=null,
     cellSize: Size,
@@ -400,52 +401,60 @@ fun CustomCalendarDialog(
                 }
             }
         ){ it ->
-            CustomCalendar(
-                modifier = modifier.padding(it),
-                tempStartDate=tempStartDate,
-                tempEndDate=tempEndDate,
-                cellSize=cellSize,
-                onDayClick = { date ->
-                    if(tempEndDate != null){
-                        tempStartDate = date
-                        tempEndDate = null
-                        selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
-                    } else {
-                        val newTempStartDate = if(date.isBefore(tempStartDate)) date else tempStartDate
-                        val newTempEndDate = if(date.isAfter(tempStartDate)) date else tempStartDate
-                        if(bookedDays==null){
-                            tempStartDate = newTempStartDate
-                            tempEndDate = newTempEndDate
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text=flatName)
+                CustomCalendar(
+                    modifier = modifier.padding(it),
+                    tempStartDate=tempStartDate,
+                    tempEndDate=tempEndDate,
+                    cellSize=cellSize,
+                    onDayClick = { date ->
+                        if(tempEndDate != null){
+                            tempStartDate = date
+                            tempEndDate = null
+                            selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                         } else {
-                            val newStartWeekNumber = newTempStartDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
-                            val newEndWeekNumber = newTempEndDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
-                            var isOverlap = false
-                            (newStartWeekNumber..newEndWeekNumber).forEach{ week->
+                            val newTempStartDate = if(date.isBefore(tempStartDate)) date else tempStartDate
+                            val newTempEndDate = if(date.isAfter(tempStartDate)) date else tempStartDate
+                            if(bookedDays==null){
+                                tempStartDate = newTempStartDate
+                                tempEndDate = newTempEndDate
+                            } else {
+                                val newStartWeekNumber = newTempStartDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                                val newEndWeekNumber = newTempEndDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
+                                var isOverlap = false
+                                (newStartWeekNumber..newEndWeekNumber).forEach{ week->
 
-                                if(bookedDays.containsKey(week)){
-                                    run breaking@ {
-                                        bookedDays[week]?.forEach { day ->
-                                            if(day in newTempStartDate..newTempEndDate){
-                                                isOverlap = true
-                                                return@breaking
+                                    if(bookedDays.containsKey(week)){
+                                        run breaking@ {
+                                            bookedDays[week]?.forEach { day ->
+                                                if(day in newTempStartDate..newTempEndDate){
+                                                    isOverlap = true
+                                                    return@breaking
+                                                }
                                             }
                                         }
                                     }
                                 }
+
+                                tempStartDate = if(isOverlap) date else  newTempStartDate
+                                tempEndDate = if(isOverlap) null else newTempEndDate
+                                selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                             }
-
-                            tempStartDate = if(isOverlap) date else  newTempStartDate
-                            tempEndDate = if(isOverlap) null else newTempEndDate
-                            selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                         }
-                    }
 
-                },
-                bookedDays = bookedDays,
-                year = year,
-                onYearChanged = onYearChanged,
-                selectedDays = selectedWeeks
-            )
+                    },
+                    bookedDays = bookedDays,
+                    year = year,
+                    onYearChanged = onYearChanged,
+                    selectedDays = selectedWeeks
+                )
+            }
+
 
         }
 

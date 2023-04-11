@@ -21,8 +21,8 @@ fun IncomeStatementReport(
     modifier: Modifier=Modifier,
     netIncome: Int,
     revenue: Int,
-    directCost: Int,
-    indirectCost: Int
+    monthlyCost: Int,
+    irregCost: Int
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -50,18 +50,18 @@ fun IncomeStatementReport(
                 horizontalAlignment = Alignment.Start
             ) {
                 TitleAmountRow(
-                    title = stringResource(R.string.direct_cost),
-                    valueString = "-$directCost",
+                    title = stringResource(R.string.monthly_exp),
+                    valueString = "-$monthlyCost",
                 )
                 TitleAmountRow(
-                    title = stringResource(R.string.indir_cost),
-                    valueString = "-$indirectCost",
+                    title = stringResource(R.string.irreg_exp),
+                    valueString = "-$irregCost",
                 )
             }
         }
         val listSegments = listOf(
-            ChartItem(name = stringResource(R.string.direct_cost), value = directCost, color = MaterialTheme.colorScheme.tertiaryContainer),
-            ChartItem(name = stringResource(R.string.indir_cost), value = indirectCost, color = MaterialTheme.colorScheme.primary),
+            ChartItem(name = stringResource(R.string.monthly_exp), value = monthlyCost, color = MaterialTheme.colorScheme.tertiaryContainer),
+            ChartItem(name = stringResource(R.string.irreg_exp), value = irregCost, color = MaterialTheme.colorScheme.primary),
             ChartItem(name = stringResource(R.string.net_income), value = netIncome, color = MaterialTheme.colorScheme.primaryContainer),
         )
         if(revenue!=0){
@@ -200,8 +200,8 @@ fun IncomeStatementReportPreview() {
         IncomeStatementReport(
             netIncome = 700,
             revenue = 1000,
-            directCost = 200,
-            indirectCost = 100
+            monthlyCost = 200,
+            irregCost = 100
         )
     }
 }

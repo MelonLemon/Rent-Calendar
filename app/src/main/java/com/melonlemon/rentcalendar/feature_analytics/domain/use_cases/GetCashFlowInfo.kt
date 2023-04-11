@@ -7,7 +7,12 @@ import com.melonlemon.rentcalendar.feature_analytics.domain.repository.Analytics
 class GetCashFlowInfo(
     private val repository: AnalyticsRepository
 ) {
-    suspend operator fun invoke(flatId: Int): List<CashFlowInfo> {
+    suspend operator fun invoke(year: Int, flatId: Int): List<CashFlowInfo> {
+        if(flatId==-1){
+
+        } else {
+
+        }
         return emptyList()
     }
 }

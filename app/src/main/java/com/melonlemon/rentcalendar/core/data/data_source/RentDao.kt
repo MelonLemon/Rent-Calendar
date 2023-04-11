@@ -2,11 +2,17 @@ package com.melonlemon.rentcalendar.core.data.data_source
 
 import androidx.room.*
 import com.melonlemon.rentcalendar.core.domain.model.*
+import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 @Dao
 interface RentDao {
+
+
+    //GET ACTIVE YEARS
+    @Query("SELECT DISTINCT year FROM schedule")
+    suspend fun getYearsActive():List<Int>
 
     //ADD/UPDATE FLAT
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -104,6 +110,21 @@ interface RentDao {
             "SELECT year, month AVG(amount) AS amount FROM bookedNights GROUP BY year AND month ORDER BY month ASC")
     suspend fun getAvgBookedNightsGroupByMY(year: Int):List<AmountGroupBy>
 
+    //GET BOOKED DAYS GROUP BY WEEK
+    @MapInfo(keyColumn = "weekNum", valueColumn = "startDate")
+    @Query("WITH filteredSchedule AS (" +
+            "SELECT * FROM schedule WHERE flat_id=:flatId AND year=:year) " +
+            "WITH RECURSIVE dates AS (" +
+            "SELECT startDate " +
+            "FROM filteredSchedule " +
+            "UNION ALL " +
+            "SELECT date(startDate, '+1 day'), endDate" +
+            "FROM dates " +
+            "WHERE startDate < endDate" +
+            ") " +
+            "SELECT startDate, WEEK(startDate) AS weekNum FROM dates GROUP BY weekNum")
+    suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>?
+
     //ADD EXPENSES
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addExpenses(expenses: Expenses)
@@ -128,11 +149,15 @@ interface RentDao {
     @Query("SELECT * FROM category WHERE type_id=:typeId")
     suspend fun getCategoriesByTypeId(typeId: Int):List<Category>
 
+    //TRANSACTIONS
+
     //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID
-    @Query("SELECT * FROM expenses " +
+    @Query("WITH categoryFiltered (" +
+            "SELECT * FROM category WHERE type_id=:typeId) " +
+            "SELECT * FROM expenses " +
+            "INNER JOIN categoryFiltered ON expenses.category_id=categoryFiltered.id " +
             "WHERE flat_id=:flatId AND year=:year AND month=:months")
     fun getExpensesByTypeId(flatId: Int, year: Int, month: Int, typeId: Int):Flow<List<Expenses>>
-
 
     //GET INCOME TRANSACTIONS BY PAYMENT DAY
     @Query("SELECT month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
@@ -210,4 +235,37 @@ interface RentDao {
             "ORDER BY month, paymentDate")
     fun getAllTransactionsByFlatIdM(flatId: Int, year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
 
+    // ANALYSIS
+
+    //GET PAYMENT BY FLAT ID BY QUARTER
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("SELECT QUARTER(DATEFROMPARTS(year, month,1)) as quarter, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE flat_id=:flatId AND year=:year AND isPaid=:isPaid " +
+            "GROUP BY quarter ORDER BY quarter ASC")
+    suspend fun getPaymentQuarter(flatId: Int, year: Int, isPaid: Boolean):Map<Int, Int>
+
+    //GET ALL PAYMENT BY FLAT ID BY QUARTER
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("SELECT QUARTER(DATEFROMPARTS(year, month,1)) as quarter, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE year=:year AND isPaid=:isPaid " +
+            "GROUP BY quarter ORDER BY quarter ASC")
+    suspend fun getAllPaymentQuarter(year: Int, isPaid: Boolean):Map<Int, Int>
+
+    //GET EXPENSES BY TYPE ID BY QUARTER
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("WITH categoryFiltered (" +
+            "SELECT * FROM category WHERE type_id=:typeId) " +
+            "SELECT QUARTER(DATEFROMPARTS(year, month,1)) as quarter, SUM(amount) AS amount FROM expenses " +
+            "INNER JOIN categoryFiltered ON expenses.category_id=categoryFiltered.id " +
+            "WHERE flat_id=:flatId AND year=:year GROUP BY quarter BY quarter ASC")
+    suspend fun getExpensesQuarter(flatId: Int, year: Int, typeId: Int):Map<Int, Int>
+
+    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("WITH categoryFiltered (" +
+            "SELECT * FROM category WHERE type_id=:typeId) " +
+            "SELECT QUARTER(DATEFROMPARTS(year, month,1)) as quarter, SUM(amount) AS amount FROM expenses " +
+            "INNER JOIN categoryFiltered ON expenses.category_id=categoryFiltered.id " +
+            "WHERE year=:year GROUP BY quarter BY quarter ASC")
+    suspend fun getAllExpensesQuarter(year: Int, typeId: Int):Map<Int, Int>
 }

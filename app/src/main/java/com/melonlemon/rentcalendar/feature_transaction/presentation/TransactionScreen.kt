@@ -51,15 +51,16 @@ fun TransactionScreen(
                     },
                     chosenMonthsNum = transFilterState.chosenMonthsNum,
                     chosenPeriod = transFilterState.chosenPeriod,
-                    year = transFilterState.year,
+                    years = transFilterState.years,
+                    selectedYearId = transFilterState.selectedYearId,
                     onMonthClick = { monthNum ->
                         viewModel.transactionScreenEvents(
                             TransactionScreenEvents.OnMonthClick(monthNum))
                     },
-                    onYearChange = { yearString ->
+                    onYearClick = { yearId->
                         viewModel.transactionScreenEvents(
-                            TransactionScreenEvents.OnYearChange(
-                                yearString.toIntOrNull() ?:0
+                            TransactionScreenEvents.OnYearClick(
+                                yearId
                             ))
                     },
                     onYearMonthClick = { transactionPeriod ->

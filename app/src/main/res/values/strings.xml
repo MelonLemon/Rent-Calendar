@@ -58,8 +58,8 @@
     <string name="invest_return">Investment Return</string>
     <string name="net_income">Net Income</string>
     <string name="revenue">Revenue</string>
-    <string name="direct_cost">Direct Cost</string>
-    <string name="indir_cost">Indirect Cost</string>
+    <string name="monthly_exp">Monthly Expenses</string>
+    <string name="irreg_exp">Irregular Expenses</string>
     <string name="cash_flow">Cash Flow</string>
     <string name="average_booked">Average Booked</string>
     <string name="aver_day_rent">Average Day Rent</string>

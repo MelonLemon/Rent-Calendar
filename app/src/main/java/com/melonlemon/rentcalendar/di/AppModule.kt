@@ -11,6 +11,7 @@ import com.melonlemon.rentcalendar.core.data.repository.HomeRepositoryImpl
 import com.melonlemon.rentcalendar.core.data.repository.TransactionRepositoryImpl
 import com.melonlemon.rentcalendar.core.domain.repository.CoreRentRepository
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
+import com.melonlemon.rentcalendar.core.domain.use_cases.GetActiveYears
 import com.melonlemon.rentcalendar.core.domain.use_cases.GetAllFlats
 import com.melonlemon.rentcalendar.feature_analytics.domain.repository.AnalyticsRepository
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.*
@@ -97,7 +98,8 @@ object AppModule {
     @Singleton
     fun provideCoreRentCases(repository: CoreRentRepository): CoreRentUseCases {
         return CoreRentUseCases(
-            getAllFlats = GetAllFlats(repository)
+            getAllFlats = GetAllFlats(repository),
+            getActiveYears = GetActiveYears(repository)
         )
     }
 

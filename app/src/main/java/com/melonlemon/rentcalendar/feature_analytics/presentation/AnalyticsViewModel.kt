@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +33,9 @@ class AnalyticsViewModel @Inject constructor(
     private val _listOfFlats = MutableStateFlow<List<CategoryInfo>>(emptyList())
     val listOfFlats  = _listOfFlats.asStateFlow()
 
+    private val _listOfYears = MutableStateFlow<List<CategoryInfo>>(emptyList())
+    val listOfYears  = _listOfYears.asStateFlow()
+
     private val _incomeStatementState = MutableStateFlow<List<IncomeStatementInfo>>(emptyList())
     val incomeStatementState  = _incomeStatementState.asStateFlow()
 
@@ -46,10 +50,15 @@ class AnalyticsViewModel @Inject constructor(
     init{
         viewModelScope.launch {
             _listOfFlats.value = coreUseCases.getAllFlats()
-            _finSnapshotState.value = useCases.getInvestmentReturn(flatId=analyticsFilterState.value.selectedFlatId)
-            _incomeStatementState.value = useCases.getIncomeStatement(flatId=analyticsFilterState.value.selectedFlatId)
-            _cashFlowState.value = useCases.getCashFlowInfo(flatId=analyticsFilterState.value.selectedFlatId)
-            _bookedReportState.value = useCases.getBookedReport(flatId=analyticsFilterState.value.selectedFlatId)
+            _listOfYears.value = coreUseCases.getActiveYears()
+            _analyticsFilterState.value = analyticsFilterState.value.copy(
+                selectedYearId = listOfYears.value[0].id
+            )
+            val selectedYear = listOfYears.value[0].name.toInt()
+            _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+            _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+            _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+            _bookedReportState.value = useCases.getBookedReport(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
         }
 
 
@@ -65,10 +74,11 @@ class AnalyticsViewModel @Inject constructor(
                     _analyticsFilterState.value =  analyticsFilterState.value.copy(
                         selectedFlatId = event.id
                     )
-                    _finSnapshotState.value = useCases.getInvestmentReturn(flatId=analyticsFilterState.value.selectedFlatId)
-                    _incomeStatementState.value = useCases.getIncomeStatement(flatId=analyticsFilterState.value.selectedFlatId)
-                    _cashFlowState.value = useCases.getCashFlowInfo(flatId=analyticsFilterState.value.selectedFlatId)
-                    _bookedReportState.value = useCases.getBookedReport(flatId=analyticsFilterState.value.selectedFlatId)
+                    val selectedYear = listOfYears.value[event.id].name.toInt()
+                    _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+                    _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+                    _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+                    _bookedReportState.value = useCases.getBookedReport(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
                 }
             }
 

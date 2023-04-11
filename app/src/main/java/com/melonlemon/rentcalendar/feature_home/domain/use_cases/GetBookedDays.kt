@@ -7,7 +7,7 @@ import java.time.LocalDate
 class GetBookedDays(
     private val repository: HomeRepository
 ) {
-    suspend operator fun invoke(year: Int): Map<Int, List<LocalDate>>?{
-        return null
+    suspend operator fun invoke(year: Int, flatId: Int): Map<Int, List<LocalDate>>?{
+        return repository.getBookedDaysByWeek(year=year, flatId=flatId)
     }
 }

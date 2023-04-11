@@ -6,7 +6,12 @@ import com.melonlemon.rentcalendar.feature_analytics.presentation.util.BookedRep
 class GetBookedReport(
     private val repository: AnalyticsRepository
 ) {
-    suspend operator fun invoke(flatId: Int): BookedReportState {
+    suspend operator fun invoke(year: Int, flatId: Int): BookedReportState {
+        if(flatId==-1){
+
+        } else {
+
+        }
         return BookedReportState()
     }
 }

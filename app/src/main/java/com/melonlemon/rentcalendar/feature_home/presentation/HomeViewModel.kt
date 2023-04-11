@@ -357,7 +357,12 @@ class HomeViewModel @Inject constructor(
             }
             is HomeScreenEvents.SetCalendarState -> {
                 viewModelScope.launch {
-                    val bookedDays = useCases.getBookedDays(year=event.year)
+                    if(filterState.value.selectedFlatId == -1) {
+                        _filterState.value = filterState.value.copy(
+                            selectedFlatId = flatsState.value.listOfFlats[0].id
+                        )
+                    }
+                    val bookedDays = useCases.getBookedDays(year=event.year, flatId = filterState.value.selectedFlatId)
                     val newStartDate = if((newBookedState.value.startDate?.year ?: 0) == event.year)
                         newBookedState.value.startDate else null
                     val newEndDate = if((newBookedState.value.endDate?.year ?: 0) == event.year)

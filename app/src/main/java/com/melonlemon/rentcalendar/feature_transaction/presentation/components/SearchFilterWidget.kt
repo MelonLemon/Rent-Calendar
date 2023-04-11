@@ -4,8 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
@@ -41,8 +40,9 @@ fun SearchFilterWidget(
     chosenPeriod: TransactionPeriod,
     onYearMonthClick: (TransactionPeriod) -> Unit,
     chosenMonthsNum: List<Int>,
-    year: Int,
-    onYearChange: (String) -> Unit,
+    years: List<CategoryInfo>,
+    selectedYearId: Int,
+    onYearClick: (Int) -> Unit,
     onMonthClick: (Int) -> Unit
 ) {
     SearchFilterContainer(
@@ -112,39 +112,37 @@ fun SearchFilterWidget(
             }
 
         }
-        Row(
+
+        LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ){
-            val limitNum = 4
-            OutlinedTextField(
-                value = if (year == 0) "" else "$year",
-                onValueChange = { onYearChange(it.take(limitNum)) },
-                placeholder = { Text(text= stringResource(R.string.number_placeholder)) },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
-                ),
-                textStyle = MaterialTheme.typography.titleMedium,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    textColor = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.width(90.dp)
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                val monthList = (1..12).toList()
 
-                itemsIndexed(monthList){ index, monthNum ->
-                    SearchFilterButton(
-                        text = java.time.Month.of(monthNum).name,
-                        isSelected = monthNum in chosenMonthsNum,
-                        onBtnClick = { onMonthClick(monthNum) }
-                    )
 
-                }
+            items(
+                items = years,
+                key = { year -> year.id }
+            ){ year ->
+                SearchFilterButton(
+                    text = year.name,
+                    isSelected = year.id==selectedYearId,
+                    onBtnClick = { onYearClick(year.id) }
+                )
+
             }
+        }
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ){
+            val monthList = (1..12).toList()
 
+            itemsIndexed(monthList){ index, monthNum ->
+                SearchFilterButton(
+                    text = java.time.Month.of(monthNum).name,
+                    isSelected = monthNum in chosenMonthsNum,
+                    onBtnClick = { onMonthClick(monthNum) }
+                )
+
+            }
         }
     }
 }
@@ -242,26 +240,26 @@ fun SearchInput(
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SearchFilterWidgetPreview() {
-    RentCalendarTheme {
-        SearchFilterWidget(
-            searchText = "",
-            onCancelClicked = { },
-            onSearchTextChanged = { },
-            transactionType = TransactionType.AllTransaction,
-            onTransactionTypeClick = { },
-            flats = listOf(CategoryInfo(1, "Central Flat"),
-                CategoryInfo(2, "Secondary Flat")),
-            selectedFlatsId = listOf(1),
-            onFlatsClick = { },
-            chosenMonthsNum = listOf(1, 3),
-            chosenPeriod = TransactionPeriod.MonthsPeriod,
-            year = 2023,
-            onMonthClick = { },
-            onYearChange = { },
-            onYearMonthClick = { }
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun SearchFilterWidgetPreview() {
+//    RentCalendarTheme {
+//        SearchFilterWidget(
+//            searchText = "",
+//            onCancelClicked = { },
+//            onSearchTextChanged = { },
+//            transactionType = TransactionType.AllTransaction,
+//            onTransactionTypeClick = { },
+//            flats = listOf(CategoryInfo(1, "Central Flat"),
+//                CategoryInfo(2, "Secondary Flat")),
+//            selectedFlatsId = listOf(1),
+//            onFlatsClick = { },
+//            chosenMonthsNum = listOf(1, 3),
+//            chosenPeriod = TransactionPeriod.MonthsPeriod,
+//            selectedYearId = 2023,
+//            onMonthClick = { },
+//            onYearClick = { },
+//            onYearMonthClick = { }
+//        )
+//    }
+//}

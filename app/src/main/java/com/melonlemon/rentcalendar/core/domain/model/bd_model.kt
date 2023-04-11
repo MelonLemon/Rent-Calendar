@@ -169,3 +169,4 @@ data class CategoryShortInfo(
     val name: String,
     val amount: Int
 )
+

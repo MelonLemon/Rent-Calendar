@@ -10,4 +10,8 @@ class CoreRentRepositoryImpl(
     override suspend fun getAllFlats(): List<Flats> {
         return dao.getFlats()
     }
+
+    override suspend fun getAllYears(): List<Int> {
+        return dao.getYearsActive()
+    }
 }
