@@ -9,12 +9,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.model.ChartItem
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.DisplayInfo
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun IncomeStatementReport(
@@ -146,9 +144,10 @@ fun BookedReport(
     modifier: Modifier=Modifier,
     averageBookedPer: Int,
     averageDayRent: Int,
-    bestBookedDays: String,
-    bestMonth: String,
-    valueBestMonth: String
+    mostBookedMonth: String,
+    mostBookedMonthPercent: Int,
+    mostIncomeMonth: String,
+    mostIncomeMonthAmount: Int
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -177,13 +176,13 @@ fun BookedReport(
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.best_booked_days) + bestBookedDays,
+                text = stringResource(R.string.highest_booked_month) + mostBookedMonth + " - "  + "$mostBookedMonthPercent%",
                 style =  MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.best_month) + bestMonth + " " + valueBestMonth,
+                text = stringResource(R.string.highest_income) + mostIncomeMonth + " - "  + "$mostIncomeMonthAmount",
                 style =  MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -193,15 +192,15 @@ fun BookedReport(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun IncomeStatementReportPreview() {
-    RentCalendarTheme {
-        IncomeStatementReport(
-            netIncome = 700,
-            revenue = 1000,
-            monthlyCost = 200,
-            irregCost = 100
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun IncomeStatementReportPreview() {
+//    RentCalendarTheme {
+//        IncomeStatementReport(
+//            netIncome = 700,
+//            revenue = 1000,
+//            monthlyCost = 200,
+//            irregCost = 100
+//        )
+//    }
+//}

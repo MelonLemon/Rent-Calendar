@@ -80,6 +80,7 @@ interface RentDao {
             )
         }
     }
+
     //GET FULL RENT INFO BY YEAR&MONTH AND FLAT ID
     @Transaction
     @Query("SELECT * FROM schedule WHERE flat_id=:flatId AND year=:year AND month=:month")
@@ -97,11 +98,64 @@ interface RentDao {
             "GROUP BY year AND month ORDER BY month ASC")
     suspend fun getAllPaymentGroupByMY(year: Int, isPaid: Boolean):List<AmountGroupBy>
 
+    //GET MOST INCOME MONTH
+    @Query("WITH incomeMonth AS (SELECT year, month, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE year=:year AND flat_id=:flatId  isPaid=:isPaid " +
+            "GROUP BY year AND month) " +
+            "SELECT year, month, amount FROM incomeMonth WHERE amount = (SELECT MAX(amount) FROM incomeMonth)")
+    suspend fun getMostIncomeMonth(flatId: Int, year: Int, isPaid: Boolean): AmountGroupBy
+
+    //GET MOST INCOME MONTH
+    @Query("WITH incomeMonth AS (SELECT year, month, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE year=:year AND isPaid=:isPaid " +
+            "GROUP BY year AND month) " +
+            "SELECT year, month, amount FROM incomeMonth WHERE amount = (SELECT MAX(amount) FROM incomeMonth)")
+    suspend fun getAllMostIncomeMonth(year: Int, isPaid: Boolean): AmountGroupBy
+
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR
     @Query("SELECT year, month, SUM(nights) AS amount " +
             "FROM payment WHERE flat_id=:flatId AND year=:year " +
             "GROUP BY year AND month ORDER BY month ASC")
     suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int):List<AmountGroupBy>
+
+    //GET AVERAGE DAY RENT
+    @Query("SELECT AVG(nights) FROM payment WHERE  flat_id=:flatId AND year=:year")
+    suspend fun getAvgDaysRent(flatId: Int, year: Int): Int
+
+    //GET AVERAGE DAY RENT
+    @Query("SELECT AVG(nights) FROM payment WHERE year=:year")
+    suspend fun getAllAvgDaysRent(year: Int): Int
+
+    //GET BOOKED DAYS AVERAGE PERCENT
+    @Query("WITH daysPercent AS (SELECT year, month, SUM(nights)/CAST( STRFTIME( '%d', DATEFROMPARTS(year, month,1)) AS percent" +
+            "FROM payment WHERE flat_id=:flatId AND year=:year " +
+            "GROUP BY year AND month ORDER BY month ASC) " +
+            "SELECT AVG(percent) FROM daysPercent")
+    suspend fun getBookedPercentYear(flatId: Int, year: Int):Int
+
+    //GET BOOKED DAYS AVERAGE PERCENT
+    @Query("WITH daysPercent AS (SELECT flat_id, year, month, SUM(nights)/CAST( STRFTIME( '%d', DATEFROMPARTS(year, month,1)) AS percent" +
+            "FROM payment WHERE year=:year " +
+            "GROUP BY year AND month AND flat_id ORDER BY month ASC) " +
+            "SELECT AVG(percent) FROM daysPercent")
+    suspend fun getAllBookedPercentYear(year: Int):Int
+
+    //GET ALL MOST BOOKED MONTH
+    @Query("WITH daysPercent AS (SELECT month, SUM(nights)/CAST( STRFTIME( '%d', DATEFROMPARTS(year, month,1)) AS percent" +
+            "FROM payment WHERE year=:year AND flat_id," +
+            "GROUP BY year AND month ORDER BY month ASC) " +
+            "SELECT month, percent  FROM daysPercent WHERE percent = (SELECT MAX(percent) FROM daysPercent)")
+    suspend fun getMostBookedMonth(flatId: Int, year: Int):MostBookedMonthInfo
+
+    //GET ALL MOST BOOKED MONTH
+    @Query("WITH daysPercent AS (SELECT flat_id, month, SUM(nights)/CAST( STRFTIME( '%d', DATEFROMPARTS(year, month,1)) AS percent" +
+            "FROM payment WHERE year=:year" +
+            "GROUP BY year AND month ORDER BY month ASC) " +
+            "WITH percentGrouped AS (SELECT month, SUM(percent) AS percent" +
+            "FROM daysPercent " +
+            "GROUP BY month) " +
+            "SELECT month, percent  FROM percentGrouped WHERE percent = (SELECT MAX(percent) FROM percentGrouped)")
+    suspend fun getAllMostBookedMonth(year: Int):MostBookedMonthInfo
 
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR
     @Query("WITH bookedNights (" +
@@ -260,7 +314,7 @@ interface RentDao {
             "WHERE flat_id=:flatId AND year=:year GROUP BY quarter BY quarter ASC")
     suspend fun getExpensesQuarter(flatId: Int, year: Int, typeId: Int):Map<Int, Int>
 
-    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID
+    //GET ALL EXPENSES BY TYPE ID  BY QUARTER
     @MapInfo(keyColumn = "quarter", valueColumn = "amount")
     @Query("WITH categoryFiltered (" +
             "SELECT * FROM category WHERE type_id=:typeId) " +
@@ -268,4 +322,32 @@ interface RentDao {
             "INNER JOIN categoryFiltered ON expenses.category_id=categoryFiltered.id " +
             "WHERE year=:year GROUP BY quarter BY quarter ASC")
     suspend fun getAllExpensesQuarter(year: Int, typeId: Int):Map<Int, Int>
+
+    //GET PAYMENT BY DATE BY QUARTER
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("SELECT QUARTER(paymentDate) as quarter, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE flat_id=:flatId AND year=:year AND isPaid=:isPaid " +
+            "GROUP BY quarter ORDER BY quarter ASC")
+    suspend fun getPaymentByDateQuarter(flatId: Int, year: Int, isPaid: Boolean):Map<Int, Int>
+
+    //GET ALL PAYMENT BY DATE BY QUARTER
+    @MapInfo(keyColumn = "quarter", valueColumn = "amount")
+    @Query("SELECT QUARTER(paymentDate) as quarter, SUM(paymentAllNights) AS amount " +
+            "FROM payment WHERE year=:year AND isPaid=:isPaid " +
+            "GROUP BY quarter ORDER BY quarter ASC")
+    suspend fun getAllPaymentByDateQuarter(year: Int, isPaid: Boolean):Map<Int, Int>
+
+    //GET EXPENSES BY TYPE ID BY QUARTER
+    @MapInfo(keyColumn = "quarter")
+    @Query( "SELECT QUARTER(expenses.paymentDate) as quarter, category.name as name, SUM(expenses.amount) AS amount FROM expenses " +
+            "INNER JOIN category ON expenses.category_id=category.id " +
+            "WHERE flat_id=:flatId AND year=:year GROUP BY quarter AND name BY quarter ASC")
+    suspend fun getExpensesByDateQuarter(flatId: Int, year: Int):Map<Int, List<DisplayInfo>>
+
+    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID
+    @MapInfo(keyColumn = "quarter")
+    @Query("SELECT QUARTER(expenses.paymentDate) as quarter, category.name as name, SUM(expenses.amount) AS amount FROM expenses " +
+            "INNER JOIN category ON expenses.category_id=category.id " +
+            "WHERE year=:year GROUP BY quarter AND name BY quarter ASC")
+    suspend fun getAllExpensesByDateQuarter(year: Int):Map<Int, List<DisplayInfo>>
 }

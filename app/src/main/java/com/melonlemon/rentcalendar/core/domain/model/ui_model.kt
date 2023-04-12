@@ -7,3 +7,7 @@ data class CategoryInfo(
     val name: String
 )
 
+data class DisplayInfo(
+    val name: String,
+    val amount: Int
+)

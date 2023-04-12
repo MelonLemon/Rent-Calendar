@@ -91,4 +91,6 @@
     <string name="cleaning">Cleaning</string>
     <string name="exp_cat_disposable">Disposable things</string>
     <string name="exp_cat_renovation">Renovation</string>
+    <string name="highest_booked_month">Highest % Booked</string>
+    <string name="highest_income">\"Highest Income \"</string>
 </resources>

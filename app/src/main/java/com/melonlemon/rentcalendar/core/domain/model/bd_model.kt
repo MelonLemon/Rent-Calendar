@@ -170,3 +170,7 @@ data class CategoryShortInfo(
     val amount: Int
 )
 
+data class MostBookedMonthInfo(
+    val month: Int,
+    val percent: Int
+)

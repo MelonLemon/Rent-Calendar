@@ -1,5 +1,7 @@
 package com.melonlemon.rentcalendar.feature_analytics.domain.use_cases
 
+import com.melonlemon.rentcalendar.core.domain.model.AmountGroupBy
+import com.melonlemon.rentcalendar.core.domain.model.MostBookedMonthInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.repository.AnalyticsRepository
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.BookedReportState
 
@@ -7,11 +9,37 @@ class GetBookedReport(
     private val repository: AnalyticsRepository
 ) {
     suspend operator fun invoke(year: Int, flatId: Int): BookedReportState {
+        val averageBooked: Int
+        val averageDayRent: Int
+        val mostBookedMonth: MostBookedMonthInfo
+        val mostIncomeMonth: AmountGroupBy
         if(flatId==-1){
-
+            averageBooked = repository.getAllBookedPercentYear(year=year)
+            averageDayRent = repository.getAllAvgDaysRent(year=year)
+            mostBookedMonth = repository.getAllMostBookedMonth(year=year)
+            mostIncomeMonth = repository.getAllMostIncomeMonth(year=year)
+            return BookedReportState(
+                averageBooked = averageBooked,
+                averageDayRent = averageDayRent,
+                mostBookedMonth = mostBookedMonth.month,
+                mostBookedMonthPercent = mostBookedMonth.percent,
+                mostIncomeMonth = mostIncomeMonth.month,
+                mostIncomeMonthAmount = mostIncomeMonth.amount
+            )
         } else {
-
+            averageBooked = repository.getBookedPercentYear(flatId=flatId,year=year)
+            averageDayRent = repository.getAvgDaysRent(flatId=flatId,year=year)
+            mostBookedMonth = repository.getMostBookedMonth(flatId=flatId, year=year)
+            mostIncomeMonth = repository.getMostIncomeMonth(flatId=flatId, year=year)
+            return BookedReportState(
+                averageBooked = averageBooked,
+                averageDayRent = averageDayRent,
+                mostBookedMonth = mostBookedMonth.month,
+                mostBookedMonthPercent = mostBookedMonth.percent,
+                mostIncomeMonth = mostIncomeMonth.month,
+                mostIncomeMonthAmount = mostIncomeMonth.amount
+            )
         }
-        return BookedReportState()
+
     }
 }

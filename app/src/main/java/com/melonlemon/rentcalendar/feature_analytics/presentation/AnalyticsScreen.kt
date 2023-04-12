@@ -20,6 +20,9 @@ import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
 import com.melonlemon.rentcalendar.feature_analytics.presentation.components.*
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.AnalyticsScreenEvents
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.Reports
+import java.time.Month
+import java.time.format.TextStyle
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +37,7 @@ fun AnalyticsScreen(
     val cashFlowState by viewModel.cashFlowState.collectAsStateWithLifecycle()
     val bookedReportState by viewModel.bookedReportState.collectAsStateWithLifecycle()
     val listOfYears by viewModel.listOfYears.collectAsStateWithLifecycle()
+
 
 
     Scaffold {
@@ -215,10 +219,12 @@ fun AnalyticsScreen(
                         BookedReport(
                             averageBookedPer = bookedReportState.averageBooked,
                             averageDayRent = bookedReportState.averageDayRent,
-                            bestBookedDays = bookedReportState.bestBookedDays,
-                            bestMonth = bookedReportState.bestMonth,
-                            valueBestMonth = "${bookedReportState.bestMonthBooked}% " +
-                                    "- ${bookedReportState.bestMonthIncome}"
+                            mostBookedMonth = Month.of(bookedReportState.mostBookedMonth).getDisplayName(
+                                TextStyle.FULL_STANDALONE, Locale.getDefault()),
+                            mostBookedMonthPercent = bookedReportState.mostBookedMonthPercent,
+                            mostIncomeMonth = Month.of(bookedReportState.mostIncomeMonth).getDisplayName(
+                                TextStyle.FULL_STANDALONE, Locale.getDefault()),
+                            mostIncomeMonthAmount = bookedReportState.mostIncomeMonthAmount
                         )
                     }
                 }

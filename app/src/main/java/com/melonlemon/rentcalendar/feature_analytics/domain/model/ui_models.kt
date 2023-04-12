@@ -1,6 +1,7 @@
 package com.melonlemon.rentcalendar.feature_analytics.domain.model
 
 import androidx.compose.ui.graphics.Color
+import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 
 data class IncomeStatementInfo(
     val quarter: Int,
@@ -8,12 +9,6 @@ data class IncomeStatementInfo(
     val revenue: Int,
     val monthlyExp: Int,
     val irregExp: Int
-)
-
-data class DisplayInfo(
-    val id: Int,
-    val name: String,
-    val amount: Int
 )
 
 data class ChartItem(
