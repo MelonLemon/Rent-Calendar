@@ -13,8 +13,8 @@ In first you start with **Welcome Screen** where you save base options of at lea
 In **Home Screen** there is monthly **financial results**, **flats and YearMonth widgets** and 3 main page: **Schedule Page**, **Expenses Page** and **Book Page**. 
 In **Schedule Page** there are rents by month where you can see rented period, payment status and some info about tenants. 
 In **Expenses Page** you add monthly and irregular expenses by categories. Monthly expenses can have only 1 payment per month and it keeps track for you.
-As well, shows expenses made by month and allow to change them. In Book Page you can make new schedule. 
-For choosing period for new schedule you can use custom Calendar that shows booked days as well. Custom calendar shows only 1 year at once. 
+As well, shows expenses made by month and allow to change them. In **Book Page** you can make new schedule. 
+For choosing period for new schedule you can use Custom Calendar that shows booked days as well. Custom calendar shows only 1 year at once. 
 
 **Transactions** shows expenses transactions which can be filtred by year/month, type of categories expenses, flats. 
 
