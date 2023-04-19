@@ -6,17 +6,20 @@ import androidx.room.TypeConverter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 
 class Converters {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun fromTimestamp(value: Long?): LocalDate? {
-        return value?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
+        val localDate = value?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
+        return localDate
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun dateToTimestamp(date: LocalDate?): Long? {
-        return date?.toEpochDay()
+        val longDate = date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+        return longDate
     }
 }

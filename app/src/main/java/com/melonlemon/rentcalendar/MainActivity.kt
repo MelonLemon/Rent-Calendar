@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
+                        //if boarding complete
                         BottomNavigation {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
                             val currentDestination = navBackStackEntry?.destination
@@ -85,7 +86,7 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = Screens.HomeScreen.route,
+                        startDestination = Screens.HomeScreen.route, //depends on complete of boarding
                         modifier = Modifier.padding(innerPadding)
                     ){
                         composable(route = Screens.HomeScreen.route){
@@ -115,15 +116,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    RentCalendarTheme {
-        Greeting("Android")
-    }
-}
+//@Composable
+//fun Greeting(name: String) {
+//    Text(text = "Hello $name!")
+//}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    RentCalendarTheme {
+//        Greeting("Android")
+//    }
+//}

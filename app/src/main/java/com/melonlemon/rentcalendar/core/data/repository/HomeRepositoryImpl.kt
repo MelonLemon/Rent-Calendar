@@ -1,19 +1,11 @@
 package com.melonlemon.rentcalendar.core.data.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.melonlemon.rentcalendar.core.data.data_source.RentDao
 import com.melonlemon.rentcalendar.core.data.util.*
 import com.melonlemon.rentcalendar.core.domain.model.*
-import com.melonlemon.rentcalendar.core.domain.util.TestData
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
-import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
-import com.melonlemon.rentcalendar.feature_home.presentation.util.NewBookedState
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -48,8 +40,8 @@ class HomeRepositoryImpl(
         dao.addFlat(flat = flat)
     }
 
-    override suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>? {
-        return dao.getBookedDaysByWeek(year = year, flatId=flatId)
+    override suspend fun getBookedDays(year: Int, flatId: Int): List<BookedDaysPeriods> {
+        return dao.getBookedDays(year = year, flatId=flatId)
     }
 
     override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {

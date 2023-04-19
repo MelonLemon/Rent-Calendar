@@ -1,11 +1,7 @@
 package com.melonlemon.rentcalendar.feature_home.domain.repository
 
 import com.melonlemon.rentcalendar.core.domain.model.*
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
-import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
-import com.melonlemon.rentcalendar.feature_home.presentation.util.NewBookedState
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.YearMonth
@@ -19,7 +15,7 @@ interface HomeRepository {
     suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
     suspend fun getAvgBookedNightsGroupByMY(year: Int): List<AmountGroupBy>
     suspend fun addUpdateFlat(flat: Flats)
-    suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>?
+    suspend fun getBookedDays(year: Int, flatId: Int): List<BookedDaysPeriods>
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
     suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>)
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)
