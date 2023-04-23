@@ -1,13 +1,14 @@
 package com.melonlemon.rentcalendar.feature_transaction.domain.repository
 
-import com.melonlemon.rentcalendar.core.domain.model.TransactionsMonth
-import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionMonth
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
+import com.melonlemon.rentcalendar.core.domain.model.TransactionsDay
 import kotlinx.coroutines.flow.Flow
 
 interface TransactionsRepository {
 
-    fun getTransactions(transactionIndex: Int, year: Int, month: List<Int>, flatId: Int): Flow<List<TransactionsMonth>>
-
+    fun getExpensesTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
+    fun getExpensesTransactionsByFlatId(flatId: List<Int>, year: Int):Flow<Map<Int, List<TransactionsDay>>>
+    fun getIncomeTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
+    fun getIncomeTransactionsFlatId(flatId: List<Int>, year: Int): Flow<Map<Int, List<TransactionsDay>>>
+    fun getAllTransactions(year: Int):Flow<Map<Int, List<TransactionsDay>>>
+    fun getAllTransactionsByFlatId(flatId: List<Int>, year: Int):Flow<Map<Int, List<TransactionsDay>>>
 }

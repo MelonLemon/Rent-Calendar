@@ -1,15 +1,16 @@
-package com.melonlemon.rentcalendar.feature_home.domain.use_cases
+package com.melonlemon.rentcalendar.core.domain.use_cases
 
 import com.melonlemon.rentcalendar.core.data.util.IRREGULAR_EXP
 import com.melonlemon.rentcalendar.core.data.util.REGULAR_EXP
 import com.melonlemon.rentcalendar.core.domain.model.Category
 import com.melonlemon.rentcalendar.core.domain.model.Flats
+import com.melonlemon.rentcalendar.core.domain.repository.CoreRentRepository
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 
 class SaveBaseOption(
-    private val repository: HomeRepository
+    private val repository: CoreRentRepository
 ) {
     suspend operator fun invoke(
         flats: List<String>,

@@ -45,8 +45,7 @@ class HomeViewModel @Inject constructor(
     private val _newBookedState = MutableStateFlow(NewBookedState())
     val newBookedState  = _newBookedState.asStateFlow()
 
-    private val _baseOption = MutableStateFlow(false)
-    val baseOption  = _baseOption.asStateFlow()
+
 
     private val _failAttempt = MutableStateFlow(false)
     val failAttempt  = _failAttempt.asStateFlow()
@@ -129,28 +128,13 @@ class HomeViewModel @Inject constructor(
                 listOfFlats = allFlats
             )
             _displayExpCategories.value = useCases.getExpCategories()
-            _baseOption.value = flatsState.value.listOfFlats.isEmpty()
         }
     }
 
     fun homeScreenEvents(event: HomeScreenEvents){
         when(event) {
 
-            is HomeScreenEvents.OnBaseOptionSave -> {
-                viewModelScope.launch {
-                    val result = useCases.saveBaseOption(
-                        flats = event.flats,
-                        monthlyExpCat = event.monthlyExpCat,
-                        irregExpCat = event.irregExpCat
-                    )
-                    if(result == SimpleStatusOperation.OperationSuccess){
-                        _baseOption.value = true
-                    } else {
-                        _failAttempt.value = true
-                    }
-                }
 
-            }
             is HomeScreenEvents.RefreshFailAttempt -> {
                 _failAttempt.value = false
             }

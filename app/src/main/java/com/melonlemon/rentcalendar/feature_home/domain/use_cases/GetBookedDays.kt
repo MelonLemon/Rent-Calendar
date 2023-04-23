@@ -7,7 +7,9 @@ class GetBookedDays(
     private val repository: HomeRepository
 ) {
     suspend operator fun invoke(year: Int, flatId: Int): Map<Int, List<LocalDate>>?{
-        val bookedDaysPeriods = repository.getBookedDays(year=year,flatId=flatId)
-        return emptyMap()
+        return repository.getBookedDays(year=year, flatId=flatId)
     }
+
+
 }
+

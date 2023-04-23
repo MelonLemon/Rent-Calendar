@@ -143,9 +143,9 @@ data class AmountGroupBy(
     val amount: Int
 )
 
-data class TransactionsMonth(
-    val month: Int,
+data class TransactionsDay(
     val paymentDate: LocalDate,
+    val category: String,
     val amount: Int,
     val comment: String
 )

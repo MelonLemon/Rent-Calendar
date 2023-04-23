@@ -40,17 +40,15 @@ class HomeRepositoryImpl(
         dao.addFlat(flat = flat)
     }
 
-    override suspend fun getBookedDays(year: Int, flatId: Int): List<BookedDaysPeriods> {
-        return dao.getBookedDays(year = year, flatId=flatId)
+    override suspend fun getBookedDays(year: Int, flatId: Int): Map<Int, List<LocalDate>>? {
+        return dao.getBookedDaysByWeek(year = year, flatId=flatId)
     }
 
     override suspend fun updatePaidStatus(id: Int, isPaid: Boolean) {
         dao.updatePaymentStatus(id = id, isPaid = isPaid)
     }
 
-    override suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>) {
-        dao.saveBaseOption(flats=flats,categories=categories)
-    }
+
 
     override suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory) {
         val typeId = when(moneyFlowCategory){

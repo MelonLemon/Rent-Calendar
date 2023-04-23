@@ -7,11 +7,7 @@ import java.time.YearMonth
 
 sealed class HomeScreenEvents{
     //On Base Save
-    data class OnBaseOptionSave(
-        val flats: List<String>,
-        val monthlyExpCat: List<ExpensesCategoryInfo>,
-        val irregExpCat: List<ExpensesCategoryInfo>,
-    ): HomeScreenEvents()
+
     object RefreshFailAttempt: HomeScreenEvents()
     //New Flat
     data class OnNewFlatChanged(val name: String): HomeScreenEvents()

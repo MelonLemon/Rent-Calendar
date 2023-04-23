@@ -51,7 +51,6 @@ fun HomeScreen(
     val displayExpensesIr by viewModel.displayExpensesIr.collectAsStateWithLifecycle()
     val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
     val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
-    val baseOption by viewModel.baseOption.collectAsStateWithLifecycle()
     val calendarState by viewModel.calendarState.collectAsStateWithLifecycle()
     val failAttempt by viewModel.failAttempt.collectAsStateWithLifecycle()
 
@@ -122,16 +121,7 @@ fun HomeScreen(
 
     val flatName = remember { derivedStateOf { flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name } }
 
-    val listBaseFlat = listOf(stringResource(R.string.main_flat))
-    val listMonthlyExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.monthly_cat_housing), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.internet), subHeader = "", amount = 0),
-    )
-    val listIrregExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.cleaning), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_disposable), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_renovation), subHeader = "", amount = 0),
-    )
+
 
     val listExpenses = remember(expensesCategoriesState.isRegularMF) {
         if (expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
@@ -142,25 +132,7 @@ fun HomeScreen(
             SnackbarHost(snackbarHostState)
         }
     ) { it ->
-        if (baseOption) {
-            WelcomeFirstPage(
-                modifier = Modifier
-                    .padding(it),
-                listBaseFlat = listBaseFlat,
-                listMonthlyExpCat = listMonthlyExpCat,
-                listIrregExpCat = listIrregExpCat,
-                onSave = { flats, monthlyCat, IrregCat ->
-                    viewModel.homeScreenEvents(
-                        HomeScreenEvents.OnBaseOptionSave(
-                            flats = flats,
-                            monthlyExpCat = monthlyCat,
-                            irregExpCat = IrregCat
-                        )
-                    )
 
-                }
-            )
-        } else {
         LazyColumn(
             modifier = Modifier
                 .padding(it),
@@ -595,7 +567,7 @@ fun HomeScreen(
 
             }
         }
-        }
+
         if(currencyDialog.value){
             CurrencyDialog(
                 currencySign = currencySign,

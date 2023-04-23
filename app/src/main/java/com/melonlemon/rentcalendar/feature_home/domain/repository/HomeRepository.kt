@@ -15,9 +15,9 @@ interface HomeRepository {
     suspend fun getBookedNightsGroupByMY(flatId: Int, year: Int): List<AmountGroupBy>
     suspend fun getAvgBookedNightsGroupByMY(year: Int): List<AmountGroupBy>
     suspend fun addUpdateFlat(flat: Flats)
-    suspend fun getBookedDays(year: Int, flatId: Int): List<BookedDaysPeriods>
+    suspend fun getBookedDays(year: Int, flatId: Int): Map<Int, List<LocalDate>>?
     suspend fun updatePaidStatus(id: Int, isPaid: Boolean)
-    suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>)
+
     suspend fun addNewExpCat(name: String, amount: Int, moneyFlowCategory: MoneyFlowCategory)
     suspend fun getExpCategories(moneyFlowCategory: MoneyFlowCategory): List<Category>
     fun getExpensesByYM(moneyFlowCategory: MoneyFlowCategory, yearMonth: YearMonth, flatId: Int): Flow<List<Expenses>>

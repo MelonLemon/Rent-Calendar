@@ -23,4 +23,12 @@ interface AnalyticsRepository {
     suspend fun getAllMostBookedMonth(year: Int):MostBookedMonthInfo
     suspend fun getMostIncomeMonth(flatId: Int, year: Int): AmountGroupBy
     suspend fun getAllMostIncomeMonth(year: Int): AmountGroupBy
+    suspend fun getGrossRentYearly(year: Int):Int
+    suspend fun getGrossRentYearlyByFlatId(flatId: Int, year: Int):Int
+    suspend fun getGrossRentMonthly(year: Int, month: Int):Int
+    suspend fun getGrossRentMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
+    suspend fun getExpensesYearly(year: Int):Int
+    suspend fun getExpensesYearlyByFlatId(flatId: Int, year: Int):Int
+    suspend fun getExpensesMonthly(year: Int, month: Int):Int
+    suspend fun getExpensesMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
 }

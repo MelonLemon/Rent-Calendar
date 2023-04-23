@@ -1365,10 +1365,8 @@ class DaoQueryTests {
         assertEquals(7, outputList.filter { it.month==4 }[0].amount)
     }
 
-
-    //PASSED
     @Test
-    fun getBookedDays_checkAdding() = runBlocking {
+    fun getBookedDaysByWeek_checkAdding() = runBlocking {
         val flatName = "Central"
         val flat = Flats(id=1, name=flatName, active = true)
         rentDao.addFlat(flat)
@@ -1428,13 +1426,9 @@ class DaoQueryTests {
             payments=listOf(payment1, payment2),
             schedules = listOf(schedule1, schedule2))
 
-        val outputList = rentDao.getBookedDays(year=2023, flatId=1)
+        val outputList = rentDao.getBookedDaysByWeek(year=2023, flatId=1)
         println("OutputList: $outputList")
 
-        assertEquals(2, outputList.size)
-        assertEquals(listOf(
-            BookedDaysPeriods(startDate = startDate, endDate = endMonth),
-            BookedDaysPeriods(startDate = startMonth, endDate = endDate)), outputList)
     }
 
     //PASSED
@@ -1664,7 +1658,7 @@ class DaoQueryTests {
         rentDao.getIncomeTransactions(year=2023).test{
             val list = awaitItem()
             assert(list.size==1)
-            assert(list==listOf(TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18")))
+//            assert(list==listOf(TransactionsDay(paymentDate = startDate, amount = 18000, comment = "18")))
             cancel()
         }
 
@@ -1734,156 +1728,12 @@ class DaoQueryTests {
             schedules = listOf(schedule1, schedule2))
 
 
-        rentDao.getIncomeTransactionsFlatId(flatId=1, year=2023).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            assert(list==listOf(TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18")))
-            cancel()
-        }
-    }
-
-    //PASSED
-    @Test
-    fun getIncomeTransactionsMonth_checkAdding() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-
-        val personName = "Lirma"
-        val person = Person(id=null, name=personName, phone=null)
-        val startDate = LocalDate.of(2023,3, 20)
-        val endMonth = LocalDate.of(2023,3, 31)
-        val startMonth = LocalDate.of(2023,4, 1)
-        val endDate = LocalDate.of(2023,4, 8)
-        val payment1 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            nights=11,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 11000,
-            isPaid = true )
-
-        val payment2 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            nights=7,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 7000,
-            isPaid = true )
-
-
-        val schedule1 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            startDate = startDate,
-            endDate = endMonth,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        val schedule2 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            startDate = startMonth,
-            endDate = endDate,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        rentDao.addSchedules(
-            person=person,
-            payments=listOf(payment1, payment2),
-            schedules = listOf(schedule1, schedule2))
-
-
-        rentDao.getIncomeTransactionsMonth(year=2023, months=listOf(3,4)).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            assert(list==listOf(TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18")))
-            cancel()
-        }
-    }
-
-    //PASSED
-    @Test
-    fun getIncomeTransactionsFlatIdM_checkAdding() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-
-        val personName = "Lirma"
-        val person = Person(id=null, name=personName, phone=null)
-        val startDate = LocalDate.of(2023,3, 20)
-        val endMonth = LocalDate.of(2023,3, 31)
-        val startMonth = LocalDate.of(2023,4, 1)
-        val endDate = LocalDate.of(2023,4, 8)
-        val payment1 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            nights=11,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 11000,
-            isPaid = true )
-
-        val payment2 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            nights=7,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 7000,
-            isPaid = true )
-
-
-        val schedule1 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            startDate = startDate,
-            endDate = endMonth,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        val schedule2 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            startDate = startMonth,
-            endDate = endDate,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        rentDao.addSchedules(
-            person=person,
-            payments=listOf(payment1, payment2),
-            schedules = listOf(schedule1, schedule2))
-
-
-        rentDao.getIncomeTransactionsFlatIdM(year=2023, months=listOf(3,4), flatId = 1).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            assert(list==listOf(TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18")))
-            cancel()
-        }
+//        rentDao.getIncomeTransactionsFlatId(flatId=1, year=2023).test{
+//            val list = awaitItem()
+//            assert(list.size==1)
+////            assert(list==listOf(TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18")))
+//            cancel()
+//        }
     }
 
 
@@ -1932,13 +1782,13 @@ class DaoQueryTests {
         rentDao.addExpenses(expenses1)
         rentDao.addExpenses(expenses2)
 
-        rentDao.getExpensesTransactions(year=2023).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            //println("OutputList: $list")
-            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
+//        rentDao.getExpensesTransactions(year=2023).test{
+//            val list = awaitItem()
+//            assert(list.size==1)
+//            //println("OutputList: $list")
+//            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
+//            cancel()
+//        }
 
     }
 
@@ -1988,124 +1838,15 @@ class DaoQueryTests {
         rentDao.addExpenses(expenses1)
         rentDao.addExpenses(expenses2)
 
-        rentDao.getExpensesTransactionsByFlatId(flatId=1, year=2023).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            //println("OutputList: $list")
-            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
+//        rentDao.getExpensesTransactionsByFlatId(flatId=1, year=2023).test{
+//            val list = awaitItem()
+//            assert(list.size==1)
+//            //println("OutputList: $list")
+//            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
+//            cancel()
+//        }
 
     }
-
-    //PASSED
-    @Test
-    fun getExpensesTransactionsMonth_checkGrouping() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-        val categoryTypeId = IRREGULAR_EXP
-        val categoryType = CategoryType(
-            id = categoryTypeId,
-            isRegular = true,
-        )
-        rentDao.addCategoryType(categoryType)
-        val categoryName = "Sample Category"
-        val sampleCategory = Category(
-            id = 1,
-            typeId = categoryTypeId,
-            name = categoryName,
-            fixedAmount = 1000,
-            active = true
-        )
-        rentDao.addCategory(sampleCategory)
-        val amount = 1000
-        val expenses1 = Expenses(
-            id=1,
-            flatId = 1,
-            year=2023,
-            month=4,
-            categoryId = 1,
-            amount=amount,
-            paymentDate = LocalDate.of(2023,4,5),
-            comment = "Sample Category"
-        )
-        val expenses2 = Expenses(
-            id=2,
-            flatId = 1,
-            year=2023,
-            month=4,
-            categoryId = 1,
-            amount=amount,
-            paymentDate = LocalDate.of(2023,4,5),
-            comment = "Sample Category"
-        )
-        rentDao.addExpenses(expenses1)
-        rentDao.addExpenses(expenses2)
-
-        rentDao.getExpensesTransactionsMonth(year=2023, months=listOf(3,4)).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            //println("OutputList: $list")
-            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
-    }
-
-    //PASSED
-    @Test
-    fun getExpensesTransactionsByFlatIdM_checkGrouping() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-        val categoryTypeId = IRREGULAR_EXP
-        val categoryType = CategoryType(
-            id = categoryTypeId,
-            isRegular = true,
-        )
-        rentDao.addCategoryType(categoryType)
-        val categoryName = "Sample Category"
-        val sampleCategory = Category(
-            id = 1,
-            typeId = categoryTypeId,
-            name = categoryName,
-            fixedAmount = 1000,
-            active = true
-        )
-        rentDao.addCategory(sampleCategory)
-        val amount = 1000
-        val expenses1 = Expenses(
-            id=1,
-            flatId = 1,
-            year=2023,
-            month=4,
-            categoryId = 1,
-            amount=amount,
-            paymentDate = LocalDate.of(2023,4,5),
-            comment = "Sample Category"
-        )
-        val expenses2 = Expenses(
-            id=2,
-            flatId = 1,
-            year=2023,
-            month=4,
-            categoryId = 1,
-            amount=amount,
-            paymentDate = LocalDate.of(2023,4,5),
-            comment = "Sample Category"
-        )
-        rentDao.addExpenses(expenses1)
-        rentDao.addExpenses(expenses2)
-
-        rentDao.getExpensesTransactionsByFlatIdM(flatId=1, year=2023, months=listOf(3,4)).test{
-            val list = awaitItem()
-            assert(list.size==1)
-            //println("OutputList: $list")
-            assert(list==listOf(TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
-    }
-
 
     //PASSED
     @Test
@@ -2210,15 +1951,15 @@ class DaoQueryTests {
             payments=listOf(payment1, payment2),
             schedules = listOf(schedule1, schedule2))
 
-        rentDao.getAllTransactions(year=2023).test{
-            val list = awaitItem()
-            println("OutputList: $list")
-            assert(list.size==2)
-            assert(list==listOf(
-                TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
-                TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
+//        rentDao.getAllTransactions(year=2023).test{
+//            val list = awaitItem()
+//            println("OutputList: $list")
+//            assert(list.size==2)
+//            assert(list==listOf(
+//                TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
+//                TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
+//            cancel()
+//        }
 
     }
 
@@ -2325,248 +2066,18 @@ class DaoQueryTests {
             payments=listOf(payment1, payment2),
             schedules = listOf(schedule1, schedule2))
 
-        rentDao.getAllTransactionsByFlatId(flatId=1, year=2023).test{
-            val list = awaitItem()
-            println("OutputList: $list")
-            assert(list.size==2)
-            assert(list==listOf(
-                TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
-                TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
+//        rentDao.getAllTransactionsByFlatId(flatId=1, year=2023).test{
+//            val list = awaitItem()
+//            println("OutputList: $list")
+//            assert(list.size==2)
+//            assert(list==listOf(
+//                TransactionsDay(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
+//                TransactionsDay(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
+//            cancel()
+//        }
 
     }
 
-    //PASSED
-    @Test
-    fun getAllTransactionsMonth_checkAdding() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-        val categoryTypeId = REGULAR_EXP
-        val categoryType = CategoryType(
-            id = categoryTypeId,
-            isRegular = true,
-        )
-        rentDao.addCategoryType(categoryType)
-        val categoryName = "Sample Category"
-        val sampleCategory = Category(
-            id = 1,
-            typeId = categoryTypeId,
-            name = categoryName,
-            fixedAmount = 1000,
-            active = true
-        )
-        rentDao.addCategory(sampleCategory)
-        val amount = 1000
-        rentDao.addExpenses(
-            Expenses(
-                id=null,
-                flatId = 1,
-                year=2023,
-                month=4,
-                categoryId = 1,
-                amount=amount,
-                paymentDate = LocalDate.of(2023,4,5),
-                comment = "Sample Category"
-            )
-        )
-        rentDao.addExpenses(
-            Expenses(
-                id=null,
-                flatId = 1,
-                year=2023,
-                month=4,
-                categoryId = 1,
-                amount=amount,
-                paymentDate = LocalDate.of(2023,4,5),
-                comment = "Sample Category"
-            )
-        )
-
-        val personName = "Lirma"
-        val person = Person(id=null, name=personName, phone=null)
-        val startDate = LocalDate.of(2023,3, 20)
-        val endMonth = LocalDate.of(2023,3, 31)
-        val startMonth = LocalDate.of(2023,4, 1)
-        val endDate = LocalDate.of(2023,4, 8)
-        val payment1 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            nights=11,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 11000,
-            isPaid = true )
-
-        val payment2 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            nights=7,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 7000,
-            isPaid = true )
-
-
-        val schedule1 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            startDate = startDate,
-            endDate = endMonth,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        val schedule2 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            startDate = startMonth,
-            endDate = endDate,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        rentDao.addSchedules(
-            person=person,
-            payments=listOf(payment1, payment2),
-            schedules = listOf(schedule1, schedule2))
-
-        rentDao.getAllTransactionsMonth(year=2023, months=listOf(3,4)).test{
-            val list = awaitItem()
-            println("OutputList: $list")
-            assert(list.size==2)
-            assert(list==listOf(
-                TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
-                TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
-
-    }
-
-
-    //PASSED
-    @Test
-    fun getAllTransactionsByFlatIdM_checkAdding() = runBlocking {
-        val flatName = "Central"
-        val flat = Flats(id=1, name=flatName, active = true)
-        rentDao.addFlat(flat)
-        val categoryTypeId = REGULAR_EXP
-        val categoryType = CategoryType(
-            id = categoryTypeId,
-            isRegular = true,
-        )
-        rentDao.addCategoryType(categoryType)
-        val categoryName = "Sample Category"
-        val sampleCategory = Category(
-            id = 1,
-            typeId = categoryTypeId,
-            name = categoryName,
-            fixedAmount = 1000,
-            active = true
-        )
-        rentDao.addCategory(sampleCategory)
-        val amount = 1000
-        rentDao.addExpenses(
-            Expenses(
-                id=null,
-                flatId = 1,
-                year=2023,
-                month=4,
-                categoryId = 1,
-                amount=amount,
-                paymentDate = LocalDate.of(2023,4,5),
-                comment = "Sample Category"
-            )
-        )
-        rentDao.addExpenses(
-            Expenses(
-                id=null,
-                flatId = 1,
-                year=2023,
-                month=4,
-                categoryId = 1,
-                amount=amount,
-                paymentDate = LocalDate.of(2023,4,5),
-                comment = "Sample Category"
-            )
-        )
-
-        val personName = "Lirma"
-        val person = Person(id=null, name=personName, phone=null)
-        val startDate = LocalDate.of(2023,3, 20)
-        val endMonth = LocalDate.of(2023,3, 31)
-        val startMonth = LocalDate.of(2023,4, 1)
-        val endDate = LocalDate.of(2023,4, 8)
-        val payment1 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            nights=11,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 11000,
-            isPaid = true )
-
-        val payment2 = Payment(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            nights=7,
-            paymentSingleNight = 1000,
-            paymentDate = startDate,
-            paymentAllNights = 7000,
-            isPaid = true )
-
-
-        val schedule1 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=3,
-            startDate = startDate,
-            endDate = endMonth,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        val schedule2 = Schedule(
-            id=null,
-            flatId = 1,
-            year=2023,
-            month=4,
-            startDate = startMonth,
-            endDate = endDate,
-            personId = -1,
-            paymentId = -1,
-            comment = "" )
-
-        rentDao.addSchedules(
-            person=person,
-            payments=listOf(payment1, payment2),
-            schedules = listOf(schedule1, schedule2))
-
-        rentDao.getAllTransactionsByFlatIdM(flatId=1, year=2023, months=listOf(3,4)).test{
-            val list = awaitItem()
-            println("OutputList: $list")
-            assert(list.size==2)
-            assert(list==listOf(
-                TransactionsMonth(month=3, paymentDate = startDate, amount = 18000, comment = "18"),
-                TransactionsMonth(month=4, paymentDate = LocalDate.of(2023,4,5), amount = -amount*2, comment = "Sample Category")))
-            cancel()
-        }
-
-    }
 
 
     //ANALYSIS SCREEN

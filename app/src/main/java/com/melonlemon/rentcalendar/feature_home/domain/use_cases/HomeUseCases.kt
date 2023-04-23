@@ -1,7 +1,5 @@
 package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 
-import com.melonlemon.rentcalendar.core.domain.use_cases.GetAllFlats
-
 data class HomeUseCases(
     val getFinResults: GetFinResults,
     val addNewFlat: AddNewFlat,
@@ -15,6 +13,5 @@ data class HomeUseCases(
     val addExpenses: AddExpenses,
     val getExpensesByYM: GetExpensesByYM,
     val updateExpenses: UpdateExpenses,
-    val saveBaseOption: SaveBaseOption,
     val getBookedDays: GetBookedDays
 )

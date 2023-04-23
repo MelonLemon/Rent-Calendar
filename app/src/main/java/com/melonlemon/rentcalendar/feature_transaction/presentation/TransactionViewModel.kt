@@ -27,9 +27,17 @@ class TransactionViewModel @Inject constructor(
     private val _transFilterState = MutableStateFlow(TransFilterState())
     val transFilterState  = _transFilterState.asStateFlow()
 
+    private val _isDownloading = MutableStateFlow(true)
+    val isDownloading = _isDownloading.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _transactionsByMonth = transFilterState.flatMapLatest{ transFilterState ->
-        useCases.getTransactions(transFilterState)
+        useCases.getTransactions(
+            flatIds = transFilterState.selectedFlatsId,
+            year = transFilterState.years.find{it.id==transFilterState.selectedYearId}!!.name.toIntOrNull() ?: 0,
+            transactionType = transFilterState.transactionType,
+            currencySign = "$" //change
+        )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -38,12 +46,18 @@ class TransactionViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     val transactionsByMonth  = searchText
         .debounce(500L)
+        .onEach { _isDownloading.update { true } }
         .combine(_transactionsByMonth)
         { searchText, transactionsByMonth  ->
-            useCases.getFilteredTransactions(
-                searchText = searchText,
-                transactionsByMonth = transactionsByMonth)
-        }.stateIn(
+            useCases.getTransactions(
+                flatIds = transFilterState.value.selectedFlatsId,
+                year = transFilterState.value.years.find{it.id==transFilterState.value.selectedYearId}!!.name.toIntOrNull() ?: 0,
+                transactionType = transFilterState.value.transactionType,
+                currencySign = "$", //change
+                searchText = searchText
+            ).first()
+        }.onEach { _isDownloading.update { false } }
+        .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             _transactionsByMonth.value
@@ -77,13 +91,21 @@ class TransactionViewModel @Inject constructor(
                 )
             }
             is TransactionScreenEvents.OnFlatsClick -> {
-                val newFlatsId = transFilterState.value.selectedFlatsId
-                if(event.id in newFlatsId) newFlatsId.toMutableList().remove(event.id)
-                else newFlatsId.toMutableList().add(event.id)
+                if(event.id==-1){
+                    val newFlatsId = listOf(-1)
+                    _transFilterState.value = transFilterState.value.copy(
+                        selectedFlatsId = newFlatsId
+                    )
+                } else {
+                    val newFlatsId = transFilterState.value.selectedFlatsId
+                    if(event.id in newFlatsId) newFlatsId.toMutableList().remove(event.id)
+                    else newFlatsId.toMutableList().add(event.id)
 
-                _transFilterState.value = transFilterState.value.copy(
-                    selectedFlatsId = newFlatsId
-                )
+                    _transFilterState.value = transFilterState.value.copy(
+                        selectedFlatsId = newFlatsId
+                    )
+                }
+
             }
             is TransactionScreenEvents.OnMonthClick -> {
                 val newMonthsNum = transFilterState.value.chosenMonthsNum

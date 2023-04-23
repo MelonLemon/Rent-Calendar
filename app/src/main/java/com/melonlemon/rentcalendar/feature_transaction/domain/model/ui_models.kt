@@ -13,7 +13,11 @@ data class TransactionMonth(
 data class AllTransactionsDay(
     val date: LocalDate,
     val transactions: List<TransactionListItem>
-)
+) {
+    fun queryMatch(text: String) {
+        transactions.filter{ it.category.contains(text) || it.comment.contains(text)}
+    }
+}
 
 data class TransactionListItem(
     val id: Int,

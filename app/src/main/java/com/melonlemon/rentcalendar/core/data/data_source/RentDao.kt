@@ -2,7 +2,6 @@ package com.melonlemon.rentcalendar.core.data.data_source
 
 import androidx.room.*
 import com.melonlemon.rentcalendar.core.domain.model.*
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -227,13 +226,9 @@ interface RentDao {
                 "UNION ALL " +
                 "SELECT schedule_id, (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000)  AS start_date, end_date " +
                 "FROM dates " +
-                "LIMIT 2) " +
-                "SELECT DISTINCT start_date, (CAST(strftime('%W', datetime(start_date/1000, 'unixepoch')) AS Integer)) AS weekNum FROM dates GROUP BY weekNum")
+                "WHERE (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000) BETWEEN start_date AND end_date ) " +
+                "SELECT start_date, (CAST(strftime('%W', datetime(start_date/1000, 'unixepoch')) AS Integer)) AS weekNum FROM dates ORDER BY start_date ")
     suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>?
-
-    @Query("SELECT start_date, end_date " +
-            "FROM schedule WHERE flat_id=:flatId AND year=:year ")
-    suspend fun getBookedDays(year: Int, flatId: Int): List<BookedDaysPeriods>
 
     //GET EXPENSES GROUP BY MONTH, FILTER YEAR AND FLAT - !TEST PASSED!
     @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE flat_id=:flatId AND year=:year GROUP BY year, month ORDER BY month ASC")
@@ -253,82 +248,57 @@ interface RentDao {
             "WHERE flat_id=:flatId AND year=:year AND month=:month AND category_id IN (SELECT category_id FROM category WHERE type_id=:typeId)")
     fun getExpensesByTypeId(flatId: Int, year: Int, month: Int, typeId: Int):Flow<List<Expenses>>
 
-    //GET INCOME TRANSACTIONS BY PAYMENT DAY - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, " +
-            "SUM(paymentAllNights) AS amount, SUM(nights) AS comment FROM payment " +
+    //GET INCOME TRANSACTIONS BY PAYMENT DAY
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, '' AS category, " +
+            "SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
             "WHERE year=:year AND is_paid=1 GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), datetime(paymentDate/1000, 'unixepoch')")
-    fun getIncomeTransactions(year: Int): Flow<List<TransactionsMonth>>
+    fun getIncomeTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
     //GET INCOME TRANSACTIONS BY PAYMENT DAY, FLAT ID - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE flat_id=:flatId AND year=:year AND is_paid=1 GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
-    fun getIncomeTransactionsFlatId(flatId: Int, year: Int): Flow<List<TransactionsMonth>>
-
-    //GET INCOME TRANSACTIONS BY PAYMENT DAY, MONTH - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE year=:year AND is_paid=1 AND (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
-    fun getIncomeTransactionsMonth(year: Int, months: List<Int>): Flow<List<TransactionsMonth>>
-
-    //GET INCOME TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE flat_id=:flatId AND year=:year AND is_paid=1 AND CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
-    fun getIncomeTransactionsFlatIdM(flatId: Int, year: Int, months: List<Int>): Flow<List<TransactionsMonth>>
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, " +
+            "'' AS category, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
+            "WHERE flat_id IN (:flatId) AND year=:year AND is_paid=1 GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
+    fun getIncomeTransactionsFlatId(flatId: List<Int>, year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
     //GET EXPENSES TRANSACTIONS BY PAYMENT DAY - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, comment AS category, SUM(amount)*-1 AS amount, " +
+            "CAST(month AS VARCHAR) AS comment FROM expenses " +
             "WHERE year=:year GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getExpensesTransactions(year: Int): Flow<List<TransactionsMonth>>
+    fun getExpensesTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
     //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, FLAT ID - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
-            "WHERE flat_id=:flatId AND year=:year GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getExpensesTransactionsByFlatId(flatId: Int, year: Int):Flow<List<TransactionsMonth>>
-
-    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
-            "WHERE year=:year AND month IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getExpensesTransactionsMonth(year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
-
-    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
-            "WHERE flat_id=:flatId AND year=:year AND (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) IN (:months) GROUP BY month, paymentDate, comment")
-    fun getExpensesTransactionsByFlatIdM(flatId: Int, year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, comment AS category,  SUM(amount)*-1 AS amount, CAST(month AS VARCHAR) AS comment FROM expenses " +
+            "WHERE flat_id IN (:flatId) AND year=:year GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
+    fun getExpensesTransactionsByFlatId(flatId: List<Int>, year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
     //GET ALL TRANSACTIONS BY PAYMENT DAY - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate," +
+            " '' AS category,  SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
             "WHERE year=:year AND is_paid=1 GROUP BY (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)), paymentDate " +
             "UNION ALL " +
-            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)), paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
+            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)), paymentDate, comment AS category,  SUM(amount)*-1 AS amount, " +
+            "CAST(month AS VARCHAR) AS comment  FROM expenses " +
             "WHERE year=:year GROUP BY month, paymentDate " +
             "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getAllTransactions(year: Int):Flow<List<TransactionsMonth>>
+    fun getAllTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
     //GET ALL TRANSACTIONS BY PAYMENT DAY, FLAT ID - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE flat_id=:flatId AND year=:year AND is_paid=1 GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
+    @MapInfo(keyColumn = "month")
+    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, " +
+            "'' AS category,  SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
+            "WHERE flat_id IN (:flatId) AND year=:year AND is_paid=1 GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
             "UNION ALL " +
-            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
-            "WHERE flat_id=:flatId AND year=:year GROUP BY month, paymentDate " +
+            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, comment AS category, " +
+            "SUM(amount)*-1 AS amount, CAST(month AS VARCHAR) AS comment  FROM expenses " +
+            "WHERE flat_id IN (:flatId) AND year=:year GROUP BY month, paymentDate " +
             "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
-    fun getAllTransactionsByFlatId(flatId: Int, year: Int):Flow<List<TransactionsMonth>>
+    fun getAllTransactionsByFlatId(flatId: List<Int>, year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
-    //GET ALL TRANSACTIONS BY PAYMENT DAY, MONTH - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE year=:year AND is_paid=1 AND CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
-            "UNION ALL " +
-            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses  " +
-            "WHERE year=:year AND CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
-            "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getAllTransactionsMonth(year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
-
-    //GET ALL TRANSACTIONS BY PAYMENT DAY, FLAT ID, MONTH - !TEST PASSED!
-    @Query("SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(paymentAllNights) AS amount, CAST(SUM(nights) AS VARCHAR) AS comment FROM payment " +
-            "WHERE flat_id=:flatId AND year=:year AND is_paid=1 AND CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
-            "UNION ALL " +
-            "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, SUM(amount)*-1 AS amount, comment FROM expenses " +
-            "WHERE flat_id=:flatId AND year=:year AND CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer) IN (:months) GROUP BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate " +
-            "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
-    fun getAllTransactionsByFlatIdM(flatId: Int, year: Int, months: List<Int>):Flow<List<TransactionsMonth>>
 
     // ANALYSIS
 
@@ -386,4 +356,36 @@ interface RentDao {
             "INNER JOIN category ON expenses.category_id=category.category_id " +
             "WHERE year=:year GROUP BY quarter, name ORDER BY quarter ASC")
     suspend fun getAllExpensesByDateQuarter(year: Int):Map<Int, List<DisplayInfo>>
+
+    // GROSS RENT  YEARLY
+    @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year")
+    suspend fun getGrossRentYearly(year: Int):Int
+
+    // GROSS RENT  YEARLY FILTER BY FLAT ID
+    @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND flat_id=:flatId")
+    suspend fun getGrossRentYearlyByFlatId(flatId: Int, year: Int):Int
+
+    // GROSS RENT  MONTHLY
+    @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND month=:month")
+    suspend fun getGrossRentMonthly(year: Int, month: Int):Int
+
+    // GROSS RENT  MONTHLY FILTER BY FLAT ID
+    @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND flat_id=:flatId AND month=:month")
+    suspend fun getGrossRentMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
+
+    // EXPENSES YEARLY
+    @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year")
+    suspend fun getExpensesYearly(year: Int):Int
+
+    // EXPENSES YEARLY FILTER BY FLAT ID
+    @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND flat_id=:flatId")
+    suspend fun getExpensesYearlyByFlatId(flatId: Int, year: Int):Int
+
+    // EXPENSES MONTHLY
+    @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND month=:month")
+    suspend fun getExpensesMonthly(year: Int, month: Int):Int
+
+    // EXPENSES MONTHLY FILTER BY FLAT ID
+    @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND flat_id=:flatId AND month=:month")
+    suspend fun getExpensesMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
 }
