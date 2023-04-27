@@ -10,7 +10,7 @@ fun getSelectedDatesList(
     startDate: LocalDate?,
     endDate: LocalDate?
 ): Map<Int, SelectedWeekInfo>{
-
+    println("startDate: $startDate, endDate: $endDate")
     if(startDate==null){
         return emptyMap()
     }
@@ -25,8 +25,10 @@ fun getSelectedDatesList(
         (startWeekNumber..endWeekNumber).forEachIndexed{ index, week->
             val startWeekNum = if(week==startWeekNumber) startDate.dayOfWeek.value else 1
             val endWeekNum = if(week==endWeekNumber) endDate.dayOfWeek.value else 7
+            println("startWeekNum: $startWeekNum, endWeekNum: $endWeekNum")
             //Add 1 as to make it inclusive
             val sizeOfSelection = endWeekNum - startWeekNum + 1
+            println("sizeOfSelection: $sizeOfSelection")
             val currentWeekDate = startDate.plusWeeks(index.toLong())
             val mondayDate = currentWeekDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             val newStartDate = if(week==startWeekNumber) startDate else mondayDate

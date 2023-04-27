@@ -1,21 +1,12 @@
 package com.melonlemon.rentcalendar.feature_home.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -23,9 +14,7 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
-import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_home.presentation.util.HomeScreenEvents
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -130,7 +119,7 @@ fun OnboardingScreen(
                             isMonthCat = isMonthCatChosen
                         },
                         tempMonthlyExpCat=tempMonthlyExpCat,
-                        tempIrregExpCat=tempIrregExpCat,
+                        tempIrregularExpCat=tempIrregExpCat,
                         newNameCat=newNameCat,
                         newAmountCat=newAmountCat,
                         onNewAmountChange={ amount ->
@@ -223,6 +212,10 @@ fun OnboardingScreen(
                         val flatNoDuplicate =  tempFlats.size == tempFlats.distinct().count()
                         val monthlyCatNoDuplicate =  monthlyCatNames.size == monthlyCatNames.distinct().count()
                         val irCatNoDuplicate =  IrCatNames.size == IrCatNames.distinct().count()
+
+                        println("tempFlats: $tempFlats")
+                        println("tempMonthlyExpCat: $tempMonthlyExpCat")
+                        println("tempIrregExpCat: $tempIrregExpCat")
                         if(flatNoDuplicate && monthlyCatNoDuplicate && irCatNoDuplicate){
                             viewModel.onboardingScreenEvents(
                                 OnboardingEvents.OnSaveBaseOptionClick(

@@ -27,9 +27,14 @@ fun TransactionScreen(
     val transFilterState by viewModel.transFilterState.collectAsStateWithLifecycle()
     val transactionsByMonth by viewModel.transactionsByMonth.collectAsStateWithLifecycle()
     val isDownloading by viewModel.isDownloading.collectAsStateWithLifecycle()
-    val totalSum = remember{ derivedStateOf{
-        transactionsByMonth.filter { it.yearMonth.monthValue in transFilterState.chosenMonthsNum }
-            .sumOf { it.amount }} }
+    val totalSum = remember{
+        if(transactionsByMonth.isNotEmpty()){
+            derivedStateOf{
+                transactionsByMonth.filter { it.yearMonth.monthValue in transFilterState.chosenMonthsNum }
+                    .sumOf { it.amount }}
+        } else {
+            0
+        } }
 
     Scaffold() {
         LazyColumn(

@@ -7,7 +7,7 @@
 
     <style name="Theme.CustomSplashScreenTheme" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/payback</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/welcome</item>
         <item name="postSplashScreenTheme">@style/Theme.RentCalendar</item>
     </style>
 </resources>

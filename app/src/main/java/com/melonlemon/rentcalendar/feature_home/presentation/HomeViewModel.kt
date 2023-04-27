@@ -45,13 +45,14 @@ class HomeViewModel @Inject constructor(
     private val _newBookedState = MutableStateFlow(NewBookedState())
     val newBookedState  = _newBookedState.asStateFlow()
 
-
-
     private val _failAttempt = MutableStateFlow(false)
     val failAttempt  = _failAttempt.asStateFlow()
 
     private val _calendarState = MutableStateFlow(CalendarState())
     val calendarState  = _calendarState.asStateFlow()
+
+    private val _sendErrorMessage = MutableStateFlow(false)
+    val sendErrorMessage  = _sendErrorMessage.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _rentList = filterState.flatMapLatest{ filterState ->
@@ -83,8 +84,8 @@ class HomeViewModel @Inject constructor(
     private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.Regular)
     private val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
 
-    private val _displayExpCategories = MutableStateFlow<Pair<List<ExpensesCategoryInfo>, List<ExpensesCategoryInfo>>>(
-        Pair(emptyList(), emptyList()))
+    private val _displayExpCategories = MutableStateFlow<DisplayExpenses>(
+        DisplayExpenses())
     val displayExpCategories  = _displayExpCategories.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -135,6 +136,9 @@ class HomeViewModel @Inject constructor(
         when(event) {
 
 
+            is HomeScreenEvents.CloseErrorMessage -> {
+                _sendErrorMessage.value = false
+            }
             is HomeScreenEvents.RefreshFailAttempt -> {
                 _failAttempt.value = false
             }
@@ -241,7 +245,7 @@ class HomeViewModel @Inject constructor(
                     val status = useCases.addNewExpCat(
                         name = expensesCategoriesState.value.newCategoryName,
                         amount = expensesCategoriesState.value.newCategoryAmount,
-                        categories = displayExpCategories.value.first,
+                        categories = displayExpCategories.value.monthlyExpCategories,
                         moneyFlowCategory = moneyFlowCategory.value
                     )
                     if(status== CheckStatusStr.SuccessStatus){
@@ -267,20 +271,20 @@ class HomeViewModel @Inject constructor(
             }
             is HomeScreenEvents.OnAmountExpChanged -> {
                 if(expensesCategoriesState.value.isRegularMF){
-                    val newList = displayExpCategories.value.first.toMutableList()
+                    val newList = displayExpCategories.value.monthlyExpCategories.toMutableList()
                     newList[event.index] = newList[event.index].copy(
                         amount = event.amount
                     )
                     _displayExpCategories.value = displayExpCategories.value.copy(
-                        first = newList
+                        monthlyExpCategories = newList
                     )
                 } else {
-                    val newList = displayExpCategories.value.second.toMutableList()
+                    val newList = displayExpCategories.value.irregularExpCategories.toMutableList()
                     newList[event.index] = newList[event.index].copy(
                         amount = event.amount
                     )
                     _displayExpCategories.value = displayExpCategories.value.copy(
-                        second = newList
+                        irregularExpCategories = newList
                     )
                 }
 
@@ -318,15 +322,23 @@ class HomeViewModel @Inject constructor(
 
 
             is HomeScreenEvents.OnExpensesAdd -> {
+
                 viewModelScope.launch {
-                    useCases.addExpenses(
+                    val result = useCases.addExpenses(
                         yearMonth = filterState.value.yearMonth,
                         flatId = filterState.value.selectedFlatId,
                         catId = event.catId,
                         amount = event.amount,
                         comment = event.categoryName
                     )
+
+                    if(result != SimpleStatusOperation.OperationSuccess) {
+                        // error message
+                    } else {
+
+                    }
                 }
+
             }
             // New Booked Events
             is HomeScreenEvents.OnNameBookedChanged -> {

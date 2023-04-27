@@ -17,12 +17,14 @@ class GetTransactions(
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
+        transFilterInit: Boolean,
         flatIds: List<Int>,
         year: Int,
         transactionType: TransactionType,
         currencySign: String,
         searchText: String?=null): Flow<List<TransactionMonth>> {
-        if(year==0){
+
+        if(!transFilterInit){
             return flowOf()
         }
 

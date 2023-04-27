@@ -2,7 +2,6 @@ package com.melonlemon.rentcalendar.feature_transaction.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
@@ -12,7 +11,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,7 +34,8 @@ class TransactionViewModel @Inject constructor(
             flatIds = transFilterState.selectedFlatsId,
             year = transFilterState.years.find{it.id==transFilterState.selectedYearId}!!.name.toIntOrNull() ?: 0,
             transactionType = transFilterState.transactionType,
-            currencySign = "$" //change
+            currencySign = "$", //change
+            transFilterInit = transFilterState.transFilterInit
         )
     }.stateIn(
         viewModelScope,
@@ -54,7 +53,8 @@ class TransactionViewModel @Inject constructor(
                 year = transFilterState.value.years.find{it.id==transFilterState.value.selectedYearId}!!.name.toIntOrNull() ?: 0,
                 transactionType = transFilterState.value.transactionType,
                 currencySign = "$", //change
-                searchText = searchText
+                searchText = searchText,
+                transFilterInit = transFilterState.value.transFilterInit
             ).first()
         }.onEach { _isDownloading.update { false } }
         .stateIn(
@@ -71,7 +71,8 @@ class TransactionViewModel @Inject constructor(
                 flats = flats,
                 years = years,
                 selectedYearId = years[0].id,
-                selectedFlatsId = listOf(flats[0].id)
+                selectedFlatsId = listOf(flats[0].id),
+                transFilterInit = true
             )
         }
 

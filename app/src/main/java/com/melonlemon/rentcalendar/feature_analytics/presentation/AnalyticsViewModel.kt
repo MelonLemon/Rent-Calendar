@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,7 +34,9 @@ class AnalyticsViewModel @Inject constructor(
     private val _listOfFlats = MutableStateFlow<List<CategoryInfo>>(emptyList())
     val listOfFlats  = _listOfFlats.asStateFlow()
 
-    private val _listOfYears = MutableStateFlow<List<CategoryInfo>>(emptyList())
+    private val _listOfYears = MutableStateFlow<List<CategoryInfo>>(listOf(
+        CategoryInfo(id=0, name = YearMonth.now().year.toString())
+    ))
     val listOfYears  = _listOfYears.asStateFlow()
 
     private val _incomeStatementState = MutableStateFlow<List<IncomeStatementInfo>>(emptyList())
@@ -54,7 +57,7 @@ class AnalyticsViewModel @Inject constructor(
             _analyticsFilterState.value = analyticsFilterState.value.copy(
                 selectedYearId = listOfYears.value[0].id
             )
-            val selectedYear = listOfYears.value[0].name.toInt()
+            val selectedYear = listOfYears.value[0].name.toIntOrNull() ?: 0
             _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
             _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
             _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
@@ -74,7 +77,7 @@ class AnalyticsViewModel @Inject constructor(
                     _analyticsFilterState.value =  analyticsFilterState.value.copy(
                         selectedFlatId = event.id
                     )
-                    val selectedYear = listOfYears.value[event.id].name.toInt()
+                    val selectedYear = listOfYears.value.find{ it.id == analyticsFilterState.value.selectedYearId}?.name?.toInt() ?: YearMonth.now().year
                     _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
                     _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
                     _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)

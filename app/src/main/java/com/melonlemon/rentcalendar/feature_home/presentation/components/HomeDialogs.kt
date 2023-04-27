@@ -371,6 +371,7 @@ fun CustomCalendarDialog(
     var tempEndDate by remember{ mutableStateOf(endDate) }
     var selectedWeeks by remember{ mutableStateOf(getSelectedDatesList(startDate=startDate, endDate=endDate)) }
 
+    println("selectedWeeks: $selectedWeeks")
     Dialog(
         onDismissRequest = onCancel
     ) {
@@ -413,7 +414,7 @@ fun CustomCalendarDialog(
                     tempEndDate=tempEndDate,
                     cellSize=cellSize,
                     onDayClick = { date ->
-                        if(tempEndDate != null){
+                        if(tempStartDate==null || tempEndDate != null){
                             tempStartDate = date
                             tempEndDate = null
                             selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
@@ -423,6 +424,7 @@ fun CustomCalendarDialog(
                             if(bookedDays==null){
                                 tempStartDate = newTempStartDate
                                 tempEndDate = newTempEndDate
+                                selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
                             } else {
                                 val newStartWeekNumber = newTempStartDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
                                 val newEndWeekNumber = newTempEndDate!!.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
@@ -461,14 +463,14 @@ fun CustomCalendarDialog(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CurrencyDialogPreview() {
-    RentCalendarTheme {
-        CurrencyDialog(
-            currencySign = "",
-            onCancel = { },
-            onSave = { }
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun CurrencyDialogPreview() {
+//    RentCalendarTheme {
+//        CurrencyDialog(
+//            currencySign = "",
+//            onCancel = { },
+//            onSave = { }
+//        )
+//    }
+//}

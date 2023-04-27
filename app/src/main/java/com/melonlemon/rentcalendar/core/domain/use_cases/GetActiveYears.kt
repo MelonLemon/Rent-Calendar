@@ -9,7 +9,7 @@ class GetActiveYears(
 ) {
     suspend operator fun invoke(): List<CategoryInfo>{
         val years = repository.getAllYears()
-        val newYears = years.ifEmpty { listOf(CategoryInfo(id=0, LocalDate.now().year.toString())) }
+        val newYears = years.ifEmpty { listOf(LocalDate.now().year)  }
         return newYears.mapIndexed { index, year ->
             CategoryInfo(
             id = index,

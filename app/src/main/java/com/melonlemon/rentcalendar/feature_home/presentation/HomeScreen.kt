@@ -53,11 +53,13 @@ fun HomeScreen(
     val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
     val calendarState by viewModel.calendarState.collectAsStateWithLifecycle()
     val failAttempt by viewModel.failAttempt.collectAsStateWithLifecycle()
+    val sendErrorMessage by viewModel.sendErrorMessage.collectAsStateWithLifecycle()
 
 
     val snackbarHostState = remember { SnackbarHostState() }
     val errorStatus = stringResource(R.string.err_msg_unknown_error)
     val successStatus = stringResource(R.string.msg_success_status)
+    val chooseFlatError = stringResource(R.string.err_msg_choose_flat)
 
     if(flatsState.checkStatusNewFlat!= CheckStatusStr.UnCheckedStatus){
         val message = stringResource(flatsState.checkStatusNewFlat.message)
@@ -114,12 +116,35 @@ fun HomeScreen(
         }
     }
 
+
+    var errorMessage = stringResource(R.string.err_msg_base_error)
+
+    if(sendErrorMessage){
+
+        LaunchedEffect(sendErrorMessage){
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                actionLabel = null
+            )
+            viewModel.homeScreenEvents(HomeScreenEvents.CloseErrorMessage)
+        }
+    }
+
     val currencyDialog = remember{ mutableStateOf(false) }
     val changeExpensesDialog = remember{ mutableStateOf(false)}
     val allExpCategories = remember{ mutableStateOf(false) }
     val calendarDialog = remember{ mutableStateOf(false) }
 
-    val flatName = remember { derivedStateOf { flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name } }
+    val allFlatsName = stringResource(R.string.all_flats)
+
+    val flatName = remember { derivedStateOf {
+        if(filterState.selectedFlatId==-1 || flatsState.listOfFlats.isEmpty()){
+            allFlatsName
+        }else {
+            flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name
+        }
+
+    } }
 
 
 
@@ -285,6 +310,8 @@ fun HomeScreen(
 
                 }
             }
+
+            //SCHEDULE PAGE
             if (homeScreenState.page == HomePages.SchedulePage) {
                 items(
                     items = rentList,
@@ -310,7 +337,11 @@ fun HomeScreen(
                     )
                 }
             }
+
+            //EXPENSES PAGE
+
             if (homeScreenState.page == HomePages.ExpensesPage) {
+                // Monthly/Irregular BTN Choose +  VIEW ALL CATEGORIES BTN
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -336,8 +367,9 @@ fun HomeScreen(
                         }
 
                     }
-
                 }
+
+                //ADD NEW CATEGORIES
                 item {
                     InputContainer(
                         icon = ImageVector.vectorResource(id = R.drawable.ic_baseline_create_new_folder_24),
@@ -371,82 +403,37 @@ fun HomeScreen(
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
-
-
-                if (expensesCategoriesState.isRegularMF) {
-                    if (displayExpCategories.first.isEmpty()) {
-                        item {
-                            Spacer(modifier = Modifier.height(32.dp))
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = stringResource(R.string.no_categories),
-                                style = MaterialTheme.typography.displaySmall,
-                                color = MaterialTheme.colorScheme.outline,
-                                textAlign = TextAlign.Center
-                            )
-                            Image(
-                                bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
-                                contentDescription = null)
-                        }
-                    } else {
-                        itemsIndexed(
-                            items = displayExpCategories.first,
-                            key = { _, category ->
-                                category.id
-                            }
-                        ) { index, category ->
-                            //if categoryId in Expenses Transactions do not show
-                            //Monthly categories can have only 1 payment for month
-                            if (category.id !in displayExpensesReg.map { it.categoryId }) {
-                                InputInfoCard(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textFirstR = category.name,
-                                    textSecondR = { Text(category.subHeader) },
-                                    inputNumber = if (category.amount != 0) category.amount.toString() else "",
-                                    onNumberChanged = { numberString ->
-                                        viewModel.homeScreenEvents(
-                                            HomeScreenEvents.OnAmountExpChanged(
-                                                index = index,
-                                                amount = numberString.toIntOrNull() ?: 0
-                                            )
-                                        )
-                                    },
-                                    onAddButtonClicked = {
-                                        viewModel.homeScreenEvents(
-                                            HomeScreenEvents.OnExpensesAdd(
-                                                catId = category.id,
-                                                amount = category.amount,
-                                                categoryName = category.name
-                                            ))
-                                    },
-                                    content = {}
-                                )
-                            }
-
-                        }
+                //NO CATEGORIES - SHOW MESSAGE
+                if((expensesCategoriesState.isRegularMF && displayExpCategories.monthlyExpCategories.isEmpty()) ||
+                    (!expensesCategoriesState.isRegularMF && displayExpCategories.irregularExpCategories.isEmpty())
+                ){
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.no_categories),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.Center
+                        )
+                        Image(
+                            bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
+                            contentDescription = null)
                     }
-                } else {
-                    if (displayExpCategories.second.isEmpty()) {
-                        item {
-                            Spacer(modifier = Modifier.height(32.dp))
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = stringResource(R.string.no_categories),
-                                style = MaterialTheme.typography.displaySmall,
-                                color = MaterialTheme.colorScheme.outline,
-                                textAlign = TextAlign.Center
-                            )
-                            Image(
-                                bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
-                                contentDescription = null)
+                }
+
+                //MONTHLY CATEGORY EXPENSES
+                if(expensesCategoriesState.isRegularMF && displayExpCategories.monthlyExpCategories.isNotEmpty()){
+                    println("monthlyExpCategories: ${displayExpCategories.monthlyExpCategories}")
+                    itemsIndexed(
+                        items = displayExpCategories.monthlyExpCategories,
+                        key = { _, category ->
+                            "M100" + category.id
                         }
-                    } else {
-                        itemsIndexed(
-                            items = displayExpCategories.second,
-                            key = { _, category ->
-                                category.id
-                            }
-                        ) { index, category ->
+                    ) { index, category ->
+                        //if categoryId in Expenses Transactions do not show
+                        //Monthly categories can have only 1 payment for month
+                        if (category.id !in displayExpensesReg.map { it.categoryId }) {
                             InputInfoCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 textFirstR = category.name,
@@ -461,32 +448,79 @@ fun HomeScreen(
                                     )
                                 },
                                 onAddButtonClicked = {
-                                    viewModel.homeScreenEvents(
-                                        HomeScreenEvents.OnExpensesAdd(
-                                            catId = category.id,
-                                            amount = category.amount,
-                                            categoryName = category.name
-                                        )
-                                    )
+                                    if(filterState.selectedFlatId!=-1){
+                                        viewModel.homeScreenEvents(
+                                            HomeScreenEvents.OnExpensesAdd(
+                                                catId = category.id,
+                                                amount = category.amount,
+                                                categoryName = category.name
+                                            ))
+                                    } else {
+                                        errorMessage = chooseFlatError
+                                        // TO DO
+                                    }
 
                                 },
                                 content = {}
                             )
                         }
+
                     }
                 }
+
+                //IRREGULAR CATEGORY EXPENSES
+                if(!expensesCategoriesState.isRegularMF && displayExpCategories.irregularExpCategories.isNotEmpty()){
+                    println("irregularExpCategories: ${displayExpCategories.irregularExpCategories}")
+                    itemsIndexed(
+                        items = displayExpCategories.irregularExpCategories,
+                        key = { _, category ->
+                            "IRR100" +  category.id
+                        }
+                    ) { index, category ->
+                        InputInfoCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            textFirstR = category.name,
+                            textSecondR = { Text(category.subHeader) },
+                            inputNumber = if (category.amount != 0) category.amount.toString() else "",
+                            onNumberChanged = { numberString ->
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnAmountExpChanged(
+                                        index = index,
+                                        amount = numberString.toIntOrNull() ?: 0
+                                    )
+                                )
+                            },
+                            onAddButtonClicked = {
+                                if(filterState.selectedFlatId!=-1){
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.OnExpensesAdd(
+                                            catId = category.id,
+                                            amount = category.amount,
+                                            categoryName = category.name
+                                        ))
+                                } else {
+                                    errorMessage = chooseFlatError
+                                    // TO DO
+
+                                }
+
+                            },
+                            content = {}
+                        )
+                    }
+                }
+
 
                 item {
                     Text(text = stringResource(R.string.expenses))
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
-
-
+                //LIST EXPENSES
                 items(
                     items = listExpenses,
                     key = { expenses ->
-                        expenses.id
+                        "EXP200" + expenses.id
                     }
                 ) { item ->
                     DisplayInfoCard(
@@ -502,9 +536,9 @@ fun HomeScreen(
                         }
                     )
                 }
-
-
             }
+
+            //BOOKING PAGE
             if (homeScreenState.page == HomePages.BookPage) {
                 item {
                     DateRange(
@@ -584,8 +618,8 @@ fun HomeScreen(
 
         if(allExpCategories.value){
             AllExpCategoriesDialog(
-                regularCategories = displayExpCategories.second,
-                irregularCategories = displayExpCategories.second,
+                regularCategories = displayExpCategories.monthlyExpCategories,
+                irregularCategories = displayExpCategories.irregularExpCategories,
                 onCancel = {
                     allExpCategories.value = false
                 },

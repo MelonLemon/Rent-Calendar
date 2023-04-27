@@ -2,14 +2,15 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
+import com.melonlemon.rentcalendar.feature_home.presentation.util.DisplayExpenses
 import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
 
 class GetExpCategories(
     private val repository: HomeRepository
 ) {
-    suspend operator fun invoke(): Pair<List<ExpensesCategoryInfo>, List<ExpensesCategoryInfo>> {
+    suspend operator fun invoke(): DisplayExpenses {
 
-        val categoriesReg = repository.getExpCategories(MoneyFlowCategory.Regular).map { category ->
+        val monthlyExpCategories = repository.getExpCategories(MoneyFlowCategory.Regular).map { category ->
             ExpensesCategoryInfo(
                 id = category.id!!,
                 name = category.name,
@@ -18,7 +19,7 @@ class GetExpCategories(
             )
         }
 
-        val categoriesIr = repository.getExpCategories(MoneyFlowCategory.Irregular).map { category ->
+        val irregularExpCategories = repository.getExpCategories(MoneyFlowCategory.Irregular).map { category ->
             ExpensesCategoryInfo(
                 id = category.id!!,
                 name = category.name,
@@ -26,7 +27,9 @@ class GetExpCategories(
                 amount = category.fixedAmount
             )
         }
-        return Pair(categoriesReg, categoriesIr)
+        return DisplayExpenses(
+            monthlyExpCategories = monthlyExpCategories,
+            irregularExpCategories = irregularExpCategories)
 
     }
 }

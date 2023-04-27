@@ -52,66 +52,66 @@ class AnalyticsRepositoryImpl(
     }
 
     override suspend fun getBookedPercentYear(flatId: Int, year: Int): Int {
-        return dao.getBookedPercentYear(flatId=flatId, year=year)
+        return dao.getBookedPercentYear(flatId=flatId, year=year)?:0
     }
 
     override suspend fun getAllBookedPercentYear(year: Int): Int {
-        return dao.getAllBookedPercentYear(year=year)
+        return dao.getAllBookedPercentYear(year=year)?:0
     }
 
     override suspend fun getAvgDaysRent(flatId: Int, year: Int): Int {
-        return dao.getAvgDaysRent(flatId=flatId, year=year)
+        return dao.getAvgDaysRent(flatId=flatId, year=year)?:0
     }
 
     override suspend fun getAllAvgDaysRent(year: Int): Int {
-        return dao.getAllAvgDaysRent(year=year)
+        return dao.getAllAvgDaysRent(year=year)?:0
     }
 
-    override suspend fun getAllMostBookedMonth(year: Int): MostBookedMonthInfo {
+    override suspend fun getAllMostBookedMonth(year: Int): MostBookedMonthInfo? {
         return dao.getAllMostBookedMonth(year=year)
     }
 
-    override suspend fun getAllMostIncomeMonth(year: Int): AmountGroupBy {
+    override suspend fun getAllMostIncomeMonth(year: Int): AmountGroupBy? {
         return dao.getAllMostIncomeMonth(year=year, isPaid = true)
     }
 
     override suspend fun getGrossRentYearly(year: Int): Int {
-        return dao.getGrossRentYearly(year=year)
+        return dao.getGrossRentYearly(year=year)?:0
     }
 
     override suspend fun getGrossRentYearlyByFlatId(flatId: Int, year: Int): Int {
-        return dao.getGrossRentYearlyByFlatId(flatId=flatId, year=year)
+        return dao.getGrossRentYearlyByFlatId(flatId=flatId, year=year)?:0
     }
 
     override suspend fun getGrossRentMonthly(year: Int, month: Int): Int {
-        return dao.getGrossRentMonthly(year=year,month=month)
+        return dao.getGrossRentMonthly(year=year,month=month)?:0
     }
 
     override suspend fun getGrossRentMonthlyByFlatId(flatId: Int, year: Int, month: Int): Int {
-        return dao.getGrossRentMonthlyByFlatId(flatId=flatId, year=year,month=month)
+        return dao.getGrossRentMonthlyByFlatId(flatId=flatId, year=year,month=month)?:0
     }
 
     override suspend fun getExpensesYearly(year: Int): Int {
-        return dao.getExpensesYearly(year=year)
+        return dao.getExpensesYearly(year=year)?:0
     }
 
     override suspend fun getExpensesYearlyByFlatId(flatId: Int, year: Int): Int {
-        return dao.getExpensesYearlyByFlatId(flatId=flatId, year=year)
+        return dao.getExpensesYearlyByFlatId(flatId=flatId, year=year)?:0
     }
 
     override suspend fun getExpensesMonthly(year: Int, month: Int): Int {
-        return dao.getExpensesMonthly(year=year,month=month)
+        return dao.getExpensesMonthly(year=year,month=month)?:0
     }
 
     override suspend fun getExpensesMonthlyByFlatId(flatId: Int, year: Int, month: Int): Int {
-        return dao.getExpensesMonthlyByFlatId(flatId=flatId, year=year,month=month)
+        return dao.getExpensesMonthlyByFlatId(flatId=flatId, year=year,month=month)?:0
     }
 
-    override suspend fun getMostBookedMonth(flatId: Int, year: Int): MostBookedMonthInfo {
+    override suspend fun getMostBookedMonth(flatId: Int, year: Int): MostBookedMonthInfo? {
         return dao.getMostBookedMonth(flatId=flatId, year=year)
     }
 
-    override suspend fun getMostIncomeMonth(flatId: Int,year: Int): AmountGroupBy {
+    override suspend fun getMostIncomeMonth(flatId: Int,year: Int): AmountGroupBy? {
         return dao.getMostIncomeMonth(flatId=flatId, year=year, isPaid = true)
     }
 }

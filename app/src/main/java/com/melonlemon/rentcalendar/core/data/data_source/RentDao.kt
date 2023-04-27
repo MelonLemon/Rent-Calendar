@@ -102,12 +102,15 @@ interface RentDao {
     //ADD BASE OPTION
     @Transaction
     suspend fun saveBaseOption(flats: List<Flats>, categories: List<Category>){
+        println("Start of save base option")
         flats.forEach { flat ->
             addFlat(flat)
         }
+        println("Start of save  categories")
         categories.forEach { category ->
             addCategory(category)
         }
+        println("The end of save base option")
     }
 
     //ADD EXPENSES - !TEST PASSED!
@@ -146,14 +149,14 @@ interface RentDao {
             "FROM payment WHERE year=:year AND flat_id=:flatId AND is_paid=:isPaid " +
             "GROUP BY year, month) " +
             "SELECT year, month, amount FROM incomeMonth WHERE amount = (SELECT MAX(amount) FROM incomeMonth)")
-    suspend fun getMostIncomeMonth(flatId: Int, year: Int, isPaid: Boolean): AmountGroupBy
+    suspend fun getMostIncomeMonth(flatId: Int, year: Int, isPaid: Boolean): AmountGroupBy?
 
     //GET MOST INCOME MONTH - !TEST PASSED!
     @Query("WITH incomeMonth AS (SELECT year, month, SUM(paymentAllNights) AS amount " +
             "FROM payment WHERE year=:year AND is_paid=:isPaid " +
             "GROUP BY year, month) " +
             "SELECT year, month, amount FROM incomeMonth WHERE amount = (SELECT MAX(amount) FROM incomeMonth)")
-    suspend fun getAllMostIncomeMonth(year: Int, isPaid: Boolean): AmountGroupBy
+    suspend fun getAllMostIncomeMonth(year: Int, isPaid: Boolean): AmountGroupBy?
 
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR - !TEST PASSED!
     @Query("SELECT year, month, SUM(nights) AS amount " +
@@ -163,11 +166,11 @@ interface RentDao {
 
     //GET AVERAGE DAY RENT - !TEST PASSED!
     @Query("SELECT AVG(nights) FROM payment WHERE  flat_id=:flatId AND year=:year")
-    suspend fun getAvgDaysRent(flatId: Int, year: Int): Int
+    suspend fun getAvgDaysRent(flatId: Int, year: Int): Int?
 
     //GET AVERAGE DAY RENT - !TEST PASSED!
     @Query("SELECT AVG(nights) FROM payment WHERE year=:year")
-    suspend fun getAllAvgDaysRent(year: Int): Int
+    suspend fun getAllAvgDaysRent(year: Int): Int?
 
     //GET BOOKED DAYS AVERAGE PERCENT - !TEST PASSED!
     @Query("WITH nightsGrouped AS " +
@@ -176,7 +179,7 @@ interface RentDao {
             "GROUP BY year, month ORDER BY month ASC), " +
             "daysPercent AS (SELECT (amount*100)/STRFTIME( '%d', date(year ||'-01-01','+'||(month-1)||' month', '+1 month','-1 day')) as percent FROM nightsGrouped) " +
             "SELECT AVG(percent) FROM daysPercent")
-    suspend fun getBookedPercentYear(flatId: Int, year: Int):Int
+    suspend fun getBookedPercentYear(flatId: Int, year: Int):Int?
 
     //GET BOOKED DAYS AVERAGE PERCENT - !TEST PASSED!
     @Query("WITH nightsGrouped AS " +
@@ -185,7 +188,7 @@ interface RentDao {
             "GROUP BY year, month ORDER BY month ASC), " +
             "daysPercent AS (SELECT (amount*100)/STRFTIME( '%d', date(year ||'-01-01','+'||(month-1)||' month', '+1 month','-1 day')) as percent FROM nightsGrouped) " +
             "SELECT AVG(percent) FROM daysPercent")
-    suspend fun getAllBookedPercentYear(year: Int):Int
+    suspend fun getAllBookedPercentYear(year: Int):Int?
 
     //GET MOST BOOKED MONTH - !TEST PASSED!
     @Query("WITH nightsGrouped AS " +
@@ -194,7 +197,7 @@ interface RentDao {
             "GROUP BY year, month ORDER BY month ASC), " +
             "daysPercent AS (SELECT month, (amount*100)/STRFTIME( '%d', date(year ||'-01-01','+'||(month-1)||' month', '+1 month','-1 day')) as percent FROM nightsGrouped) " +
             "SELECT month, percent  FROM daysPercent WHERE percent = (SELECT MAX(percent) FROM daysPercent)")
-    suspend fun getMostBookedMonth(flatId: Int, year: Int):MostBookedMonthInfo
+    suspend fun getMostBookedMonth(flatId: Int, year: Int):MostBookedMonthInfo?
 
     //GET ALL MOST BOOKED MONTH - !TEST PASSED!
     @Query("WITH nightsGrouped AS " +
@@ -206,7 +209,7 @@ interface RentDao {
             "FROM daysPercent " +
             "GROUP BY month) " +
             "SELECT month, percent  FROM percentGrouped WHERE percent = (SELECT MAX(percent) FROM percentGrouped)")
-    suspend fun getAllMostBookedMonth(year: Int):MostBookedMonthInfo
+    suspend fun getAllMostBookedMonth(year: Int):MostBookedMonthInfo?
 
     //GET BOOKED DAYS GROUP BY MONTH, FILTER YEAR - !TEST PASSED!
     @Query("SELECT b.year AS year, b.month AS month, AVG(b.amount) AS amount " +
@@ -359,33 +362,33 @@ interface RentDao {
 
     // GROSS RENT  YEARLY
     @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year")
-    suspend fun getGrossRentYearly(year: Int):Int
+    suspend fun getGrossRentYearly(year: Int):Int?
 
     // GROSS RENT  YEARLY FILTER BY FLAT ID
     @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND flat_id=:flatId")
-    suspend fun getGrossRentYearlyByFlatId(flatId: Int, year: Int):Int
+    suspend fun getGrossRentYearlyByFlatId(flatId: Int, year: Int):Int?
 
     // GROSS RENT  MONTHLY
     @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND month=:month")
-    suspend fun getGrossRentMonthly(year: Int, month: Int):Int
+    suspend fun getGrossRentMonthly(year: Int, month: Int):Int?
 
     // GROSS RENT  MONTHLY FILTER BY FLAT ID
     @Query("SELECT SUM(paymentAllNights) AS amount FROM payment WHERE year=:year AND flat_id=:flatId AND month=:month")
-    suspend fun getGrossRentMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
+    suspend fun getGrossRentMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int?
 
     // EXPENSES YEARLY
     @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year")
-    suspend fun getExpensesYearly(year: Int):Int
+    suspend fun getExpensesYearly(year: Int):Int?
 
     // EXPENSES YEARLY FILTER BY FLAT ID
     @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND flat_id=:flatId")
-    suspend fun getExpensesYearlyByFlatId(flatId: Int, year: Int):Int
+    suspend fun getExpensesYearlyByFlatId(flatId: Int, year: Int):Int?
 
     // EXPENSES MONTHLY
     @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND month=:month")
-    suspend fun getExpensesMonthly(year: Int, month: Int):Int
+    suspend fun getExpensesMonthly(year: Int, month: Int):Int?
 
     // EXPENSES MONTHLY FILTER BY FLAT ID
     @Query("SELECT SUM(amount) AS amount FROM expenses WHERE year=:year AND flat_id=:flatId AND month=:month")
-    suspend fun getExpensesMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int
+    suspend fun getExpensesMonthlyByFlatId(flatId: Int, year: Int, month: Int):Int?
 }

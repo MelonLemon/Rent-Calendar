@@ -1,9 +1,7 @@
 package com.melonlemon.rentcalendar.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
-import com.melonlemon.rentcalendar.core.data.data_source.DatabaseInitializer
 import com.melonlemon.rentcalendar.core.data.data_source.RentDao
 import com.melonlemon.rentcalendar.core.data.data_source.RentDatabase
 import com.melonlemon.rentcalendar.core.data.repository.*
@@ -23,9 +21,7 @@ import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.Transact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -35,27 +31,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRentDatabase(
-        app: Application,
-        catalogueProvider: Provider<RentDao>,
+        app: Application
     ): RentDatabase {
         return Room.databaseBuilder(
             app,
             RentDatabase::class.java,
             RentDatabase.DATABASE_NAME
-        ).addCallback(
-            DatabaseInitializer(catalogueProvider)
         ).build()
     }
 
     @Provides
     @Singleton
     fun provideRentDao(db: RentDatabase): RentDao = db.rentDao
-
-    @Provides
-    @Singleton
-    fun provideDataStoreRepository(
-        @ApplicationContext context: Context
-    ) = DataStoreRepository(context = context)
 
     @Provides
     @Singleton

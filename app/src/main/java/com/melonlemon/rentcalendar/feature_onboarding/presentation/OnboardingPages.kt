@@ -1,9 +1,7 @@
 package com.melonlemon.rentcalendar.feature_onboarding.presentation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,23 +14,30 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.NameInputPlus
 import com.melonlemon.rentcalendar.core.presentation.components.NameValueInputPlus
-import com.melonlemon.rentcalendar.core.presentation.components.SectionButton
 import com.melonlemon.rentcalendar.core.presentation.components.SegmentedTwoBtns
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun WelcomePage(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.Start
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
+        item{
+            Image(
+                bitmap = ImageBitmap.imageResource(id = R.drawable.welcome),
+                contentDescription = null)
+        }
+
         item{
             Text(
                 modifier = Modifier.fillMaxWidth(),
@@ -42,11 +47,7 @@ fun WelcomePage(
                 textAlign = TextAlign.Center
             )
         }
-        item{
-            Image(
-                bitmap = ImageBitmap.imageResource(id = R.drawable.welcome),
-                contentDescription = null)
-        }
+
 
     }
 }
@@ -61,7 +62,6 @@ fun IntroduceFlatPage(
     onNewFlatAdd: () -> Unit,
     onNameFlatChanged: (Int, String)  -> Unit,
 ) {
-    var tempFlats by remember {  mutableStateOf(listBaseFlat) }
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -86,8 +86,9 @@ fun IntroduceFlatPage(
                 onAddButtonClicked = onNewFlatAdd
             )
         }
-        itemsIndexed(tempFlats){ index, flat ->
-            val isDuplicate = tempFlats.filter { it== flat}.size>1
+
+        itemsIndexed(listBaseFlat){ index, flat ->
+            val isDuplicate = listBaseFlat.filter { it== flat}.size>1
             OutlinedTextField(
                 value = flat,
                 onValueChange = { name ->
@@ -112,7 +113,7 @@ fun IntroduceExpCategoriesPage(
     isMonthCat: Boolean,
     onSegmentBtnClick: (Boolean) -> Unit,
     tempMonthlyExpCat: List<ExpensesCategoryInfo>,
-    tempIrregExpCat: List<ExpensesCategoryInfo>,
+    tempIrregularExpCat: List<ExpensesCategoryInfo>,
     newNameCat: String,
     newAmountCat: Int,
     onNewAmountChange: (Int) -> Unit,
@@ -161,8 +162,8 @@ fun IntroduceExpCategoriesPage(
             )
         }
 
-        itemsIndexed(if(isMonthCat) tempMonthlyExpCat else tempIrregExpCat){ index, category ->
-            val chosenList = if(isMonthCat) tempMonthlyExpCat else tempIrregExpCat
+        itemsIndexed(if(isMonthCat) tempMonthlyExpCat else tempIrregularExpCat){ index, category ->
+            val chosenList = if(isMonthCat) tempMonthlyExpCat else tempIrregularExpCat
             val isDuplicate = chosenList.filter { it.name== category.name}.size>1
             InputCategories(
                 name=category.name,
@@ -217,3 +218,12 @@ fun InputCategories(
         )
     }
 }
+
+
+//@Preview(showBackground = true)
+//@Composable
+//fun WelcomePagePreview() {
+//    RentCalendarTheme {
+//        WelcomePage()
+//    }
+//}
