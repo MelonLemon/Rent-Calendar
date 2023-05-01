@@ -3,11 +3,8 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 import com.melonlemon.rentcalendar.core.domain.model.Payment
 import com.melonlemon.rentcalendar.core.domain.model.Person
 import com.melonlemon.rentcalendar.core.domain.model.Schedule
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import com.melonlemon.rentcalendar.feature_home.presentation.util.CheckStatusBooked
-import com.melonlemon.rentcalendar.feature_home.presentation.util.CheckStatusStr
-import com.melonlemon.rentcalendar.feature_home.presentation.util.MoneyFlowCategory
 import com.melonlemon.rentcalendar.feature_home.presentation.util.NewBookedState
 import java.time.LocalDate
 import java.time.YearMonth
@@ -27,18 +24,22 @@ class AddNewBooked(
             return CheckStatusBooked.BlankPaymentFailStatus
         }
         if(newBookedState.startDate.isAfter(newBookedState.endDate)){
+
             return CheckStatusBooked.UnKnownFailStatus
         }
         try {
+
             val person = Person(id = null, name = newBookedState.name, phone = newBookedState.phone)
             val yearMonthStartDate = YearMonth.from(newBookedState.startDate)
             val yearMonthEndDate = YearMonth.from(newBookedState.endDate)
             if(yearMonthStartDate!=yearMonthEndDate){
+
                 var temptEndDate = yearMonthStartDate.atEndOfMonth()
                 var temptStartDate = newBookedState.startDate
                 val paymentsList = mutableListOf<Payment>()
                 val scheduleList = mutableListOf<Schedule>()
                 while(true){
+                    println("Start loop")
                     val nights = ChronoUnit.DAYS.between(temptStartDate, temptEndDate).toInt()
                     paymentsList.add(
                         Payment(
@@ -70,13 +71,15 @@ class AddNewBooked(
                     val nextMonth = YearMonth.from(temptStartDate).plusMonths(1)
                     temptStartDate = nextMonth.atDay(1)
                     temptEndDate = if(nextMonth == yearMonthEndDate) newBookedState.endDate else
-                        nextMonth.atEndOfMonth()
+                        nextMonth.plusMonths(1).atDay(1)
                 }
+
                 repository.addNewRent(
                     person = person,
                     payments = paymentsList,
                     schedules = scheduleList
                 )
+
 
             } else {
 
@@ -112,9 +115,11 @@ class AddNewBooked(
                     schedules = schedules
                 )
 
+
             }
 
         } catch (e: Exception){
+
             return CheckStatusBooked.UnKnownFailStatus
         }
         return CheckStatusBooked.SuccessStatus

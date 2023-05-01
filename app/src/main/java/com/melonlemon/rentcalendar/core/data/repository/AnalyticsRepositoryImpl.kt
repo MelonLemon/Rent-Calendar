@@ -27,11 +27,11 @@ class AnalyticsRepositoryImpl(
         return dao.getAllExpensesQuarter(year = year, typeId = REGULAR_EXP)
     }
 
-    override suspend fun getIrregExpensesQuarter(flatId: Int, year: Int): Map<Int, Int> {
+    override suspend fun getIrregularExpQuarter(flatId: Int, year: Int): Map<Int, Int> {
         return dao.getExpensesQuarter(flatId=flatId, year = year, typeId = IRREGULAR_EXP)
     }
 
-    override suspend fun getAllIrregExpensesQuarter(year: Int): Map<Int, Int> {
+    override suspend fun getAllIrregularExpQuarter(year: Int): Map<Int, Int> {
         return dao.getAllExpensesQuarter(year = year, typeId = IRREGULAR_EXP)
     }
 

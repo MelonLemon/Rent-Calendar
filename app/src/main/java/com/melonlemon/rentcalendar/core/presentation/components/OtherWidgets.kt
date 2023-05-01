@@ -4,7 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -19,9 +19,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -116,48 +113,60 @@ fun YearMonthRow(
             ),
             exit = slideOutVertically() + shrinkVertically() + fadeOut()
         ){
-            Row(){
-                val limitNum = 4
-                OutlinedTextField(
-                    value = if (tempYear == "0") "" else tempYear,
-                    onValueChange = { tempYear = it.take(limitNum) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
-                    ),
-                    textStyle = MaterialTheme.typography.titleMedium,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        textColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier.width(90.dp),
-                    supportingText = {
-                        Text(text = if(tempYear.length != 4 || (tempYear.take(1)!="2" && tempYear.take(1)!="1"))
-                            stringResource(R.string.not_correct_year) else "")
-                    }
-                )
-                Spacer(modifier = Modifier.width(32.dp))
-                IconButton(onClick = {
-                    if((tempYear.take(1)=="2" || tempYear.take(1)=="1") && tempYear.length == 4){
-                        onYearChange(tempYear)
-                    }
-
-                }) {
-                    Icons.Filled.Done
-
-                }
-            }
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                val monthList = (1..12).toList()
-
-                itemsIndexed(monthList){ index, monthNum ->
-                    SearchFilterButton(
-                        text = Month.of(monthNum).name,
-                        isSelected = monthNum == yearMonth.monthValue,
-                        onBtnClick = { onMonthClick(monthNum) }
+            Column {
+                Row() {
+                    val limitNum = 4
+                    OutlinedTextField(
+                        value = if (tempYear == "0") "" else tempYear,
+                        onValueChange = { tempYear = it.take(limitNum) },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        textStyle = MaterialTheme.typography.titleMedium,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            textColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        modifier = Modifier.width(90.dp),
+                        supportingText = {
+                            Text(
+                                text = if (tempYear.length != 4 || (tempYear.take(1) != "2" && tempYear.take(
+                                        1
+                                    ) != "1")
+                                )
+                                    stringResource(R.string.not_correct_year) else ""
+                            )
+                        }
                     )
+                    Spacer(modifier = Modifier.width(32.dp))
+                    IconButton(onClick = {
+                        if ((tempYear.take(1) == "2" || tempYear.take(1) == "1") && tempYear.length == 4) {
+                            onYearChange(tempYear)
+                        }
 
+                    }) {
+                        Icons.Filled.Done
+
+                    }
+                }
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val monthList = (1..12).toList()
+
+                    items(
+                        items = monthList,
+                        key = { monthNum ->
+                            Month.of(monthNum).name + monthNum
+                        }
+                    ) { monthNum ->
+                        SearchFilterButton(
+                            text = Month.of(monthNum).name,
+                            isSelected = monthNum == yearMonth.monthValue,
+                            onBtnClick = { onMonthClick(monthNum) }
+                        )
+
+                    }
                 }
             }
 

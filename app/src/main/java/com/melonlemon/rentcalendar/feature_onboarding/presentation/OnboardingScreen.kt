@@ -1,4 +1,4 @@
-package com.melonlemon.rentcalendar.feature_home.presentation
+package com.melonlemon.rentcalendar.feature_onboarding.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -15,62 +16,52 @@ import com.google.accompanist.pager.rememberPagerState
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_onboarding.presentation.*
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun OnboardingScreen(
+fun OnBoardingScreen(
     onFinish: () -> Unit,
-    viewModel: OnboardingViewModel
+    viewModel: OnBoardingViewModel
 ) {
 
-    val showErrorMessage by viewModel.showErrorMessage.collectAsStateWithLifecycle()
-    val finishOnboarding by viewModel.finishOnboarding.collectAsStateWithLifecycle()
+    val onBoardingState by viewModel.onBoardingState.collectAsStateWithLifecycle()
+
 
     val listBaseFlat = listOf(stringResource(R.string.main_flat))
     val listMonthlyExpCat = listOf(
         ExpensesCategoryInfo(id=-1, name= stringResource(R.string.monthly_cat_housing), subHeader = "", amount = 0),
         ExpensesCategoryInfo(id=-1, name= stringResource(R.string.internet), subHeader = "", amount = 0),
     )
-    val listIrregExpCat = listOf(
+    val listIrregularExpCat = listOf(
         ExpensesCategoryInfo(id=-1, name= stringResource(R.string.cleaning), subHeader = "", amount = 0),
         ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_disposable), subHeader = "", amount = 0),
         ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_renovation), subHeader = "", amount = 0),
     )
 
     val pagerState = rememberPagerState()
-    var newFlat by remember {  mutableStateOf("") }
-    var tempFlats by remember {  mutableStateOf(listBaseFlat) }
-    var isMonthCat by remember {  mutableStateOf(true) }
-    var newNameCat by remember {  mutableStateOf("") }
-    var newAmountCat by remember {  mutableStateOf(0) }
-    var tempMonthlyExpCat by remember {  mutableStateOf(listMonthlyExpCat) }
-    var tempIrregExpCat by remember {  mutableStateOf(listIrregExpCat) }
-
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorMessage = stringResource(R.string.err_msg_onboarding)
+    val context = LocalContext.current
 
-    if(showErrorMessage){
-
-        LaunchedEffect(showErrorMessage){
-
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                actionLabel = null
-            )
-
+    LaunchedEffect(key1 = true){
+        viewModel.onBoardingUiEvents.collectLatest { event ->
+            when(event) {
+                is OnBoardingUiEvents.ShowErrorMessage -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.resources.getString(event.message),
+                        actionLabel = null
+                    )
+                }
+                is OnBoardingUiEvents.FinishOnBoarding -> {
+                    onFinish()
+                }
+            }
         }
+
     }
 
-    if(finishOnboarding){
 
-        LaunchedEffect(finishOnboarding){
-
-            onFinish()
-
-        }
-    }
 
     Scaffold(
         snackbarHost = {
@@ -93,99 +84,61 @@ fun OnboardingScreen(
                 }
                 if(position==1){
                     IntroduceFlatPage(
-                        newFlat = newFlat,
+                        newFlat = onBoardingState.newFlat,
                         onNameChanged= { name ->
-                            newFlat=name
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNewNameChanged(name))
                         },
-                        listBaseFlat=tempFlats,
+                        listBaseFlat=onBoardingState.tempFlats,
                         onNewFlatAdd={
-                                if(newFlat.trim().lowercase() !in tempFlats.map{it.lowercase()}){
-                                val newList = tempFlats.toMutableList()
-                                newList.add(newFlat.trim())
-                                tempFlats = newList
-                                newFlat = "" }
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNewFlatAdd)
                         },
                         onNameFlatChanged = { index, name ->
-                            val newList = tempFlats.toMutableList()
-                            newList[index] = name
-                            tempFlats = newList
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNameFlatChanged(
+                                    index=index, name=name
+                                ))
                         }
                     )
                 }
                 if(position==2){
                     IntroduceExpCategoriesPage(
-                        isMonthCat=isMonthCat,
+                        isMonthCat=onBoardingState.isMonthCat,
                         onSegmentBtnClick={ isMonthCatChosen ->
-                            isMonthCat = isMonthCatChosen
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnSegmentBtnClick(isMonthCatChosen))
+
                         },
-                        tempMonthlyExpCat=tempMonthlyExpCat,
-                        tempIrregularExpCat=tempIrregExpCat,
-                        newNameCat=newNameCat,
-                        newAmountCat=newAmountCat,
+                        tempMonthlyExpCat=onBoardingState.tempMonthlyExpCat,
+                        tempIrregularExpCat=onBoardingState.tempIrregularExpCat,
+                        newNameCat=onBoardingState.newNameCat,
+                        newAmountCat=onBoardingState.newAmountCat,
                         onNewAmountChange={ amount ->
-                            newAmountCat = amount
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNewAmountChange(amount))
                         },
                         onNewNameChange={ name ->
-                            newNameCat = name
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNewNameChange(name))
                         },
                         onNewCatAdd={
-                            if(isMonthCat) {
-                                if(newNameCat.trim().lowercase() !in tempMonthlyExpCat.map{ it.name.lowercase()}){
-                                    val newList = tempMonthlyExpCat.toMutableList()
-                                    newList.add(ExpensesCategoryInfo(
-                                        id = -1,
-                                        name = newNameCat.trim(),
-                                        subHeader = "",
-                                        amount = newAmountCat
-                                    ))
-                                    tempMonthlyExpCat = newList
-                                    newNameCat = ""
-                                    newAmountCat = 0
-                                }
-                            } else {
-                                if(newNameCat.trim().lowercase() !in tempIrregExpCat.map{ it.name.lowercase()}){
-                                    val newList = tempIrregExpCat.toMutableList()
-                                    newList.add(ExpensesCategoryInfo(
-                                        id = -1,
-                                        name = newNameCat.trim(),
-                                        subHeader = "",
-                                        amount = newAmountCat
-                                    ))
-                                    tempIrregExpCat = newList
-                                    newNameCat = ""
-                                    newAmountCat = 0
-                                }
-                            }
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNewCatAdd)
                         },
                         onNameCatChanged={ index, name ->
-                            if(isMonthCat) {
-                                val newList = tempMonthlyExpCat.toMutableList()
-                                newList[index] = newList[index].copy(
-                                    name = name
-                                )
-                                tempMonthlyExpCat = newList
-                            } else {
-                                val newList = tempIrregExpCat.toMutableList()
-                                newList[index] = newList[index].copy(
-                                    name = name
-                                )
-                                tempIrregExpCat = newList
-                            }
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnNameCatChanged(
+                                    index=index, name=name
+                                ))
+
                         },
                         onAmountCatChanged={ index, amount ->
-                            if(isMonthCat) {
-                                val newList = tempMonthlyExpCat.toMutableList()
-                                newList[index] = newList[index].copy(
-                                    amount = amount.toIntOrNull() ?: 0
-                                )
-                                tempMonthlyExpCat = newList
-                            } else {
-                                val newList = tempIrregExpCat.toMutableList()
-                                newList[index] = newList[index].copy(
-                                    amount = amount.toIntOrNull() ?: 0
-                                )
-                                tempIrregExpCat = newList
-                            }
+
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnAmountCatChanged(
+                                    index=index, amount=amount.toIntOrNull()?:0
+                                ))
                         }
                     )
                 }
@@ -207,25 +160,20 @@ fun OnboardingScreen(
                     text = stringResource(R.string.add_btn),
                     isSelected = true,
                     onBtnClick = {
-                        val monthlyCatNames = tempMonthlyExpCat.map{it.name}
-                        val IrCatNames = tempIrregExpCat.map{it.name}
-                        val flatNoDuplicate =  tempFlats.size == tempFlats.distinct().count()
+                        val monthlyCatNames = onBoardingState.tempMonthlyExpCat.map{it.name}
+                        val irCatNames = onBoardingState.tempIrregularExpCat.map{it.name}
+                        val flatNoDuplicate =  onBoardingState.tempFlats.size == onBoardingState.tempFlats.distinct().count()
                         val monthlyCatNoDuplicate =  monthlyCatNames.size == monthlyCatNames.distinct().count()
-                        val irCatNoDuplicate =  IrCatNames.size == IrCatNames.distinct().count()
+                        val irCatNoDuplicate =  irCatNames.size == irCatNames.distinct().count()
 
-                        println("tempFlats: $tempFlats")
-                        println("tempMonthlyExpCat: $tempMonthlyExpCat")
-                        println("tempIrregExpCat: $tempIrregExpCat")
                         if(flatNoDuplicate && monthlyCatNoDuplicate && irCatNoDuplicate){
-                            viewModel.onboardingScreenEvents(
-                                OnboardingEvents.OnSaveBaseOptionClick(
-                                    flats = tempFlats,
-                                    monthlyExpCategories = tempMonthlyExpCat,
-                                    irregExpCategories = tempIrregExpCat
+                            viewModel.onBoardingScreenEvents(OnBoardingEvents.OnSaveBaseOptionClick)
+                        } else {
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.SendMessage(
+                                    R.string.err_msg_onboarding
                                 )
                             )
-                        } else {
-
                         }
                     }
                 )

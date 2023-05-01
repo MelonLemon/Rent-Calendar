@@ -752,8 +752,8 @@ class DaoQueryTests {
 
         val outputList = rentDao.getMostIncomeMonth(flatId = 1, year=2023, isPaid = true)
         println("OutputList: $outputList")
-        assertEquals(3, outputList.month)
-        assertEquals(11000, outputList.amount)
+        assertEquals(3, outputList!!.month)
+        assertEquals(11000, outputList!!.amount)
     }
 
     // PASSED
@@ -821,8 +821,8 @@ class DaoQueryTests {
 
         val outputList = rentDao.getAllMostIncomeMonth(year=2023, isPaid = true)
         println("OutputList: $outputList")
-        assertEquals(3, outputList.month)
-        assertEquals(11000, outputList.amount)
+        assertEquals(3, outputList!!.month)
+        assertEquals(11000, outputList!!.amount)
     }
 
     // PASSED
@@ -1225,8 +1225,8 @@ class DaoQueryTests {
 
         val outputList = rentDao.getMostBookedMonth(flatId = 1, year=2023)
         println("OutputList: $outputList")
-        assertEquals(3, outputList.month)
-        assertEquals(35, outputList.percent)
+        assertEquals(3, outputList!!.month)
+        assertEquals(35, outputList!!.percent)
     }
 
     // PASSED
@@ -1293,8 +1293,8 @@ class DaoQueryTests {
 
         val outputList = rentDao.getAllMostBookedMonth(year=2023)
         println("OutputList: $outputList")
-        assertEquals(3, outputList.month)
-        assertEquals(35, outputList.percent)
+        assertEquals(3, outputList!!.month)
+        assertEquals(35, outputList!!.percent)
     }
 
     // PASSED
@@ -1405,7 +1405,7 @@ class DaoQueryTests {
             year=2023,
             month=3,
             startDate = startDate,
-            endDate = endMonth,
+            endDate = startMonth,
             personId = -1,
             paymentId = -1,
             comment = "" )

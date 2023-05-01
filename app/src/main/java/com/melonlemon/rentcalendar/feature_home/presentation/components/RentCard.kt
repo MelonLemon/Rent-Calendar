@@ -103,34 +103,3 @@ fun RentCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun BasicCardIconFalsePreview() {
-    RentCalendarTheme {
-        RentCard(
-            name="Lera",
-            description="Will be with husband",
-            periodStart=LocalDate.now().minusDays(5),
-            periodEnd=LocalDate.now().plusDays(2),
-            amount=30000,
-            isPaid = false,
-            onPaidChange = { }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun BasicCardIconPreview() {
-    RentCalendarTheme {
-        RentCard(
-            name="Lera",
-            description="Will be with husband",
-            periodStart=LocalDate.now().minusDays(5),
-            periodEnd=LocalDate.now().plusDays(2),
-            amount=30000,
-            isPaid = true,
-            onPaidChange = { }
-        )
-    }
-}

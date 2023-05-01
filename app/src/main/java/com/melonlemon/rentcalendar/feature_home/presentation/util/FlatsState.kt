@@ -4,6 +4,5 @@ import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 
 data class FlatsState(
     val newFlat: String = "",
-    val listOfFlats: List<CategoryInfo> = emptyList(),
-    val checkStatusNewFlat: CheckStatusStr = CheckStatusStr.UnCheckedStatus
+    val listOfFlats: List<CategoryInfo> = emptyList()
 )

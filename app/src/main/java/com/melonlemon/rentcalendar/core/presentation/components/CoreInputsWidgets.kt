@@ -12,10 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +92,7 @@ fun InputContainer(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     title: String,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     var selected by remember { mutableStateOf(false) }
     Column(
@@ -176,14 +174,3 @@ fun NameCommentFields(
 }
 
 
-
-@Preview(showBackground = true)
-@Composable
-fun NameCommentFieldsPreview() {
-    RentCalendarTheme {
-        NameCommentFields(
-            onNameChange = { },
-            onCommentChange = { }
-        )
-    }
-}

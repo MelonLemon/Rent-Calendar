@@ -8,7 +8,7 @@ data class IncomeStatementInfo(
     val netIncome: Int,
     val revenue: Int,
     val monthlyExp: Int,
-    val irregExp: Int
+    val irregularExp: Int
 )
 
 data class ChartItem(
@@ -22,7 +22,7 @@ data class BarchartData(
     val color: Color,
     val values: List<Int>
 ) {
-    fun BarchartItem(index: Int):ChartItem{
+    fun barchartItem(index: Int):ChartItem{
         return ChartItem(name = name, color = color, value = values.getOrNull(index)?:0)
     }
 }

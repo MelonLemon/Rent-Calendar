@@ -97,5 +97,5 @@
     <string name="err_msg_onboarding">Can\'t save! Something is wrong. Check pages!</string>
     <string name="all_flats">All Flats</string>
     <string name="err_msg_base_error">Something goes wrong! Try again.</string>
-    <string name="err_msg_choose_flat">Can\'t add expenses. Choose flat!</string>
+    <string name="err_msg_choose_flat">Choose flat first!</string>
 </resources>

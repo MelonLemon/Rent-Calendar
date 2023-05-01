@@ -220,17 +220,23 @@ interface RentDao {
             "GROUP BY year, month ORDER BY month")
     suspend fun getAvgBookedNightsGroupByMY(year: Int):List<AmountGroupBy>
 
-
-//    //GET BOOKED DAYS GROUP BY WEEK
+    //    //GET BOOKED DAYS GROUP BY WEEK
     @MapInfo(keyColumn = "weekNum", valueColumn = "start_date")
-        @Query("WITH RECURSIVE dates AS " +
-                "(SELECT schedule_id, start_date, end_date " +
-                "FROM schedule WHERE flat_id=:flatId AND year=:year " +
-                "UNION ALL " +
-                "SELECT schedule_id, (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000)  AS start_date, end_date " +
-                "FROM dates " +
-                "WHERE (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000) BETWEEN start_date AND end_date ) " +
-                "SELECT start_date, (CAST(strftime('%W', datetime(start_date/1000, 'unixepoch')) AS Integer)) AS weekNum FROM dates ORDER BY start_date ")
+    @Query("WITH RECURSIVE dates AS " +
+            "(SELECT schedule_id, start_date, end_date " +
+            "FROM schedule WHERE flat_id=:flatId AND year=:year " +
+            "UNION ALL " +
+            "SELECT schedule_id, (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000)  AS start_date, end_date " +
+            "FROM dates " +
+            "WHERE (CAST(strftime('%s', datetime(start_date/1000, 'unixepoch', '+1 days')) AS INTEGER) * 1000) BETWEEN start_date AND end_date ), " +
+            "vacantDays AS " +
+            "(SELECT v.date as date FROM " +
+            "(SELECT start_date as date FROM schedule WHERE flat_id=:flatId AND year=:year " +
+            "UNION ALL " +
+            "SELECT end_date as date FROM schedule WHERE flat_id=:flatId AND year=:year" +
+            ") as v  GROUP BY date HAVING COUNT(date) = 1)" +
+            "SELECT DISTINCT start_date, (CAST(strftime('%W', datetime(start_date/1000, 'unixepoch')) AS Integer)) AS weekNum FROM dates" +
+            " WHERE start_date not in (SELECT date FROM vacantDays) ORDER BY start_date ")
     suspend fun getBookedDaysByWeek(year: Int, flatId: Int): Map<Int, List<LocalDate>>?
 
     //GET EXPENSES GROUP BY MONTH, FILTER YEAR AND FLAT - !TEST PASSED!

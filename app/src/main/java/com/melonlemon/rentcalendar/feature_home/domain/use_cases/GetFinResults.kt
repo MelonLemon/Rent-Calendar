@@ -2,7 +2,6 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.util.toRange
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import java.time.YearMonth
@@ -13,11 +12,11 @@ class GetFinResults(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend operator fun invoke(flatId: Int, year: Int): List<FinResultsDisplay> {
 
-        var expensesGrouped = if(flatId==-1)  repository.getAllExpensesGroupByMY(year=year).toMutableList()
+        val expensesGrouped = if(flatId==-1)  repository.getAllExpensesGroupByMY(year=year).toMutableList()
         else repository.getExpensesGroupByMY(flatId=flatId, year=year).toMutableList()
-        var incomeGrouped = if(flatId==-1)  repository.getAllIncomeGroupByMY(year=year).toMutableList()
+        val incomeGrouped = if(flatId==-1)  repository.getAllIncomeGroupByMY(year=year).toMutableList()
         else repository.getIncomeGroupByMY(flatId=flatId, year=year).toMutableList()
-        var nights = if(flatId==-1)  repository.getAvgBookedNightsGroupByMY(year=year).toMutableList()
+        val nights = if(flatId==-1)  repository.getAvgBookedNightsGroupByMY(year=year).toMutableList()
         else repository.getBookedNightsGroupByMY(flatId=flatId, year=year).toMutableList()
 
         // Create empty year List
@@ -32,11 +31,11 @@ class GetFinResults(
         val emptyYear = MutableList(12) { month -> emptyMonth.copy(yearMonth=YearMonth.of(year, month+1))}
 
         // goes through it and add data
-        val fullYear = emptyYear.mapIndexed { index, finResult ->
+        val fullYear = emptyYear.map { finResult ->
             val daysInMonth = finResult.yearMonth.lengthOfMonth()
-            var income: Int = 0
-            var expenses: Int = 0
-            var percentBooked: Float = 0f
+            var income = 0
+            var expenses = 0
+            var percentBooked = 0f
 
             if(incomeGrouped.isNotEmpty() && incomeGrouped[0].month == finResult.yearMonth.monthValue) {
                 income = incomeGrouped[0].amount

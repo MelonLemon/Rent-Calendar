@@ -5,7 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,18 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_home.domain.model.SelectedWeekInfo
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.temporal.ChronoField
-import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -49,7 +44,7 @@ fun CustomCalendar(
     contentPadding: PaddingValues = PaddingValues(),
     year: Int
 ) {
-    var tempYear by remember{ mutableStateOf(year) }
+    val tempYear by remember{ mutableStateOf(year) }
     val density = LocalDensity.current
 
     Column(
@@ -64,9 +59,9 @@ fun CustomCalendar(
         )
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         val dateStart = if(tempStartDate != null)
-            "${tempStartDate!!.month.name} ${tempStartDate!!.dayOfMonth}" else ""
+            "${tempStartDate.month.name} ${tempStartDate.dayOfMonth}" else ""
         val dateEnd = if(tempEndDate!= null)
-            "${tempEndDate!!.month.name} ${tempEndDate!!.dayOfMonth}" else ""
+            "${tempEndDate.month.name} ${tempEndDate.dayOfMonth}" else ""
         Text(
             text="$dateStart - $dateEnd",
             style = MaterialTheme.typography.titleLarge,
@@ -91,9 +86,6 @@ fun CustomCalendar(
             contentPadding = contentPadding,
         ){
             val contentModifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-            println("In Custom Calendar")
             (1..12).forEach { monthInt ->
                 val yearMonth = YearMonth.of(year, monthInt)
                 itemsCalendarMonth(
@@ -185,7 +177,7 @@ private fun LazyListScope.itemsCalendarMonth(
     selectedDays: Map<Int, SelectedWeekInfo>,
     cellSize: Size,
     yearMonth: YearMonth,
-    contentModifier: Modifier,
+    contentModifier: Modifier = Modifier,
     density: Density
 ) {
     println("Month: ${yearMonth.month.name}")
@@ -201,10 +193,11 @@ private fun LazyListScope.itemsCalendarMonth(
     val lastYearWeekNumber = yearMonth.atEndOfMonth()[WeekFields.ISO.weekOfYear()]
     val listWeeks = (firstWeekNumber..lastWeekNumber).toList()
     val listYearWeeks = (firstYearWeekNumber..lastYearWeekNumber).toList()
+    println("bookedDays: $bookedDays")
 
     itemsIndexed(
         items = listWeeks,
-        key = { index, week ->
+        key = { index, _ ->
             yearMonth.year.toString() +
                     "/" +
                     yearMonth.month.value +
@@ -212,15 +205,15 @@ private fun LazyListScope.itemsCalendarMonth(
                     (index + 1).toString()}
     ){ index, week ->
         Box(
-            modifier = Modifier
+            modifier = contentModifier
                 .background(MaterialTheme.colorScheme.surface)
                 .size(width = (cellSize.width * 7).dp, cellSize.height.dp),
 
         ) {
             val yearWeek = listYearWeeks[index]
-            println("week: $week, yearWeek: $yearWeek")
+
             WeekView(
-                modifier  = Modifier,
+                modifier  = contentModifier,
                 cellSize=cellSize,
                 onDayClicked=onDayClicked,
                 yearMonth=yearMonth,
@@ -230,36 +223,35 @@ private fun LazyListScope.itemsCalendarMonth(
                     else null else null
             )
 
-            if(selectedDays.isNotEmpty() && selectedDays.containsKey(yearWeek) && selectedDays[yearWeek]!=null){
-                println("selectedDays: ${selectedDays[yearWeek]}")
-                val startDay = selectedDays[yearWeek]!!.startDate.dayOfWeek.value
-                SelectedWeekView(
-                    modifier = Modifier.padding(start = ((startDay-1)*cellSize.width).dp),
-                    cellSize = cellSize,
-                    onDayClicked = onDayClicked,
-                    selectedDays = selectedDays[yearWeek]!!
-                )
-            }
-            //add delay
-//            if(selectedDays.isNotEmpty()){
-//                println("Selected days are not empty: $selectedDays")
-//                AnimatedVisibility(
-//                    visible = selectedDays.containsKey(yearWeek),
-//                    enter = slideInHorizontally(
-//                        animationSpec = tween(delayMillis = 1000* (selectedDays[yearWeek]?.index ?: 1) +1000)
-//                    ) {
-//                        with(density) { 40.dp.roundToPx() }
-//                    } + expandHorizontally (
-//                        expandFrom = Alignment.Start
-//                    ) + fadeIn(
-//                        initialAlpha = 0.3f
-//                    ),
-//                    exit = slideOutHorizontally() + shrinkHorizontally() + fadeOut()
-//                ){
+            if(selectedDays.isNotEmpty()){
 
-//
-//                }
-//            }
+                AnimatedVisibility(
+                    visible = selectedDays.containsKey(yearWeek),
+                    enter = slideInHorizontally(
+                        animationSpec = tween(delayMillis = 1000* (selectedDays[yearWeek]?.index ?: 1) +1000)
+                    ) {
+                        with(density) { 40.dp.roundToPx() }
+                    } + expandHorizontally (
+                        expandFrom = Alignment.Start
+                    ) + fadeIn(
+                        initialAlpha = 0.3f
+                    ),
+                    exit = slideOutHorizontally() + shrinkHorizontally() + fadeOut()
+                ){
+                    if(selectedDays.isNotEmpty() && selectedDays.containsKey(yearWeek) && selectedDays[yearWeek]!=null){
+
+                        val startDay = selectedDays[yearWeek]!!.startDate.dayOfWeek.value
+                        SelectedWeekView(
+                            modifier = contentModifier.padding(start = ((startDay-1)*cellSize.width).dp),
+                            cellSize = cellSize,
+                            onDayClicked = onDayClicked,
+                            selectedDays = selectedDays[yearWeek]!!,
+                            yearMonth = yearMonth
+                        )
+                    }
+
+                }
+            }
 
 
         }

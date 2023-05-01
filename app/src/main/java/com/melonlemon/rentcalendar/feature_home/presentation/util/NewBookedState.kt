@@ -11,6 +11,5 @@ data class NewBookedState(
     val nights: Int=0,
     val oneNightMoney: Int=0,
     val allMoney: Int=0,
-    val isPaid: Boolean = false,
-    val checkStatusNewBooked: CheckStatusBooked = CheckStatusBooked.UnCheckedStatus
+    val isPaid: Boolean = false
 )

@@ -21,7 +21,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -32,18 +31,13 @@ import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsScree
 import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsViewModel
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeScreen
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeViewModel
-import com.melonlemon.rentcalendar.feature_home.presentation.OnboardingScreen
-import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnboardingViewModel
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingScreen
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingViewModel
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.SplashViewModel
 import com.melonlemon.rentcalendar.feature_transaction.presentation.TransactionScreen
 import com.melonlemon.rentcalendar.feature_transaction.presentation.TransactionViewModel
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -126,8 +120,8 @@ class MainActivity : ComponentActivity() {
                     ){
 
                         composable(route = Screens.OnBoardingScreen.route){
-                            val viewModel = hiltViewModel<OnboardingViewModel>()
-                            OnboardingScreen(
+                            val viewModel = hiltViewModel<OnBoardingViewModel>()
+                            OnBoardingScreen(
                                 onFinish = {
                                     navController.popBackStack()
                                     navController.navigate(Screens.HomeScreen.route)

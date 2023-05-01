@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -26,7 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
@@ -50,83 +50,21 @@ fun HomeScreen(
     val displayExpensesReg by viewModel.displayExpensesReg.collectAsStateWithLifecycle()
     val displayExpensesIr by viewModel.displayExpensesIr.collectAsStateWithLifecycle()
     val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
-    val updateExpensesStatus by viewModel.updateExpensesStatus.collectAsStateWithLifecycle()
     val calendarState by viewModel.calendarState.collectAsStateWithLifecycle()
-    val failAttempt by viewModel.failAttempt.collectAsStateWithLifecycle()
-    val sendErrorMessage by viewModel.sendErrorMessage.collectAsStateWithLifecycle()
+    val messageState by viewModel.messageState.collectAsStateWithLifecycle()
 
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val errorStatus = stringResource(R.string.err_msg_unknown_error)
-    val successStatus = stringResource(R.string.msg_success_status)
-    val chooseFlatError = stringResource(R.string.err_msg_choose_flat)
 
-    if(flatsState.checkStatusNewFlat!= CheckStatusStr.UnCheckedStatus){
-        val message = stringResource(flatsState.checkStatusNewFlat.message)
-        LaunchedEffect(flatsState.checkStatusNewFlat){
+    val context = LocalContext.current
+
+    if(messageState.send){
+        LaunchedEffect(messageState.message){
             snackbarHostState.showSnackbar(
-                message = message,
+                message = context.resources.getString(messageState.message),
                 actionLabel = null
             )
-            viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewExpCatComplete)
-        }
-    }
-
-    if(failAttempt){
-        LaunchedEffect(failAttempt){
-            snackbarHostState.showSnackbar(
-                message = errorStatus,
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.RefreshFailAttempt)
-        }
-    }
-
-    if(expensesCategoriesState.checkStatusNewCat!= CheckStatusStr.UnCheckedStatus){
-        val message = stringResource(flatsState.checkStatusNewFlat.message)
-        LaunchedEffect(expensesCategoriesState.checkStatusNewCat){
-            snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
-        }
-    }
-
-    if(newBookedState.checkStatusNewBooked!= CheckStatusBooked.UnCheckedStatus){
-        val message = stringResource(newBookedState.checkStatusNewBooked.message)
-        LaunchedEffect(newBookedState.checkStatusNewBooked){
-            snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.OnAddNewFlatComplete)
-        }
-    }
-
-    if(updateExpensesStatus != SimpleStatusOperation.OperationUnChecked){
-
-        LaunchedEffect(updateExpensesStatus){
-
-            snackbarHostState.showSnackbar(
-                message = if(updateExpensesStatus==SimpleStatusOperation.OperationSuccess) successStatus else errorStatus,
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.OnExpensesUpdateComplete)
-        }
-    }
-
-
-    var errorMessage = stringResource(R.string.err_msg_base_error)
-
-    if(sendErrorMessage){
-
-        LaunchedEffect(sendErrorMessage){
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.CloseErrorMessage)
+            viewModel.homeScreenEvents(HomeScreenEvents.CloseMessage)
         }
     }
 
@@ -456,8 +394,11 @@ fun HomeScreen(
                                                 categoryName = category.name
                                             ))
                                     } else {
-                                        errorMessage = chooseFlatError
-                                        // TO DO
+                                        viewModel.homeScreenEvents(
+                                            HomeScreenEvents.SendMessage(
+                                                message = R.string.err_msg_choose_flat
+                                            )
+                                        )
                                     }
 
                                 },
@@ -499,8 +440,11 @@ fun HomeScreen(
                                             categoryName = category.name
                                         ))
                                 } else {
-                                    errorMessage = chooseFlatError
-                                    // TO DO
+                                    viewModel.homeScreenEvents(
+                                        HomeScreenEvents.SendMessage(
+                                            message = R.string.err_msg_choose_flat
+                                        )
+                                    )
 
                                 }
 
@@ -545,6 +489,7 @@ fun HomeScreen(
                         startDate = newBookedState.startDate,
                         endDate = newBookedState.endDate,
                         onCalendarBtnClick = {
+                            viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(filterState.yearMonth.year))
                             calendarDialog.value = true
                         }
                     )
@@ -592,9 +537,19 @@ fun HomeScreen(
                         text = stringResource(R.string.add_btn),
                         isSelected = true,
                         onBtnClick = {
-                            viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnAddNewBookedBtnClick
-                            )
+                            if(filterState.selectedFlatId!=-1){
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnAddNewBookedBtnClick
+                                )
+                            } else {
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.SendMessage(
+                                        message = R.string.err_msg_choose_flat
+                                    )
+                                )
+
+                            }
+
                         }
                     )
                 }

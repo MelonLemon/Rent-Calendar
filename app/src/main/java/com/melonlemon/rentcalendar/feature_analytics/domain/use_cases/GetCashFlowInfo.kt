@@ -1,9 +1,7 @@
 package com.melonlemon.rentcalendar.feature_analytics.domain.use_cases
 
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.model.CashFlowInfo
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.repository.AnalyticsRepository
 
 class GetCashFlowInfo(
@@ -20,7 +18,7 @@ class GetCashFlowInfo(
             rentQuarter = repository.getRentByDateQuarter(flatId=flatId, year = year)
             expensesQuarter = repository.getExpensesByDateQuarter(flatId=flatId, year = year)
         }
-        var cashFlowYear = mutableListOf<CashFlowInfo>()
+        val cashFlowYear = mutableListOf<CashFlowInfo>()
         (1..4).forEach { quarter ->
             val rent = if(rentQuarter.containsKey(quarter)) rentQuarter[quarter]?:0 else 0
             val expenses = if(expensesQuarter.containsKey(quarter)) expensesQuarter[quarter]?: emptyList() else emptyList()

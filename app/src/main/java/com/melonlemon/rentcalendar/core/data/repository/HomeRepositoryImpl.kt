@@ -121,6 +121,7 @@ class HomeRepositoryImpl(
     }
 
     override suspend fun addNewRent(person: Person, payments: List<Payment>, schedules: List<Schedule>) {
+        println("In repository")
         dao.addSchedules(
             person = person,
             payments = payments,

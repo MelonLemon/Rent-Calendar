@@ -25,7 +25,7 @@ fun LazyListScope.transactionDay(
     }
     itemsIndexed(
         items = listOfItems,
-        key =  { index, item ->
+        key =  { _, item ->
             item.id
         }
     ){ index, item ->

@@ -47,7 +47,7 @@ class TransactionViewModel @Inject constructor(
         .debounce(500L)
         .onEach { _isDownloading.update { true } }
         .combine(_transactionsByMonth)
-        { searchText, transactionsByMonth  ->
+        { searchText, _  ->
             useCases.getTransactions(
                 flatIds = transFilterState.value.selectedFlatsId,
                 year = transFilterState.value.years.find{it.id==transFilterState.value.selectedYearId}!!.name.toIntOrNull() ?: 0,

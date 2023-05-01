@@ -4,9 +4,10 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
+import com.melonlemon.rentcalendar.core.presentation.util.SendMessage
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.FinResultsDisplay
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
@@ -45,14 +46,11 @@ class HomeViewModel @Inject constructor(
     private val _newBookedState = MutableStateFlow(NewBookedState())
     val newBookedState  = _newBookedState.asStateFlow()
 
-    private val _failAttempt = MutableStateFlow(false)
-    val failAttempt  = _failAttempt.asStateFlow()
-
     private val _calendarState = MutableStateFlow(CalendarState())
     val calendarState  = _calendarState.asStateFlow()
 
-    private val _sendErrorMessage = MutableStateFlow(false)
-    val sendErrorMessage  = _sendErrorMessage.asStateFlow()
+    private val _messageState = MutableStateFlow(SendMessage())
+    val messageState  = _messageState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _rentList = filterState.flatMapLatest{ filterState ->
@@ -75,17 +73,10 @@ class HomeViewModel @Inject constructor(
     )
     val selectedExpenses  = _selectedExpenses.asStateFlow()
 
-    private val _updateExpensesStatus = MutableStateFlow<SimpleStatusOperation>(
-        SimpleStatusOperation.OperationUnChecked)
-    val updateExpensesStatus  = _updateExpensesStatus.asStateFlow()
-
-
-
     private val _moneyFlowCategory = MutableStateFlow<MoneyFlowCategory>(MoneyFlowCategory.Regular)
     private val moneyFlowCategory  = _moneyFlowCategory.asStateFlow()
 
-    private val _displayExpCategories = MutableStateFlow<DisplayExpenses>(
-        DisplayExpenses())
+    private val _displayExpCategories = MutableStateFlow(DisplayExpenses())
     val displayExpCategories  = _displayExpCategories.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -135,13 +126,20 @@ class HomeViewModel @Inject constructor(
     fun homeScreenEvents(event: HomeScreenEvents){
         when(event) {
 
+            is HomeScreenEvents.SendMessage -> {
+                _messageState.value = messageState.value.copy(
+                    send = true,
+                    message = event.message
+                )
+            }
 
-            is HomeScreenEvents.CloseErrorMessage -> {
-                _sendErrorMessage.value = false
+            is HomeScreenEvents.CloseMessage -> {
+                _messageState.value = messageState.value.copy(
+                    send = false,
+                    message = R.string.err_msg_base_error
+                )
             }
-            is HomeScreenEvents.RefreshFailAttempt -> {
-                _failAttempt.value = false
-            }
+
 
             is HomeScreenEvents.OnYearMonthChange -> {
                 _filterState.value = filterState.value.copy(
@@ -164,21 +162,17 @@ class HomeViewModel @Inject constructor(
                         val newFlatList = coreUseCases.getAllFlats()
                         _flatsState.value = flatsState.value.copy(
                             newFlat = "",
-                            listOfFlats = newFlatList,
-                            checkStatusNewFlat = status
-                        )
-                    } else {
-                        _flatsState.value = flatsState.value.copy(
-                            checkStatusNewFlat = status
+                            listOfFlats = newFlatList
                         )
                     }
+                    _messageState.value = messageState.value.copy(
+                        send = true,
+                        message = status.message
+                    )
+
                 }
             }
-            is HomeScreenEvents.OnAddNewFlatComplete -> {
-                _flatsState.value = flatsState.value.copy(
-                   checkStatusNewFlat = CheckStatusStr.UnCheckedStatus
-                )
-            }
+
             is HomeScreenEvents.OnFlatClick -> {
                 if(filterState.value.selectedFlatId!=event.id){
                     _filterState.value = filterState.value.copy(
@@ -203,7 +197,10 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     val result = useCases.updatePaidStatus(id = event.id, isPaid = event.isPaid)
                     if(result != SimpleStatusOperation.OperationSuccess){
-                        _failAttempt.value = true
+                        _messageState.value = messageState.value.copy(
+                            send = true,
+                            message = R.string.err_msg_unknown_error
+                        )
                     }
                 }
             }
@@ -252,23 +249,17 @@ class HomeViewModel @Inject constructor(
                         _expensesCategoriesState.value = expensesCategoriesState.value.copy(
                             newCategoryName = "",
                             newCategoryAmount = 0,
-                            checkStatusNewCat = status
                         )
-
                         _displayExpCategories.value = useCases.getExpCategories()
-
-                    } else {
-                        _expensesCategoriesState.value = expensesCategoriesState.value.copy(
-                            checkStatusNewCat = status
-                        )
                     }
+                    _messageState.value = messageState.value.copy(
+                        send = true,
+                        message = status.message
+                    )
+
                 }
             }
-            is HomeScreenEvents.OnAddNewExpCatComplete -> {
-                _expensesCategoriesState.value = expensesCategoriesState.value.copy(
-                    checkStatusNewCat = CheckStatusStr.UnCheckedStatus
-                )
-            }
+
             is HomeScreenEvents.OnAmountExpChanged -> {
                 if(expensesCategoriesState.value.isRegularMF){
                     val newList = displayExpCategories.value.monthlyExpCategories.toMutableList()
@@ -299,7 +290,15 @@ class HomeViewModel @Inject constructor(
                         id = event.expensesId,
                         amount = event.amount
                     )
-                    _updateExpensesStatus.value = result
+
+                    if(result != SimpleStatusOperation.OperationSuccess) {
+                        _messageState.value = messageState.value.copy(
+                            send = true,
+                            message = R.string.err_msg_unknown_error
+                        )
+                    }
+
+
 
                 }
 
@@ -310,16 +309,14 @@ class HomeViewModel @Inject constructor(
                         categories = event.listChangedCategories
                     )
                     if(result != SimpleStatusOperation.OperationSuccess){
-                        _failAttempt.value = true
+                        _messageState.value = messageState.value.copy(
+                            send = true,
+                            message = R.string.err_msg_unknown_error
+                        )
                     }
                 }
 
             }
-
-            is HomeScreenEvents.OnExpensesUpdateComplete -> {
-                _updateExpensesStatus.value = SimpleStatusOperation.OperationUnChecked
-            }
-
 
             is HomeScreenEvents.OnExpensesAdd -> {
 
@@ -333,9 +330,10 @@ class HomeViewModel @Inject constructor(
                     )
 
                     if(result != SimpleStatusOperation.OperationSuccess) {
-                        // error message
-                    } else {
-
+                        _messageState.value = messageState.value.copy(
+                            send = true,
+                            message = R.string.err_msg_unknown_error
+                        )
                     }
                 }
 
@@ -413,21 +411,14 @@ class HomeViewModel @Inject constructor(
                             comment = "",
                             nights = 0,
                             oneNightMoney = 0,
-                            allMoney = 0,
-                            checkStatusNewBooked = result
-                        )
-                    } else {
-                        _newBookedState.value = newBookedState.value.copy(
-                            checkStatusNewBooked = result
+                            allMoney = 0
                         )
                     }
+                    _messageState.value = messageState.value.copy(
+                        send = true,
+                        message = result.message
+                    )
                 }
-
-            }
-            is HomeScreenEvents.OnAddNewBookedComplete -> {
-                _newBookedState.value = newBookedState.value.copy(
-                    checkStatusNewBooked = CheckStatusBooked.UnCheckedStatus
-                )
             }
 
             //Currency dialog

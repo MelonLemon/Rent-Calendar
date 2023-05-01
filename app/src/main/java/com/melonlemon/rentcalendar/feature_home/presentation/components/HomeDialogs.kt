@@ -14,17 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.core.util.toRange
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.FilterButton
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.CustomCalendar
-import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.HeaderWeekView
 import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_calendar.getSelectedDatesList
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.LocalDate
 import java.time.temporal.ChronoField
 
@@ -157,7 +153,6 @@ fun ExpensesDialog(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllExpCategoriesDialog(
     modifier: Modifier = Modifier,
@@ -401,7 +396,7 @@ fun CustomCalendarDialog(
                     )
                 }
             }
-        ){ it ->
+        ){
             Column(
                 modifier = modifier,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -463,14 +458,3 @@ fun CustomCalendarDialog(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun CurrencyDialogPreview() {
-//    RentCalendarTheme {
-//        CurrencyDialog(
-//            currencySign = "",
-//            onCancel = { },
-//            onSave = { }
-//        )
-//    }
-//}

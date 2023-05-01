@@ -1,6 +1,5 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.util
 
-import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import java.time.LocalDate
 
 data class SchedulePageState(

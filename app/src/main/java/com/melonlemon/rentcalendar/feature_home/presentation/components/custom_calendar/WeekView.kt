@@ -3,7 +3,6 @@ package com.melonlemon.rentcalendar.feature_home.presentation.components.custom_
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -92,26 +90,36 @@ fun SelectedWeekView(
     cellSize: Size,
     onDayClicked: (LocalDate) -> Unit,
     selectedDays:SelectedWeekInfo,
+    yearMonth: YearMonth
 ) {
 
     val sizeWeek = selectedDays.size
     var currentDay = selectedDays.startDate
+
     Box(
         modifier = modifier
             .size(width = (cellSize.width * sizeWeek).dp, cellSize.height.dp)) {
         Row(modifier = Modifier) {
             println("Start")
             for (i in 0 until sizeWeek) {
-                println("In i: $i")
-                DayView(
-                    backgroundColor = MaterialTheme.colorScheme.primary,
-                    colorText = MaterialTheme.colorScheme.onPrimary,
-                    day = currentDay,
-                    cellSize = cellSize,
-                    onCellClick = { day ->
-                        onDayClicked(day)
-                    }
-                )
+                if(currentDay.month == yearMonth.month){
+                    DayView(
+                        backgroundColor = MaterialTheme.colorScheme.primary,
+                        colorText = MaterialTheme.colorScheme.onPrimary,
+                        day = currentDay,
+                        cellSize = cellSize,
+                        onCellClick = { day ->
+                            onDayClicked(day)
+                        }
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(width = cellSize.width.dp, height = cellSize.height.dp)
+                            .background(MaterialTheme.colorScheme.surface)
+                    )
+                }
+
                 currentDay = currentDay.plusDays(1)
             }
         }
@@ -132,7 +140,8 @@ fun SelectedWeekViewPreview() {
             modifier = Modifier.padding(start = ((startDay-1)*cellSize.width).dp),
             cellSize = cellSize,
             onDayClicked = { },
-            selectedDays = selectedDays[17]!!
+            selectedDays = selectedDays[17]!!,
+            yearMonth = YearMonth.of(2023,4)
         )
     }
 }
@@ -180,8 +189,9 @@ fun DayViewViewPreview() {
 @Composable
 fun CrossOverPreview() {
     RentCalendarTheme {
-        val selectedDays = mapOf(17 to SelectedWeekInfo(1, LocalDate.now(), 2))
+        val selectedDays = mapOf(17 to SelectedWeekInfo(1, LocalDate.now().minusDays(5), 2))
         val startDay = selectedDays[17]!!.startDate.dayOfWeek.value
+        val bookedDays = listOf(LocalDate.now(), LocalDate.now().plusDays(1))
         val cellSize = Size(48f,48f)
         Box(
             modifier = Modifier
@@ -194,14 +204,15 @@ fun CrossOverPreview() {
                 onDayClicked={ },
                 yearMonth= YearMonth.of(2023,4),
                 weekNumber=4,
-                bookedDays = null
+                bookedDays = bookedDays
             )
 
             SelectedWeekView(
                 modifier = Modifier.padding(start = ((startDay-1)*cellSize.width).dp),
                 cellSize = cellSize,
                 onDayClicked = { },
-                selectedDays = selectedDays[17]!!
+                selectedDays = selectedDays[17]!!,
+                yearMonth = YearMonth.of(2023,4)
             )
 
 

@@ -12,14 +12,12 @@ class Converters {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun fromTimestamp(value: Long?): LocalDate? {
-        val localDate = value?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
-        return localDate
+        return value?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun dateToTimestamp(date: LocalDate?): Long? {
-        val longDate = date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
-        return longDate
+        return date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
     }
 }

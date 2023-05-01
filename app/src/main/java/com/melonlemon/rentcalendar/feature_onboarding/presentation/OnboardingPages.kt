@@ -14,14 +14,13 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 import com.melonlemon.rentcalendar.core.presentation.components.NameInputPlus
 import com.melonlemon.rentcalendar.core.presentation.components.NameValueInputPlus
 import com.melonlemon.rentcalendar.core.presentation.components.SegmentedTwoBtns
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun WelcomePage(
@@ -112,8 +111,8 @@ fun IntroduceExpCategoriesPage(
     modifier: Modifier = Modifier,
     isMonthCat: Boolean,
     onSegmentBtnClick: (Boolean) -> Unit,
-    tempMonthlyExpCat: List<ExpensesCategoryInfo>,
-    tempIrregularExpCat: List<ExpensesCategoryInfo>,
+    tempMonthlyExpCat: List<DisplayInfo>,
+    tempIrregularExpCat: List<DisplayInfo>,
     newNameCat: String,
     newAmountCat: Int,
     onNewAmountChange: (Int) -> Unit,

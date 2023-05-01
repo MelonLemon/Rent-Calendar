@@ -9,8 +9,8 @@ interface AnalyticsRepository {
     suspend fun getAllRevenueQuarter(year: Int):Map<Int, Int>
     suspend fun getMonthlyExpensesQuarter(flatId: Int, year: Int):Map<Int, Int>
     suspend fun getAllMonthlyExpensesQuarter(year: Int):Map<Int, Int>
-    suspend fun getIrregExpensesQuarter(flatId: Int, year: Int):Map<Int, Int>
-    suspend fun getAllIrregExpensesQuarter(year: Int):Map<Int, Int>
+    suspend fun getIrregularExpQuarter(flatId: Int, year: Int):Map<Int, Int>
+    suspend fun getAllIrregularExpQuarter(year: Int):Map<Int, Int>
     suspend fun getRentByDateQuarter(flatId: Int, year: Int):Map<Int, Int>
     suspend fun getAllRentByDateQuarter(year: Int):Map<Int, Int>
     suspend fun getExpensesByDateQuarter(flatId: Int, year: Int):Map<Int, List<DisplayInfo>>

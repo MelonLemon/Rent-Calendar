@@ -20,7 +20,7 @@ fun IncomeStatementReport(
     netIncome: Int,
     revenue: Int,
     monthlyCost: Int,
-    irregCost: Int
+    irregularCost: Int
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -53,13 +53,13 @@ fun IncomeStatementReport(
                 )
                 TitleAmountRow(
                     title = stringResource(R.string.irreg_exp),
-                    valueString = "-$irregCost",
+                    valueString = "-$irregularCost",
                 )
             }
         }
         val listSegments = listOf(
             ChartItem(name = stringResource(R.string.monthly_exp), value = monthlyCost, color = MaterialTheme.colorScheme.tertiaryContainer),
-            ChartItem(name = stringResource(R.string.irreg_exp), value = irregCost, color = MaterialTheme.colorScheme.primary),
+            ChartItem(name = stringResource(R.string.irreg_exp), value = irregularCost, color = MaterialTheme.colorScheme.primary),
             ChartItem(name = stringResource(R.string.net_income), value = netIncome, color = MaterialTheme.colorScheme.primaryContainer),
         )
         if(revenue!=0){
@@ -191,16 +191,3 @@ fun BookedReport(
     }
 }
 
-
-//@Preview(showBackground = true)
-//@Composable
-//fun IncomeStatementReportPreview() {
-//    RentCalendarTheme {
-//        IncomeStatementReport(
-//            netIncome = 700,
-//            revenue = 1000,
-//            monthlyCost = 200,
-//            irregCost = 100
-//        )
-//    }
-//}

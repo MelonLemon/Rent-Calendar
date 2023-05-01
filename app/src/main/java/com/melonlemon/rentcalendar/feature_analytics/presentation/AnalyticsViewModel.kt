@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 
@@ -34,7 +33,7 @@ class AnalyticsViewModel @Inject constructor(
     private val _listOfFlats = MutableStateFlow<List<CategoryInfo>>(emptyList())
     val listOfFlats  = _listOfFlats.asStateFlow()
 
-    private val _listOfYears = MutableStateFlow<List<CategoryInfo>>(listOf(
+    private val _listOfYears = MutableStateFlow(listOf(
         CategoryInfo(id=0, name = YearMonth.now().year.toString())
     ))
     val listOfYears  = _listOfYears.asStateFlow()

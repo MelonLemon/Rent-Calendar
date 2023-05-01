@@ -15,14 +15,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.presentation.components.NameCommentFields
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun FinSnapShotContainer(
     modifier: Modifier = Modifier,
     title: String,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     OutlinedCard(
         modifier = modifier,
@@ -258,51 +257,3 @@ fun TitleAmountRow(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun FinSnapShotPaybackPreview() {
-    RentCalendarTheme {
-        FinSnapShotContainer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            title = "Gross Rent Multiplier",
-        ){
-            PaybackVariant(
-                result = "12 years",
-                description = "The higher the GRM, the less attractive " +
-                        "an investment property becomes.",
-                firstValue = 140000,
-                onFirstVChange = { },
-                secondValue = 12000,
-                onSecondVChange = { },
-                nameFirstV = "TOTAL PURCHASE PRICE",
-                nameSecondV = "YEARLY GROSS RENT"
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FinSnapShotComparePreview() {
-    RentCalendarTheme {
-        FinSnapShotContainer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            title = "The 1% Rule",
-        ){
-            CompareVariant(
-                firstResult=1200,
-                firstResTitle="Good Monthly Gross Rent",
-                secondResult=1200,
-                secondResTitle="Your Monthly Gross Rent",
-                firstValue = 140000,
-                onFirstVChange = { },
-                secondValue = 1,
-                nameFirstV = "TOTAL PURCHASE PRICE",
-            )
-        }
-    }
-}

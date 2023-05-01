@@ -16,16 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.core.presentation.components.SearchFilterButton
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchFilterWidget(
     modifier: Modifier = Modifier,
@@ -46,6 +43,7 @@ fun SearchFilterWidget(
     onMonthClick: (Int) -> Unit
 ) {
     SearchFilterContainer(
+        modifier = modifier,
         searchText =  searchText,
         onSearchTextChanged = onSearchTextChanged,
         onCancelClicked = onCancelClicked
@@ -135,7 +133,12 @@ fun SearchFilterWidget(
         ){
             val monthList = (1..12).toList()
 
-            itemsIndexed(monthList){ index, monthNum ->
+            items(
+                items = monthList,
+                key = { monthNum ->
+                    java.time.Month.of(monthNum).name + monthNum
+                }
+            ){monthNum ->
                 SearchFilterButton(
                     text = java.time.Month.of(monthNum).name,
                     isSelected = monthNum in chosenMonthsNum,
@@ -154,7 +157,7 @@ fun SearchFilterContainer(
     searchText: String,
     onSearchTextChanged: (String) -> Unit,
     onCancelClicked: () -> Unit,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     var selected by remember { mutableStateOf(false) }
     Column(

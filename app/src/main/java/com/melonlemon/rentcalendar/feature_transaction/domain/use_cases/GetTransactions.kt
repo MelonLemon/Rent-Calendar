@@ -5,8 +5,6 @@ import com.melonlemon.rentcalendar.feature_transaction.domain.model.AllTransacti
 import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionListItem
 import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionMonth
 import com.melonlemon.rentcalendar.feature_transaction.domain.repository.TransactionsRepository
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
-import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -55,13 +53,12 @@ class GetTransactions(
         val result = transactions.mapLatest {
 
             it.toList().map { info ->
-                val filtredDays: List<TransactionsDay>
-                if(searchText!=null && searchText.isNotBlank()){
-                    filtredDays = info.second.filter { it.category.contains(searchText) || it.comment.contains(searchText) }
+                val filteredDays: List<TransactionsDay> = if(searchText!=null && searchText.isNotBlank()){
+                    info.second.filter { days -> days.category.contains(searchText) || days.comment.contains(searchText) }
                 } else {
-                    filtredDays = info.second
+                    info.second
                 }
-                val daysList = filtredDays.groupBy { it.paymentDate }.toList().map{ dayList ->
+                val daysList = filteredDays.groupBy { days -> days.paymentDate }.toList().map{ dayList ->
                     AllTransactionsDay(
                         date = dayList.first,
                         transactions = dayList.second.mapIndexed { index, day ->
@@ -76,7 +73,7 @@ class GetTransactions(
                     )
                 }
 
-                val allAmount = info.second.sumOf { it.amount }
+                val allAmount = info.second.sumOf { days -> days.amount }
                 TransactionMonth(
                     yearMonth = YearMonth.of(year, info.first),
                     amount = allAmount,

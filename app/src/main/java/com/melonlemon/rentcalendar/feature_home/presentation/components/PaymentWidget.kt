@@ -1,6 +1,5 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.components
 
-import android.inputmethodservice.Keyboard.Key
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -13,8 +12,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.core.presentation.components.NameCommentFields
-import com.melonlemon.rentcalendar.feature_home.presentation.util.HomeScreenEvents
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +23,7 @@ fun PaymentWidget(
     onNightMChange: (String) -> Unit,
     onAllMoneyChange: (String) -> Unit,
 ) {
-    Column() {
+    Column {
         Text(
             text = stringResource(R.string.payment) + ":",
             style = MaterialTheme.typography.headlineSmall,

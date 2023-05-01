@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,9 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun BasicCardIcon(
@@ -45,11 +42,11 @@ fun BasicCardIcon(
 fun InputInfoCard(
     modifier: Modifier = Modifier,
     textFirstR: String = "",
-    textSecondR: @Composable() () -> Unit,
+    textSecondR: @Composable () -> Unit,
     inputNumber: String = "",
     onNumberChanged: (String) -> Unit,
     onAddButtonClicked: () -> Unit,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     OutlinedCard(
         modifier = modifier
@@ -137,48 +134,3 @@ fun DisplayInfoCard(
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun BasicCardIconPreview() {
-    RentCalendarTheme {
-        BasicCardIcon(
-            modifier = Modifier.size(56.dp),
-            icon = Icons.Filled.Add,
-            isSelected = true
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InfoCardInputPreview() {
-    RentCalendarTheme {
-        InputInfoCard(
-            textFirstR = "Safety Net - 1m Expenses ddddddddddd",
-            textSecondR = {
-                Text(
-                    text = "$1500",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                ) },
-            inputNumber = "300",
-            onNumberChanged =  { },
-            onAddButtonClicked = { },
-            content = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ArchiveCardPreview() {
-    RentCalendarTheme {
-        DisplayInfoCard(
-            textFirstR = "Safety Net - 1m Expenses ddddddddddd",
-            textSecondR = "dsfsdfds",
-            onDoubleTap = { }
-        )
-    }
-}

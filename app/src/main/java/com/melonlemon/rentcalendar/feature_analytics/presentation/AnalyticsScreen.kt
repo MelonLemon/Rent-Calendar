@@ -174,7 +174,7 @@ fun AnalyticsScreen(
                                     netIncome = incomeStatement.netIncome,
                                     revenue = incomeStatement.revenue,
                                     monthlyCost = incomeStatement.monthlyExp,
-                                    irregCost = incomeStatement.irregExp
+                                    irregularCost = incomeStatement.irregularExp
                                 )
                             }
                         }

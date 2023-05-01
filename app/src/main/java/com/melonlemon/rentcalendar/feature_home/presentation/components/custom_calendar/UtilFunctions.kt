@@ -21,7 +21,7 @@ fun getSelectedDatesList(
     } else {
         val startWeekNumber = startDate.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
         val endWeekNumber = endDate.get(ChronoField.ALIGNED_WEEK_OF_YEAR)
-        var selections = mutableMapOf<Int, SelectedWeekInfo>()
+        val selections = mutableMapOf<Int, SelectedWeekInfo>()
         (startWeekNumber..endWeekNumber).forEachIndexed{ index, week->
             val startWeekNum = if(week==startWeekNumber) startDate.dayOfWeek.value else 1
             val endWeekNum = if(week==endWeekNumber) endDate.dayOfWeek.value else 7
