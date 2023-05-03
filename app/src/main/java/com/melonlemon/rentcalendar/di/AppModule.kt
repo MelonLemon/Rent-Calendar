@@ -16,6 +16,7 @@ import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.domain.repository.HomeRepository
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_transaction.domain.repository.TransactionsRepository
+import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetFilteredTransactions
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.GetTransactions
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import dagger.Module
@@ -74,7 +75,7 @@ object AppModule {
             addNewFlat = AddNewFlat(repository),
             updatePaidStatus = UpdatePaidStatus(repository),
             getRentList = GetRentList(repository),
-            getSchedulePageState = GetSchedulePageState(),
+            getSchedulePageInfo = GetSchedulePageInfo(),
             addNewExpCat = AddNewExpCat(repository),
             getExpCategories = GetExpCategories(repository),
             addNewBooked = AddNewBooked(repository),
@@ -113,7 +114,8 @@ object AppModule {
     @Singleton
     fun provideTransactionsUseCases(repository: TransactionsRepository): TransactionsUseCases {
         return TransactionsUseCases(
-            getTransactions = GetTransactions(repository)
+            getTransactions = GetTransactions(repository),
+            getFilteredTransactions = GetFilteredTransactions()
         )
     }
 

@@ -27,7 +27,6 @@ class GetInvestmentReturn(
             expensesM = repository.getExpensesMonthlyByFlatId(year=year,month=month, flatId=flatId)
         }
         return InvestmentReturnState(
-            totalPurchasePrice = 0,
             yearlyGrossRent = yearlyGrossRent,
             monthlyGrossRent = monthlyGrossRent,
             netOperatingIncomeM = monthlyGrossRent - expensesM,

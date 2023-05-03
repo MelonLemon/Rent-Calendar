@@ -26,6 +26,8 @@ class OnBoardingViewModel @Inject constructor(
     private val _onBoardingUiEvents = MutableSharedFlow<OnBoardingUiEvents>()
     val onBoardingUiEvents  = _onBoardingUiEvents.asSharedFlow()
 
+
+
     fun onBoardingScreenEvents(event: OnBoardingEvents){
         when(event){
             is OnBoardingEvents.OnSaveBaseOptionClick -> {
@@ -36,11 +38,9 @@ class OnBoardingViewModel @Inject constructor(
                         irregExpCat = onBoardingState.value.tempIrregularExpCat
                     )
                     if(result == SimpleStatusOperation.OperationSuccess){
-                        _onBoardingUiEvents.emit(OnBoardingUiEvents.ShowErrorMessage(R.string.err_msg_onboarding))
-
-
-                    } else {
                         _onBoardingUiEvents.emit(OnBoardingUiEvents.FinishOnBoarding)
+                    } else {
+                        _onBoardingUiEvents.emit(OnBoardingUiEvents.ShowErrorMessage(R.string.err_msg_onboarding))
                     }
 
                 }
@@ -98,11 +98,20 @@ class OnBoardingViewModel @Inject constructor(
                             name = onBoardingState.value.newNameCat.trim(),
                             amount = onBoardingState.value.newAmountCat)
                     )
-                    _onBoardingState.value = onBoardingState.value.copy(
-                        tempMonthlyExpCat = newList,
-                        newNameCat = "",
-                        newAmountCat = 0,
-                    )
+                    if(onBoardingState.value.isMonthCat){
+                        _onBoardingState.value = onBoardingState.value.copy(
+                            tempMonthlyExpCat = newList,
+                            newNameCat = "",
+                            newAmountCat = 0,
+                        )
+                    } else {
+                        _onBoardingState.value = onBoardingState.value.copy(
+                            tempIrregularExpCat = newList,
+                            newNameCat = "",
+                            newAmountCat = 0,
+                        )
+                    }
+
                 }
 
             }

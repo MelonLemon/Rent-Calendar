@@ -19,8 +19,7 @@ class GetTransactions(
         flatIds: List<Int>,
         year: Int,
         transactionType: TransactionType,
-        currencySign: String,
-        searchText: String?=null): Flow<List<TransactionMonth>> {
+        currencySign: String): Flow<List<TransactionMonth>> {
 
         if(!transFilterInit){
             return flowOf()
@@ -53,11 +52,8 @@ class GetTransactions(
         val result = transactions.mapLatest {
 
             it.toList().map { info ->
-                val filteredDays: List<TransactionsDay> = if(searchText!=null && searchText.isNotBlank()){
-                    info.second.filter { days -> days.category.contains(searchText) || days.comment.contains(searchText) }
-                } else {
-                    info.second
-                }
+
+                val filteredDays: List<TransactionsDay> = info.second
                 val daysList = filteredDays.groupBy { days -> days.paymentDate }.toList().map{ dayList ->
                     AllTransactionsDay(
                         date = dayList.first,

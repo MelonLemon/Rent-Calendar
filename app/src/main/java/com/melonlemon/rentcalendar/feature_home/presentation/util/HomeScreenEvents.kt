@@ -15,20 +15,17 @@ sealed class HomeScreenEvents{
     object OnAddNewFlatBtnClick: HomeScreenEvents()
     data class OnFlatClick(val id: Int): HomeScreenEvents()
     //Home Screen State
-    data class OnPageChange(val page: HomePages): HomeScreenEvents()
     data class OnYearChanged(val year: Int): HomeScreenEvents()
     data class OnMonthClick(val monthInt: Int): HomeScreenEvents()
     //Schedule Page
     data class OnRentPaidChange(val id: Int, val isPaid: Boolean): HomeScreenEvents()
     data class OnYearMonthChange(val yearMonth: YearMonth): HomeScreenEvents()
     //Change Category Expenses
-    data class OnMoneyFlowChanged(val isRegularMF: Boolean): HomeScreenEvents()
     data class OnNewNameExpCatChanged(val name: String): HomeScreenEvents()
     data class OnNewAmountExpCatChanged(val amount: Int): HomeScreenEvents()
-    object OnAddNewExpCatBtnClick: HomeScreenEvents()
-    data class OnAmountExpChanged(val index: Int, val amount: Int): HomeScreenEvents()
+    data class OnAddNewExpCatBtnClick(val moneyFlowCategory: MoneyFlowCategory): HomeScreenEvents()
+    data class OnAmountExpChanged(val index: Int, val amount: Int, val monthlyIrregularToggle: Boolean): HomeScreenEvents()
     data class OnExpensesAdd(val catId: Int, val amount: Int, val categoryName: String): HomeScreenEvents()
-    data class OnSelectExpensesChange(val expensesInfo: ExpensesInfo): HomeScreenEvents()
     data class OnCategoriesChanged(val listChangedCategories: List<ExpensesCategoryInfo>): HomeScreenEvents()
     //New Booked
     data class OnNameBookedChanged(val name: String): HomeScreenEvents()

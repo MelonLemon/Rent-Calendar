@@ -30,14 +30,8 @@ fun AnalyticsScreen(
     viewModel: AnalyticsViewModel
 ) {
     val analyticsFilterState by viewModel.analyticsFilterState.collectAsStateWithLifecycle()
-    val chosenReport by viewModel.chosenReport.collectAsStateWithLifecycle()
-    val finSnapshotState by viewModel.finSnapshotState.collectAsStateWithLifecycle()
-    val listOfFlats by viewModel.listOfFlats.collectAsStateWithLifecycle()
-    val incomeStatementState by viewModel.incomeStatementState.collectAsStateWithLifecycle()
-    val cashFlowState by viewModel.cashFlowState.collectAsStateWithLifecycle()
-    val bookedReportState by viewModel.bookedReportState.collectAsStateWithLifecycle()
-    val listOfYears by viewModel.listOfYears.collectAsStateWithLifecycle()
-
+    val analyticsDependState by viewModel.analyticsDependState.collectAsStateWithLifecycle()
+    val analyticsIndependentState by viewModel.analyticsIndependentState.collectAsStateWithLifecycle()
 
 
     Scaffold {
@@ -53,7 +47,7 @@ fun AnalyticsScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.report_income_st),
-                            isSelected = chosenReport == Reports.IncomeStatement,
+                            isSelected = analyticsIndependentState.chosenReport == Reports.IncomeStatement,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.IncomeStatement))
@@ -64,7 +58,7 @@ fun AnalyticsScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.report_cash_flow),
-                            isSelected = chosenReport == Reports.CashFlow,
+                            isSelected = analyticsIndependentState.chosenReport == Reports.CashFlow,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.CashFlow))
@@ -74,7 +68,7 @@ fun AnalyticsScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.booked_report),
-                            isSelected = chosenReport == Reports.BookedReport,
+                            isSelected = analyticsIndependentState.chosenReport == Reports.BookedReport,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.BookedReport))
@@ -85,7 +79,7 @@ fun AnalyticsScreen(
                     item{
                         FilterButton(
                             text = stringResource(R.string.invest_return),
-                            isSelected = chosenReport == Reports.InvestmentReturn,
+                            isSelected = analyticsIndependentState.chosenReport == Reports.InvestmentReturn,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
                                     AnalyticsScreenEvents.OnReportChange(Reports.InvestmentReturn))
@@ -112,7 +106,7 @@ fun AnalyticsScreen(
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                     items(
-                        items = listOfFlats,
+                        items = analyticsIndependentState.listOfFlats,
                         key = { item ->
                             item.id
                         }
@@ -135,7 +129,7 @@ fun AnalyticsScreen(
                     contentPadding = PaddingValues(horizontal = 8.dp)
                 ){
                     items(
-                        items = listOfYears,
+                        items = analyticsIndependentState.listOfYears,
                         key = { item ->
                             item.id
                         }
@@ -145,7 +139,7 @@ fun AnalyticsScreen(
                             isSelected = analyticsFilterState.selectedYearId == item.id,
                             onBtnClick = {
                                 viewModel.analyticsScreenEvents(
-                                    AnalyticsScreenEvents.OnFlatClick(item.id))
+                                    AnalyticsScreenEvents.OnYearClick(item.id))
                             },
                         )
                         Spacer(modifier = Modifier.width(4.dp))
@@ -153,14 +147,14 @@ fun AnalyticsScreen(
                 }
             }
 
-            if(chosenReport == Reports.IncomeStatement){
+            if(analyticsIndependentState.chosenReport == Reports.IncomeStatement){
                 item{
                     LazyRow(
                         modifier = Modifier,
                         contentPadding = PaddingValues(horizontal = 8.dp)
                     ){
                         items(
-                            items = incomeStatementState,
+                            items = analyticsDependState.incomeStatementState,
                             key = { incomeStatement ->
                                 incomeStatement.quarter
                             }
@@ -182,14 +176,15 @@ fun AnalyticsScreen(
 
                 }
             }
-            if(chosenReport == Reports.CashFlow){
+
+            if(analyticsIndependentState.chosenReport == Reports.CashFlow){
                 item{
                     LazyRow(
                         modifier = Modifier,
                         contentPadding = PaddingValues(horizontal = 8.dp)
                     ){
                         items(
-                            items = cashFlowState,
+                            items = analyticsDependState.cashFlowState,
                             key = { cashFlow ->
                                 cashFlow.quarter
                             }
@@ -210,26 +205,26 @@ fun AnalyticsScreen(
 
                 }
             }
-            if(chosenReport == Reports.BookedReport){
+            if(analyticsIndependentState.chosenReport == Reports.BookedReport){
                 item{
                     FinSnapShotContainer(
                         modifier = Modifier.fillParentMaxWidth(),
                         title = stringResource(R.string.booked),
                     ){
                         BookedReport(
-                            averageBookedPer = bookedReportState.averageBooked,
-                            averageDayRent = bookedReportState.averageDayRent,
-                            mostBookedMonth = Month.of(bookedReportState.mostBookedMonth).getDisplayName(
+                            averageBookedPer = analyticsDependState.bookedReportState.averageBooked,
+                            averageDayRent = analyticsDependState.bookedReportState.averageDayRent,
+                            mostBookedMonth = Month.of(analyticsDependState.bookedReportState.mostBookedMonth).getDisplayName(
                                 TextStyle.FULL_STANDALONE, Locale.getDefault()),
-                            mostBookedMonthPercent = bookedReportState.mostBookedMonthPercent,
-                            mostIncomeMonth = Month.of(bookedReportState.mostIncomeMonth).getDisplayName(
+                            mostBookedMonthPercent = analyticsDependState.bookedReportState.mostBookedMonthPercent,
+                            mostIncomeMonth = Month.of(analyticsDependState.bookedReportState.mostIncomeMonth).getDisplayName(
                                 TextStyle.FULL_STANDALONE, Locale.getDefault()),
-                            mostIncomeMonthAmount = bookedReportState.mostIncomeMonthAmount
+                            mostIncomeMonthAmount = analyticsDependState.bookedReportState.mostIncomeMonthAmount
                         )
                     }
                 }
             }
-            if(chosenReport == Reports.InvestmentReturn){
+            if(analyticsIndependentState.chosenReport == Reports.InvestmentReturn){
                 item{
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
@@ -242,11 +237,11 @@ fun AnalyticsScreen(
                                 title = stringResource(R.string.grm),
                             ){
                                 PaybackVariant(
-                                    result = if(finSnapshotState.totalPurchasePrice!=0 && finSnapshotState.yearlyGrossRent!=0)
-                                        "${finSnapshotState.totalPurchasePrice/finSnapshotState.yearlyGrossRent}" + stringResource(R.string.years)
+                                    result = if(analyticsIndependentState.totalPurchasePrice!=0 && analyticsDependState.finSnapshotState.yearlyGrossRent!=0)
+                                        "${analyticsIndependentState.totalPurchasePrice/analyticsDependState.finSnapshotState.yearlyGrossRent}" + stringResource(R.string.years)
                                     else "0 " + stringResource(R.string.years),
                                     description = stringResource(R.string.grm_description),
-                                    firstValue = finSnapshotState.totalPurchasePrice,
+                                    firstValue = analyticsIndependentState.totalPurchasePrice,
                                     onFirstVChange = {  valueString ->
                                         viewModel.analyticsScreenEvents(
                                             AnalyticsScreenEvents.OnTotalPurchaseChange(
@@ -254,7 +249,7 @@ fun AnalyticsScreen(
                                             )
                                         )
                                     },
-                                    secondValue = finSnapshotState.yearlyGrossRent,
+                                    secondValue = analyticsDependState.finSnapshotState.yearlyGrossRent,
                                     nameFirstV = stringResource(R.string.total_purchase_price),
                                     nameSecondV = stringResource(R.string.yearly_gross_rent)
                                 )
@@ -266,11 +261,11 @@ fun AnalyticsScreen(
                                 title = stringResource(R.string.one_per_rule),
                             ){
                                 CompareVariant(
-                                    firstResult=(finSnapshotState.totalPurchasePrice*0.01f).toInt(),
+                                    firstResult=(analyticsIndependentState.totalPurchasePrice*0.01f).toInt(),
                                     firstResTitle= stringResource(R.string.good_gross_rent_monthly),
-                                    secondResult=finSnapshotState.monthlyGrossRent,
+                                    secondResult=analyticsDependState.finSnapshotState.monthlyGrossRent,
                                     secondResTitle= stringResource(R.string.your_gross_rent_monthly),
-                                    firstValue = finSnapshotState.totalPurchasePrice,
+                                    firstValue = analyticsIndependentState.totalPurchasePrice,
                                     secondValue = 1,
                                     nameFirstV = stringResource(R.string.total_purchase_price)
                                 )
@@ -282,12 +277,12 @@ fun AnalyticsScreen(
                                 title = stringResource(R.string.cap_rate),
                             ){
                                 PaybackVariant(
-                                    result = if(finSnapshotState.netOperatingIncomeY!=0 && finSnapshotState.totalPurchasePrice!=0)
-                                        "${(finSnapshotState.netOperatingIncomeY/finSnapshotState.totalPurchasePrice)*100}%"
+                                    result = if(analyticsDependState.finSnapshotState.netOperatingIncomeY!=0 && analyticsIndependentState.totalPurchasePrice!=0)
+                                        "${(analyticsDependState.finSnapshotState.netOperatingIncomeY/analyticsIndependentState.totalPurchasePrice)*100}%"
                                     else "0%",
                                     description = stringResource(R.string.cap_rate_desc),
-                                    firstValue = finSnapshotState.netOperatingIncomeY,
-                                    secondValue = finSnapshotState.totalPurchasePrice,
+                                    firstValue = analyticsDependState.finSnapshotState.netOperatingIncomeY,
+                                    secondValue = analyticsIndependentState.totalPurchasePrice,
                                     onSecondVChange = {valueString ->
                                         viewModel.analyticsScreenEvents(
                                             AnalyticsScreenEvents.OnTotalPurchaseChange(
@@ -306,11 +301,11 @@ fun AnalyticsScreen(
                                 title = stringResource(R.string.fifty_rule),
                             ){
                                 CompareVariant(
-                                    firstResult=(finSnapshotState.monthlyGrossRent*0.5f).toInt(),
+                                    firstResult=(analyticsDependState.finSnapshotState.monthlyGrossRent*0.5f).toInt(),
                                     firstResTitle= stringResource(R.string.good_noi),
-                                    secondResult=finSnapshotState.netOperatingIncomeM,
+                                    secondResult=analyticsDependState.finSnapshotState.netOperatingIncomeM,
                                     secondResTitle= stringResource(R.string.your_noi),
-                                    firstValue = finSnapshotState.monthlyGrossRent,
+                                    firstValue = analyticsDependState.finSnapshotState.monthlyGrossRent,
                                     secondValue = 50,
                                     nameFirstV = stringResource(R.string.monthly_gross_rent),
                                 )

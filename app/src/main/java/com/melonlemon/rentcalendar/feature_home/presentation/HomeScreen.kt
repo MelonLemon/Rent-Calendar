@@ -26,10 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
-import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
+import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
+import java.time.LocalDate
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -38,19 +39,10 @@ import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 fun HomeScreen(
     viewModel: HomeViewModel
 ) {
-    val finResults by viewModel.finResults.collectAsStateWithLifecycle()
-    val flatsState by viewModel.flatsState.collectAsStateWithLifecycle()
-    val homeScreenState by viewModel.homeScreenState.collectAsStateWithLifecycle()
-    val rentList by viewModel.rentList.collectAsStateWithLifecycle()
+
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
-    val expensesCategoriesState by viewModel.expensesCategoriesState.collectAsStateWithLifecycle()
-    val displayExpCategories by viewModel.displayExpCategories.collectAsStateWithLifecycle()
-    val newBookedState by viewModel.newBookedState.collectAsStateWithLifecycle()
-    val currencySign by viewModel.currencySign.collectAsStateWithLifecycle()
-    val displayExpensesReg by viewModel.displayExpensesReg.collectAsStateWithLifecycle()
-    val displayExpensesIr by viewModel.displayExpensesIr.collectAsStateWithLifecycle()
-    val selectedExpenses by viewModel.selectedExpenses.collectAsStateWithLifecycle()
-    val calendarState by viewModel.calendarState.collectAsStateWithLifecycle()
+    val dependState by viewModel.dependState.collectAsStateWithLifecycle()
+    val independentState by viewModel.independentState.collectAsStateWithLifecycle()
     val messageState by viewModel.messageState.collectAsStateWithLifecycle()
 
 
@@ -73,22 +65,38 @@ fun HomeScreen(
     val allExpCategories = remember{ mutableStateOf(false) }
     val calendarDialog = remember{ mutableStateOf(false) }
 
+    val homeScreenState = remember{ mutableStateOf<HomePages>(HomePages.SchedulePage) }
+
+
+    val monthlyIrregularToggle = remember{ mutableStateOf(true) }
+
+    var listExpenses = remember { derivedStateOf {
+        if(monthlyIrregularToggle.value) dependState.expensesPageState.monthlyExpenses else
+            dependState.expensesPageState.irregularExpenses
+    }
+
+    }
+
+    val selectedExpenses = remember{ mutableStateOf(
+        ExpensesInfo(
+        id = -1,
+        categoryId = -1,
+        categoryName = "",
+        paymentDate = LocalDate.now(),
+        amount = 0)
+    ) }
+
     val allFlatsName = stringResource(R.string.all_flats)
 
     val flatName = remember { derivedStateOf {
-        if(filterState.selectedFlatId==-1 || flatsState.listOfFlats.isEmpty()){
+        if(filterState.selectedFlatId==-1 || independentState.flatState.listOfFlats.isEmpty()){
             allFlatsName
         }else {
-            flatsState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name
+            independentState.flatState.listOfFlats.filter { it.id == filterState.selectedFlatId }[0].name
         }
 
     } }
 
-
-
-    val listExpenses = remember(expensesCategoriesState.isRegularMF) {
-        if (expensesCategoriesState.isRegularMF) displayExpensesReg else displayExpensesIr
-    }
 
     Scaffold(
         snackbarHost = {
@@ -109,7 +117,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     items(
-                        items = finResults,
+                        items = dependState.finResultsDisplay,
                         key = { monthResults ->
                             monthResults.yearMonth
                         }
@@ -122,7 +130,7 @@ fun HomeScreen(
                             bookedPercent = monthResults.percentBooked,
                             income = monthResults.income,
                             expenses = monthResults.expenses,
-                            currencySign = currencySign
+                            currencySign = independentState.currencySign
                         )
                     }
 
@@ -142,7 +150,7 @@ fun HomeScreen(
                     title = stringResource(R.string.new_flat)
                 ) {
                     NameInputPlus(
-                        name = flatsState.newFlat,
+                        name = independentState.flatState.newFlat,
                         onNameChanged = { name ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnNewFlatChanged(name)
@@ -173,7 +181,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                     items(
-                        items = flatsState.listOfFlats,
+                        items = independentState.flatState.listOfFlats,
                         key = { item ->
                             item.id
                         }
@@ -219,9 +227,9 @@ fun HomeScreen(
                     item {
                         SectionButton(
                             text = stringResource(R.string.schedule),
-                            isSelected = homeScreenState.page == HomePages.SchedulePage,
+                            isSelected = homeScreenState.value == HomePages.SchedulePage,
                             onBtnClick = {
-                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.SchedulePage))
+                                homeScreenState.value = HomePages.SchedulePage
                             }
                         )
                         Spacer(modifier = Modifier.width(16.dp))
@@ -229,9 +237,9 @@ fun HomeScreen(
                     item {
                         SectionButton(
                             text = stringResource(R.string.expenses),
-                            isSelected = homeScreenState.page == HomePages.ExpensesPage,
+                            isSelected = homeScreenState.value == HomePages.ExpensesPage,
                             onBtnClick = {
-                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.ExpensesPage))
+                                homeScreenState.value = HomePages.ExpensesPage
                             }
                         )
                         Spacer(modifier = Modifier.width(16.dp))
@@ -239,9 +247,9 @@ fun HomeScreen(
                     item {
                         SectionButton(
                             text = stringResource(R.string.book),
-                            isSelected = homeScreenState.page == HomePages.BookPage,
+                            isSelected = homeScreenState.value == HomePages.BookPage,
                             onBtnClick = {
-                                viewModel.homeScreenEvents(HomeScreenEvents.OnPageChange(HomePages.BookPage))
+                                homeScreenState.value = HomePages.BookPage
                             }
                         )
                     }
@@ -250,9 +258,9 @@ fun HomeScreen(
             }
 
             //SCHEDULE PAGE
-            if (homeScreenState.page == HomePages.SchedulePage) {
+            if (homeScreenState.value == HomePages.SchedulePage) {
                 items(
-                    items = rentList,
+                    items = dependState.schedulePageState.rentInfo,
                     key = { rent ->
                         rent.id
                     }
@@ -278,7 +286,7 @@ fun HomeScreen(
 
             //EXPENSES PAGE
 
-            if (homeScreenState.page == HomePages.ExpensesPage) {
+            if (homeScreenState.value == HomePages.ExpensesPage) {
                 // Monthly/Irregular BTN Choose +  VIEW ALL CATEGORIES BTN
                 item {
                     Row(
@@ -289,13 +297,9 @@ fun HomeScreen(
                         SegmentedTwoBtns(
                             firstBtnName = stringResource(R.string.regular_btn),
                             secondBtnName = stringResource(R.string.irregular_btn),
-                            isFirstBtnSelected = expensesCategoriesState.isRegularMF,
-                            onBtnClick = { isRegularSelected ->
-                                viewModel.homeScreenEvents(
-                                    HomeScreenEvents.OnMoneyFlowChanged(
-                                        isRegularMF = isRegularSelected
-                                    )
-                                )
+                            isFirstBtnSelected = monthlyIrregularToggle.value,
+                            onBtnClick = { isMonthlySelected ->
+                                monthlyIrregularToggle.value = isMonthlySelected
                             }
                         )
                         IconButton(onClick = {
@@ -314,8 +318,8 @@ fun HomeScreen(
                         title = stringResource(R.string.new_category)
                     ) {
                         NameValueInputPlus(
-                            name = expensesCategoriesState.newCategoryName,
-                            number = expensesCategoriesState.newCategoryAmount,
+                            name = independentState.expCategoriesState.newCategoryName,
+                            number = independentState.expCategoriesState.newCategoryAmount,
                             onNumberChanged = { amount ->
                                 viewModel.homeScreenEvents(
                                     HomeScreenEvents.OnNewAmountExpCatChanged(
@@ -330,7 +334,10 @@ fun HomeScreen(
                             },
                             onAddButtonClicked = {
                                 viewModel.homeScreenEvents(
-                                    HomeScreenEvents.OnAddNewExpCatBtnClick
+                                    HomeScreenEvents.OnAddNewExpCatBtnClick(
+                                        if(monthlyIrregularToggle.value) MoneyFlowCategory.Regular
+                                    else MoneyFlowCategory.Irregular
+                                    )
                                 )
                             }
                         )
@@ -341,9 +348,10 @@ fun HomeScreen(
                     Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline)
                 }
 
+
                 //NO CATEGORIES - SHOW MESSAGE
-                if((expensesCategoriesState.isRegularMF && displayExpCategories.monthlyExpCategories.isEmpty()) ||
-                    (!expensesCategoriesState.isRegularMF && displayExpCategories.irregularExpCategories.isEmpty())
+                if((monthlyIrregularToggle.value && independentState.expCategoriesState.monthlyExpCategories.isEmpty()) ||
+                    (!monthlyIrregularToggle.value && independentState.expCategoriesState.irregularExpCategories.isEmpty())
                 ){
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
@@ -361,17 +369,17 @@ fun HomeScreen(
                 }
 
                 //MONTHLY CATEGORY EXPENSES
-                if(expensesCategoriesState.isRegularMF && displayExpCategories.monthlyExpCategories.isNotEmpty()){
-                    println("monthlyExpCategories: ${displayExpCategories.monthlyExpCategories}")
+                if(monthlyIrregularToggle.value && independentState.expCategoriesState.monthlyExpCategories.isNotEmpty()){
+
                     itemsIndexed(
-                        items = displayExpCategories.monthlyExpCategories,
+                        items = independentState.expCategoriesState.monthlyExpCategories,
                         key = { _, category ->
                             "M100" + category.id
                         }
                     ) { index, category ->
                         //if categoryId in Expenses Transactions do not show
                         //Monthly categories can have only 1 payment for month
-                        if (category.id !in displayExpensesReg.map { it.categoryId }) {
+                        if (category.id !in dependState.expensesPageState.monthlyExpenses.map { it.categoryId }) {
                             InputInfoCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 textFirstR = category.name,
@@ -381,7 +389,8 @@ fun HomeScreen(
                                     viewModel.homeScreenEvents(
                                         HomeScreenEvents.OnAmountExpChanged(
                                             index = index,
-                                            amount = numberString.toIntOrNull() ?: 0
+                                            amount = numberString.toIntOrNull() ?: 0,
+                                            monthlyIrregularToggle = true
                                         )
                                     )
                                 },
@@ -410,10 +419,10 @@ fun HomeScreen(
                 }
 
                 //IRREGULAR CATEGORY EXPENSES
-                if(!expensesCategoriesState.isRegularMF && displayExpCategories.irregularExpCategories.isNotEmpty()){
-                    println("irregularExpCategories: ${displayExpCategories.irregularExpCategories}")
+                if(!monthlyIrregularToggle.value && independentState.expCategoriesState.irregularExpCategories.isNotEmpty()){
+
                     itemsIndexed(
-                        items = displayExpCategories.irregularExpCategories,
+                        items = independentState.expCategoriesState.irregularExpCategories,
                         key = { _, category ->
                             "IRR100" +  category.id
                         }
@@ -427,7 +436,8 @@ fun HomeScreen(
                                 viewModel.homeScreenEvents(
                                     HomeScreenEvents.OnAmountExpChanged(
                                         index = index,
-                                        amount = numberString.toIntOrNull() ?: 0
+                                        amount = numberString.toIntOrNull() ?: 0,
+                                        monthlyIrregularToggle = false
                                     )
                                 )
                             },
@@ -461,8 +471,9 @@ fun HomeScreen(
                 }
 
                 //LIST EXPENSES
+
                 items(
-                    items = listExpenses,
+                    items = listExpenses.value,
                     key = { expenses ->
                         "EXP200" + expenses.id
                     }
@@ -471,11 +482,7 @@ fun HomeScreen(
                         textFirstR = item.categoryName,
                         textSecondR = "${item.paymentDate} - ${item.amount}",
                         onDoubleTap = {
-                            viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnSelectExpensesChange(
-                                    expensesInfo = item
-                                )
-                            )
+                            selectedExpenses.value = item
                             changeExpensesDialog.value = true
                         }
                     )
@@ -483,11 +490,11 @@ fun HomeScreen(
             }
 
             //BOOKING PAGE
-            if (homeScreenState.page == HomePages.BookPage) {
+            if (homeScreenState.value == HomePages.BookPage) {
                 item {
                     DateRange(
-                        startDate = newBookedState.startDate,
-                        endDate = newBookedState.endDate,
+                        startDate = independentState.newBookedState.startDate,
+                        endDate = independentState.newBookedState.endDate,
                         onCalendarBtnClick = {
                             viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(filterState.yearMonth.year))
                             calendarDialog.value = true
@@ -496,8 +503,8 @@ fun HomeScreen(
                 }
                 item {
                     NameCommentFields(
-                        name = newBookedState.name,
-                        comment = newBookedState.comment,
+                        name = independentState.newBookedState.name,
+                        comment = independentState.newBookedState.comment,
                         onNameChange = { name ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnNameBookedChanged(name)
@@ -512,9 +519,9 @@ fun HomeScreen(
                 }
                 item {
                     PaymentWidget(
-                        nights = newBookedState.nights,
-                        oneNightMoney = newBookedState.oneNightMoney,
-                        allMoney = newBookedState.allMoney,
+                        nights = independentState.newBookedState.nights,
+                        oneNightMoney = independentState.newBookedState.oneNightMoney,
+                        allMoney = independentState.newBookedState.allMoney,
                         onAllMoneyChange = { moneyString ->
                             viewModel.homeScreenEvents(
                                 HomeScreenEvents.OnAllMoneyChange(
@@ -559,7 +566,7 @@ fun HomeScreen(
 
         if(currencyDialog.value){
             CurrencyDialog(
-                currencySign = currencySign,
+                currencySign = independentState.currencySign,
                 onCancel = {
                     currencyDialog.value = false
                 },
@@ -573,8 +580,8 @@ fun HomeScreen(
 
         if(allExpCategories.value){
             AllExpCategoriesDialog(
-                regularCategories = displayExpCategories.monthlyExpCategories,
-                irregularCategories = displayExpCategories.irregularExpCategories,
+                regularCategories = independentState.expCategoriesState.monthlyExpCategories,
+                irregularCategories = independentState.expCategoriesState.irregularExpCategories,
                 onCancel = {
                     allExpCategories.value = false
                 },
@@ -595,32 +602,32 @@ fun HomeScreen(
                 onAgree = { amount ->
                     viewModel.homeScreenEvents(
                         HomeScreenEvents.OnExpensesAmountChange(
-                            expensesId = selectedExpenses.id,
+                            expensesId = selectedExpenses.value.id,
                             amount = amount
                         )
                     )
                     changeExpensesDialog.value = false
                 },
-                name = selectedExpenses.categoryName,
-                paymentDate = selectedExpenses.paymentDate,
-                amount = selectedExpenses.amount
+                name = selectedExpenses.value.categoryName,
+                paymentDate = selectedExpenses.value.paymentDate,
+                amount = selectedExpenses.value.amount
             )
         }
 
         if(calendarDialog.value){
             CustomCalendarDialog(
                 flatName = flatName.value,
-                startDate = calendarState.startDate,
-                endDate = calendarState.endDate,
+                startDate = independentState.calendarState.startDate,
+                endDate = independentState.calendarState.endDate,
                 cellSize = Size(48f, 48f),
                 onCancel = {
                     calendarDialog.value = false
                 },
-                year = calendarState.year,
+                year = independentState.calendarState.year,
                 onYearChanged = { year ->
                     viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(year))
                 },
-                bookedDays = calendarState.bookedDays,
+                bookedDays = independentState.calendarState.bookedDays,
                 onSave = { startDate, endDate ->
                     viewModel.homeScreenEvents(HomeScreenEvents.OnDateRangeChanged(
                         startDate = startDate,

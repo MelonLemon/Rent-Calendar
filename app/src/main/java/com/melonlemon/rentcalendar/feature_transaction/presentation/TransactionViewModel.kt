@@ -47,21 +47,18 @@ class TransactionViewModel @Inject constructor(
         .debounce(500L)
         .onEach { _isDownloading.update { true } }
         .combine(_transactionsByMonth)
-        { searchText, _  ->
-            useCases.getTransactions(
-                flatIds = transFilterState.value.selectedFlatsId,
-                year = transFilterState.value.years.find{it.id==transFilterState.value.selectedYearId}!!.name.toIntOrNull() ?: 0,
-                transactionType = transFilterState.value.transactionType,
-                currencySign = "$", //change
+        { searchText, transactionsByMonth  ->
+            useCases.getFilteredTransactions(
                 searchText = searchText,
-                transFilterInit = transFilterState.value.transFilterInit
-            ).first()
+                transactionMonth = transactionsByMonth)
         }.onEach { _isDownloading.update { false } }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             _transactionsByMonth.value
         )
+
+
 
     init {
         viewModelScope.launch {
@@ -92,30 +89,58 @@ class TransactionViewModel @Inject constructor(
                 )
             }
             is TransactionScreenEvents.OnFlatsClick -> {
+
                 if(event.id==-1){
                     val newFlatsId = listOf(-1)
                     _transFilterState.value = transFilterState.value.copy(
                         selectedFlatsId = newFlatsId
                     )
                 } else {
-                    val newFlatsId = transFilterState.value.selectedFlatsId
-                    if(event.id in newFlatsId) newFlatsId.toMutableList().remove(event.id)
-                    else newFlatsId.toMutableList().add(event.id)
 
+                    val newFlatsId = transFilterState.value.selectedFlatsId.toMutableList()
+                    if(newFlatsId.contains(-1)){
+                        newFlatsId.remove(-1)
+                    }
+                    if(event.id in newFlatsId) {
+                        newFlatsId.remove(event.id)
+                        if(newFlatsId.isEmpty()){
+                            newFlatsId.add(-1)
+                        }
+                    }
+                    else {
+                        newFlatsId.add(event.id)
+
+                    }
                     _transFilterState.value = transFilterState.value.copy(
                         selectedFlatsId = newFlatsId
                     )
+
                 }
 
             }
             is TransactionScreenEvents.OnMonthClick -> {
-                val newMonthsNum = transFilterState.value.chosenMonthsNum
-                if(event.num in newMonthsNum) newMonthsNum.toMutableList().remove(event.num)
-                else newMonthsNum.toMutableList().add(event.num)
 
-                _transFilterState.value = transFilterState.value.copy(
-                    chosenMonthsNum = newMonthsNum
-                )
+                if(event.num==-1){
+                    _transFilterState.value = transFilterState.value.copy(
+                        chosenMonthsNum = listOf(1)
+                    )
+                } else {
+                    val newMonthsNum = transFilterState.value.chosenMonthsNum.toMutableList()
+                    if(event.num in newMonthsNum) {
+                        newMonthsNum.remove(event.num)
+                        if(newMonthsNum.isEmpty()){
+                            newMonthsNum.add(1)
+                        }
+                    }
+                    else {
+                        newMonthsNum.add(event.num)
+                    }
+                    println("after newMonthsNum: $newMonthsNum")
+                    _transFilterState.value = transFilterState.value.copy(
+                        chosenMonthsNum = newMonthsNum
+                    )
+                }
+
 
 
             }
@@ -125,6 +150,7 @@ class TransactionViewModel @Inject constructor(
                 )
             }
             is TransactionScreenEvents.OnYearMonthClick -> {
+
                 _transFilterState.value = transFilterState.value.copy(
                     chosenPeriod = event.transactionPeriod
                 )

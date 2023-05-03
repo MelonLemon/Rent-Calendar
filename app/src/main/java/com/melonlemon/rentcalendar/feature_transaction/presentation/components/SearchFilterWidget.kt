@@ -128,25 +128,28 @@ fun SearchFilterWidget(
 
             }
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ){
-            val monthList = (1..12).toList()
+        if(chosenPeriod == TransactionPeriod.MonthsPeriod){
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ){
+                val monthList = (1..12).toList()
 
-            items(
-                items = monthList,
-                key = { monthNum ->
-                    java.time.Month.of(monthNum).name + monthNum
+                items(
+                    items = monthList,
+                    key = { monthNum ->
+                        java.time.Month.of(monthNum).name + monthNum
+                    }
+                ){monthNum ->
+                    SearchFilterButton(
+                        text = java.time.Month.of(monthNum).name,
+                        isSelected = monthNum in chosenMonthsNum,
+                        onBtnClick = { onMonthClick(monthNum) }
+                    )
+
                 }
-            ){monthNum ->
-                SearchFilterButton(
-                    text = java.time.Month.of(monthNum).name,
-                    isSelected = monthNum in chosenMonthsNum,
-                    onBtnClick = { onMonthClick(monthNum) }
-                )
-
             }
         }
+
     }
 }
 

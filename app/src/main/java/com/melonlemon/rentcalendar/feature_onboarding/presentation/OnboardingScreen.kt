@@ -27,18 +27,6 @@ fun OnBoardingScreen(
 
     val onBoardingState by viewModel.onBoardingState.collectAsStateWithLifecycle()
 
-
-    val listBaseFlat = listOf(stringResource(R.string.main_flat))
-    val listMonthlyExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.monthly_cat_housing), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.internet), subHeader = "", amount = 0),
-    )
-    val listIrregularExpCat = listOf(
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.cleaning), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_disposable), subHeader = "", amount = 0),
-        ExpensesCategoryInfo(id=-1, name= stringResource(R.string.exp_cat_renovation), subHeader = "", amount = 0),
-    )
-
     val pagerState = rememberPagerState()
 
     val snackbarHostState = remember { SnackbarHostState() }

@@ -34,7 +34,7 @@ class GetTransactionsTest{
         val transactions = getTransactions(
             transactionType = TransactionType.AllTransaction,
             flatIds = listOf(-1),
-            year=2023, currencySign = "$", transFilterInit = true, searchText = "").first()
+            year=2023, currencySign = "$", transFilterInit = true).first()
 
         val listOfMonths = listOf(
             TransactionMonth(

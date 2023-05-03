@@ -2,13 +2,13 @@ package com.melonlemon.rentcalendar.feature_home.domain.use_cases
 
 
 import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
-import com.melonlemon.rentcalendar.feature_home.presentation.util.SchedulePageState
+import com.melonlemon.rentcalendar.feature_home.presentation.util.SchedulePageInfo
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-class GetSchedulePageState(
+class GetSchedulePageInfo(
 ) {
-    suspend operator fun invoke(rentList: List<RentInfo>): SchedulePageState {
+     operator fun invoke(rentList: List<RentInfo>): SchedulePageInfo {
         if(rentList.isNotEmpty()){
             val currentYear = rentList[0].periodStart.year
             val currentMonth = rentList[0].periodStart.month
@@ -30,7 +30,7 @@ class GetSchedulePageState(
                 }
 
             }
-            return SchedulePageState(
+            return SchedulePageInfo(
                 vacantDays = vacantDays,
                 vacantList = vacantList,
                 amountPaid = amountPaid,
@@ -38,7 +38,7 @@ class GetSchedulePageState(
 
             )
         } else {
-            return SchedulePageState()
+            return SchedulePageInfo()
         }
 
     }

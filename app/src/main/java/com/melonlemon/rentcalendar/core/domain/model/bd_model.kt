@@ -175,7 +175,3 @@ data class MostBookedMonthInfo(
     val percent: Int
 )
 
-data class BookedDaysPeriods(
-    @ColumnInfo(name = "start_date") val startDate: LocalDate,
-    @ColumnInfo(name = "end_date") val endDate: LocalDate,
-)

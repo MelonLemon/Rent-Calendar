@@ -9,8 +9,8 @@ import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatemen
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import javax.inject.Inject
@@ -24,43 +24,45 @@ class AnalyticsViewModel @Inject constructor(
     private val _analyticsFilterState = MutableStateFlow(AnalyticsFilterState())
     val analyticsFilterState  = _analyticsFilterState.asStateFlow()
 
-    private val _finSnapshotState = MutableStateFlow(InvestmentReturnState())
-    val finSnapshotState  = _finSnapshotState.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _analyticsDependState = _analyticsFilterState.flatMapLatest { filterState ->
+        val selectedYear = analyticsIndependentState.value.listOfYears[filterState.selectedYearId].name.toIntOrNull() ?: 0
+        val finSnapshotState  = useCases.getInvestmentReturn(year=selectedYear, flatId=filterState.selectedFlatId)
+        val incomeStatementState  = useCases.getIncomeStatement(year=selectedYear, flatId=filterState.selectedFlatId)
+        val cashFlowState  = useCases.getCashFlowInfo(year=selectedYear, flatId=filterState.selectedFlatId)
+        val bookedReportState  = useCases.getBookedReport(year=selectedYear, flatId=filterState.selectedFlatId)
+        flow{
+            emit(AnalyticsDependState(
+                finSnapshotState=finSnapshotState,
+                incomeStatementState=incomeStatementState,
+                cashFlowState=cashFlowState,
+                bookedReportState=bookedReportState
+            ))
+        }
 
-    private val _chosenReport = MutableStateFlow<Reports>(Reports.IncomeStatement)
-    val chosenReport  = _chosenReport.asStateFlow()
+    }
+    val analyticsDependState  = _analyticsDependState.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        AnalyticsDependState()
+    )
 
-    private val _listOfFlats = MutableStateFlow<List<CategoryInfo>>(emptyList())
-    val listOfFlats  = _listOfFlats.asStateFlow()
-
-    private val _listOfYears = MutableStateFlow(listOf(
-        CategoryInfo(id=0, name = YearMonth.now().year.toString())
-    ))
-    val listOfYears  = _listOfYears.asStateFlow()
-
-    private val _incomeStatementState = MutableStateFlow<List<IncomeStatementInfo>>(emptyList())
-    val incomeStatementState  = _incomeStatementState.asStateFlow()
-
-    private val _cashFlowState = MutableStateFlow<List<CashFlowInfo>>(emptyList())
-    val cashFlowState  = _cashFlowState.asStateFlow()
-
-    private val _bookedReportState = MutableStateFlow(BookedReportState())
-    val bookedReportState  = _bookedReportState.asStateFlow()
-
+    private val _analyticsIndependentState = MutableStateFlow(AnalyticsIndependentState())
+    val analyticsIndependentState  = _analyticsIndependentState.asStateFlow()
 
 
     init{
         viewModelScope.launch {
-            _listOfFlats.value = coreUseCases.getAllFlats()
-            _listOfYears.value = coreUseCases.getActiveYears()
-            _analyticsFilterState.value = analyticsFilterState.value.copy(
-                selectedYearId = listOfYears.value[0].id
+            val listOfFlats  = coreUseCases.getAllFlats()
+            val listOfYears  = coreUseCases.getActiveYears()
+            _analyticsIndependentState.value = analyticsIndependentState.value.copy(
+                listOfFlats=listOfFlats,
+                listOfYears=listOfYears
             )
-            val selectedYear = listOfYears.value[0].name.toIntOrNull() ?: 0
-            _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-            _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-            _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-            _bookedReportState.value = useCases.getBookedReport(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
+            _analyticsFilterState.value = analyticsFilterState.value.copy(
+                selectedYearId = analyticsIndependentState.value.listOfYears[0].id
+            )
+
         }
 
 
@@ -69,23 +71,23 @@ class AnalyticsViewModel @Inject constructor(
     fun analyticsScreenEvents(event: AnalyticsScreenEvents){
         when(event){
             is AnalyticsScreenEvents.OnReportChange -> {
-                _chosenReport.value = event.report
+                _analyticsIndependentState.value = analyticsIndependentState.value.copy(
+                    chosenReport = event.report
+                )
             }
             is AnalyticsScreenEvents.OnFlatClick -> {
-                viewModelScope.launch {
-                    _analyticsFilterState.value =  analyticsFilterState.value.copy(
-                        selectedFlatId = event.id
-                    )
-                    val selectedYear = listOfYears.value.find{ it.id == analyticsFilterState.value.selectedYearId}?.name?.toInt() ?: YearMonth.now().year
-                    _finSnapshotState.value = useCases.getInvestmentReturn(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-                    _incomeStatementState.value = useCases.getIncomeStatement(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-                    _cashFlowState.value = useCases.getCashFlowInfo(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-                    _bookedReportState.value = useCases.getBookedReport(year=selectedYear, flatId=analyticsFilterState.value.selectedFlatId)
-                }
+                _analyticsFilterState.value =  analyticsFilterState.value.copy(
+                    selectedFlatId = event.id
+                )
+            }
+            is AnalyticsScreenEvents.OnYearClick -> {
+                _analyticsFilterState.value =  analyticsFilterState.value.copy(
+                    selectedYearId = event.id
+                )
             }
 
             is AnalyticsScreenEvents.OnTotalPurchaseChange -> {
-                _finSnapshotState.value = finSnapshotState.value.copy(
+                _analyticsIndependentState.value = analyticsIndependentState.value.copy(
                     totalPurchasePrice = event.price
                 )
             }
@@ -93,4 +95,6 @@ class AnalyticsViewModel @Inject constructor(
 
         }
     }
+
+
 }

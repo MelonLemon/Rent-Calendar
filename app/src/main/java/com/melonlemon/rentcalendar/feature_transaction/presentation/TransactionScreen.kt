@@ -15,6 +15,7 @@ import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.SearchFilterWidget
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.transactionDay
+import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionScreenEvents
 import java.time.format.DateTimeFormatter
 
@@ -27,14 +28,18 @@ fun TransactionScreen(
     val transFilterState by viewModel.transFilterState.collectAsStateWithLifecycle()
     val transactionsByMonth by viewModel.transactionsByMonth.collectAsStateWithLifecycle()
     val isDownloading by viewModel.isDownloading.collectAsStateWithLifecycle()
-    val totalSum = remember{
-        if(transactionsByMonth.isNotEmpty()){
-            derivedStateOf{
+    val totalSum = remember(transactionsByMonth, transFilterState.chosenMonthsNum, transFilterState.chosenPeriod){
+        mutableStateOf(if(transactionsByMonth.isNotEmpty()){
+
+            if(transFilterState.chosenPeriod == TransactionPeriod.YearPeriod) {
+                transactionsByMonth.sumOf { it.amount }
+            } else {
                 transactionsByMonth.filter { it.yearMonth.monthValue in transFilterState.chosenMonthsNum }
                     .sumOf { it.amount }}
         } else {
             0
-        } }
+        })
+    }
 
     Scaffold() {
         LazyColumn(
@@ -92,10 +97,12 @@ fun TransactionScreen(
 
             } else {
                 item{
-                    Text(text= stringResource(R.string.total_sum) + totalSum)
+                    Text(text= stringResource(R.string.total_sum) + "${totalSum.value}")
                 }
                 transactionsByMonth.forEach { month ->
-                    if(month.yearMonth.monthValue in transFilterState.chosenMonthsNum){
+                    val showMonth = if(transFilterState.chosenPeriod == TransactionPeriod.YearPeriod) true else
+                        month.yearMonth.monthValue in transFilterState.chosenMonthsNum
+                    if(showMonth){
                         val sign = if(month.amount>0) "+" else "-"
                         val monthTitle = "${month.yearMonth}: $sign${month.amount}${month.currencySign}"
                         item {

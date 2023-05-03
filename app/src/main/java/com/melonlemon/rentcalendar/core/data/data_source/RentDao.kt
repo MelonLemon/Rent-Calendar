@@ -292,7 +292,7 @@ interface RentDao {
             "UNION ALL " +
             "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)), paymentDate, comment AS category,  SUM(amount)*-1 AS amount, " +
             "CAST(month AS VARCHAR) AS comment  FROM expenses " +
-            "WHERE year=:year GROUP BY month, paymentDate " +
+            "WHERE year=:year GROUP BY month, paymentDate, comment " +
             "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate, comment")
     fun getAllTransactions(year: Int): Flow<Map<Int, List<TransactionsDay>>>
 
@@ -304,7 +304,7 @@ interface RentDao {
             "UNION ALL " +
             "SELECT (CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer)) AS month, paymentDate, comment AS category, " +
             "SUM(amount)*-1 AS amount, CAST(month AS VARCHAR) AS comment  FROM expenses " +
-            "WHERE flat_id IN (:flatId) AND year=:year GROUP BY month, paymentDate " +
+            "WHERE flat_id IN (:flatId) AND year=:year GROUP BY month, paymentDate, comment " +
             "ORDER BY CAST(strftime('%m', datetime(paymentDate/1000, 'unixepoch')) AS Integer), paymentDate")
     fun getAllTransactionsByFlatId(flatId: List<Int>, year: Int): Flow<Map<Int, List<TransactionsDay>>>
 

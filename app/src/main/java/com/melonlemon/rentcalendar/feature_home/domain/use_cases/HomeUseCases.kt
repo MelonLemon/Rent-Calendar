@@ -5,7 +5,7 @@ data class HomeUseCases(
     val addNewFlat: AddNewFlat,
     val updatePaidStatus: UpdatePaidStatus,
     val getRentList: GetRentList,
-    val getSchedulePageState: GetSchedulePageState,
+    val getSchedulePageInfo: GetSchedulePageInfo,
     val addNewExpCat: AddNewExpCat,
     val getExpCategories: GetExpCategories,
     val addNewBooked: AddNewBooked,
