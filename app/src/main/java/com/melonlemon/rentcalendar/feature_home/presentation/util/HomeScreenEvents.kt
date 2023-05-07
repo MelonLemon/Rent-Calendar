@@ -9,7 +9,6 @@ import java.time.YearMonth
 sealed class HomeScreenEvents{
     //On Base Save
     data class SendMessage(@StringRes val message: Int): HomeScreenEvents()
-    object CloseMessage: HomeScreenEvents()
     //New Flat
     data class OnNewFlatChanged(val name: String): HomeScreenEvents()
     object OnAddNewFlatBtnClick: HomeScreenEvents()

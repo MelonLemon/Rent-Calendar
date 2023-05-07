@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
@@ -21,10 +22,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_home.domain.model.SelectedWeekInfo
+import org.w3c.dom.Text
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
@@ -46,43 +49,59 @@ fun CustomCalendar(
 ) {
     val tempYear by remember{ mutableStateOf(year) }
     val density = LocalDensity.current
+    val listState = rememberLazyListState()
+    val firstScroll = remember{ mutableStateOf(true) }
+    val scrollToItem = remember{ mutableStateOf(false) }
+
+    val firstWeekOfCurrentMonth = YearMonth.now().atDay(1)[WeekFields.ISO.weekOfYear()]
+
+    if(scrollToItem.value){
+        LaunchedEffect(scrollToItem.value){
+            listState.scrollToItem(firstWeekOfCurrentMonth)
+        }
+        scrollToItem.value = false
+        firstScroll.value = false
+    }
 
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            text= stringResource(R.string.calendar),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         val dateStart = if(tempStartDate != null)
             "${tempStartDate.month.name} ${tempStartDate.dayOfMonth}" else ""
         val dateEnd = if(tempEndDate!= null)
             "${tempEndDate.month.name} ${tempEndDate.dayOfMonth}" else ""
-        Text(
-            text="$dateStart - $dateEnd",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
-        YearWidget(
-            year = tempYear,
-            onYearChange = onYearChanged,
-            density = density
-        )
+        if(dateStart.isNotBlank() || dateEnd.isNotBlank()){
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text="$dateStart - $dateEnd",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        } else {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text= stringResource(R.string.choose_dates),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
         HeaderWeekView(modifier = Modifier
             .fillMaxWidth()
             .wrapContentWidth(Alignment.CenterHorizontally), cellSize = cellSize)
 
         LazyColumn(
+            state = listState,
             modifier = modifier
                 .consumeWindowInsets(contentPadding)
-                .background(MaterialTheme.colorScheme.surface),
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)),
             contentPadding = contentPadding,
         ){
             val contentModifier = Modifier
@@ -100,74 +119,11 @@ fun CustomCalendar(
             }
 
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun YearWidget(
-    year: Int,
-    onYearChange: (Int) -> Unit,
-    density: Density
-) {
-    var showEdit by remember { mutableStateOf(false) }
-    var tempYear by remember { mutableStateOf(year.toString()) }
-    Column(){
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    showEdit = !showEdit
-                }
-        ){
-            Text(text="$year")
-        }
-        AnimatedVisibility(
-            visible = showEdit,
-            enter = slideInVertically {
-                with(density) { 40.dp.roundToPx() }
-            } + expandVertically(
-                expandFrom = Alignment.Top
-            ) + fadeIn(
-                initialAlpha = 0.3f
-            ),
-            exit = slideOutVertically() + shrinkVertically() + fadeOut()
-        ){
-            Row(){
-                val limitNum = 4
-                OutlinedTextField(
-                    value = if (tempYear == "0") "" else tempYear,
-                    onValueChange = { tempYear = it.take(limitNum) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number
-                    ),
-                    textStyle = MaterialTheme.typography.titleMedium,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        textColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier.width(90.dp),
-                    supportingText = {
-                        Text(text = if(tempYear.length != 4 || (tempYear.take(1)!="2" && tempYear.take(1)!="1"))
-                        stringResource(R.string.not_correct_year) else "")
-                    }
-                )
-                Spacer(modifier = Modifier.width(32.dp))
-                IconButton(onClick = {
-                    if((tempYear.take(1)=="2" || tempYear.take(1)=="1") && tempYear.length == 4){
-                        onYearChange(tempYear.toInt())
-                    }
-
-                }) {
-                    Icons.Filled.Done
-
-                }
-            }
+        if(firstScroll.value){
+            scrollToItem.value = true
         }
 
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -229,9 +185,7 @@ private fun LazyListScope.itemsCalendarMonth(
                     visible = selectedDays.containsKey(yearWeek),
                     enter = slideInHorizontally(
                         animationSpec = tween(delayMillis = 1000* (selectedDays[yearWeek]?.index ?: 1) +1000)
-                    ) {
-                        with(density) { 40.dp.roundToPx() }
-                    } + expandHorizontally (
+                    )  + expandHorizontally (
                         expandFrom = Alignment.Start
                     ) + fadeIn(
                         initialAlpha = 0.3f

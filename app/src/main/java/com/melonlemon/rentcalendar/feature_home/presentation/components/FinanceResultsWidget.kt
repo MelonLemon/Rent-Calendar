@@ -12,9 +12,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import com.melonlemon.rentcalendar.R
+import org.w3c.dom.Text
 import java.time.YearMonth
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -42,11 +45,25 @@ fun FinanceResultWidget(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = flatName,
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(
+                    text = flatName,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${month.year}",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,9 +81,12 @@ fun FinanceResultWidget(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "${month.month.name} ${month.year}",
+                        text = month.month.name,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -77,7 +97,7 @@ fun FinanceResultWidget(
                         val finResult = income - expenses
                         Text(
                             text = if(finResult>0) "+${String.format("% d",finResult)}$currencySign"
-                            else "-$finResult$currencySign",
+                            else "$finResult$currencySign",
                             style = MaterialTheme.typography.titleLarge,
                             color = if(finResult>0) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSecondaryContainer,
@@ -120,11 +140,30 @@ fun CircleDiagram(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(radius * 2f)
             ) {
+                val diagramColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+                Canvas(modifier = Modifier.size(radius * 2f)) {
+                    drawArc(
+                        color = diagramColor,
+                        startAngle = 0f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        style = Stroke(
+                            width = 15.dp.toPx(),
+                            cap = StrokeCap.Round,
+                        )
+                    )
+                }
+
+            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(radius * 2f)
+            ) {
                 val diagramColor = MaterialTheme.colorScheme.primary
                 Canvas(modifier = Modifier.size(radius * 2f)) {
                     drawArc(
                         color = diagramColor,
-                        startAngle = 30f,
+                        startAngle = 270f,
                         sweepAngle = 360 * percent,
                         useCenter = false,
                         style = Stroke(
@@ -135,6 +174,7 @@ fun CircleDiagram(
                 }
 
             }
+
             Text(
                 text = "${(percent * 100).toInt()}%",
                 style = MaterialTheme.typography.headlineMedium,

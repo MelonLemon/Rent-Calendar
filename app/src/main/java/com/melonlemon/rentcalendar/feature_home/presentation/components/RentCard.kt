@@ -36,7 +36,7 @@ fun RentCard(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+            defaultElevation = 10.dp
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
     ) {

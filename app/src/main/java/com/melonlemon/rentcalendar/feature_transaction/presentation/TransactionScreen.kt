@@ -1,15 +1,14 @@
 package com.melonlemon.rentcalendar.feature_transaction.presentation
 
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
@@ -43,7 +42,9 @@ fun TransactionScreen(
 
     Scaffold() {
         LazyColumn(
-            modifier = Modifier.padding(it)
+            modifier = Modifier.padding(it).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.Start
         ){
             item{
                 SearchFilterWidget(
@@ -97,19 +98,23 @@ fun TransactionScreen(
 
             } else {
                 item{
-                    Text(text= stringResource(R.string.total_sum) + "${totalSum.value}")
+                    Text(
+                        text= stringResource(R.string.total_sum) + "${totalSum.value}",
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 }
                 transactionsByMonth.forEach { month ->
                     val showMonth = if(transFilterState.chosenPeriod == TransactionPeriod.YearPeriod) true else
                         month.yearMonth.monthValue in transFilterState.chosenMonthsNum
                     if(showMonth){
-                        val sign = if(month.amount>0) "+" else "-"
+                        val sign = if(month.amount>0) "+" else ""
                         val monthTitle = "${month.yearMonth}: $sign${month.amount}${month.currencySign}"
                         item {
                             Text(
                                 text= monthTitle,
-                                style = MaterialTheme.typography.titleLarge
+                                style = MaterialTheme.typography.titleMedium
                             )
+                            Spacer(modifier=Modifier.height(8.dp))
                         }
                         val pattern = "dd.MM"
                         val format = DateTimeFormatter.ofPattern(pattern)

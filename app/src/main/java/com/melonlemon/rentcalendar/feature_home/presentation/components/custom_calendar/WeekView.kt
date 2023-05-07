@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -27,7 +28,11 @@ import java.time.temporal.WeekFields
 internal fun HeaderWeekView(modifier: Modifier = Modifier, cellSize: Size) {
     Row(modifier = modifier) {
         for (day in DayOfWeek.values()) {
-            DayOfWeekHeading(day = day.name.take(1), cellSize = cellSize)
+            DayOfWeekHeading(
+                day = day.name.take(1),
+                cellSize = cellSize,
+                backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)
+            )
         }
     }
 }
@@ -50,7 +55,7 @@ fun WeekView(
 
     Box(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
             .size(width = (cellSize.width * 7).dp, cellSize.height.dp)) {
         Row(modifier = Modifier) {
             for (i in 0..6) {
@@ -72,7 +77,7 @@ fun WeekView(
                     Box(
                         modifier = Modifier
                             .size(width = cellSize.width.dp, height = cellSize.height.dp)
-                            .background(MaterialTheme.colorScheme.surface)
+                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
                     )
                 }
                 currentDay = currentDay.plusDays(1)
@@ -116,7 +121,7 @@ fun SelectedWeekView(
                     Box(
                         modifier = Modifier
                             .size(width = cellSize.width.dp, height = cellSize.height.dp)
-                            .background(MaterialTheme.colorScheme.surface)
+                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
                     )
                 }
 

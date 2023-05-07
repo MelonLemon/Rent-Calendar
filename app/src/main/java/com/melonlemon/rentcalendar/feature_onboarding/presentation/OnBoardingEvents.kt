@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 sealed class OnBoardingEvents{
     object OnSaveBaseOptionClick: OnBoardingEvents()
     data class SendMessage(@StringRes val message: Int): OnBoardingEvents()
+    data class InitSettings(val settingsInfo:SettingsInfo): OnBoardingEvents()
     //FLAT PAGE
     data class OnNewNameChanged(val name:String): OnBoardingEvents()
     object OnNewFlatAdd: OnBoardingEvents()

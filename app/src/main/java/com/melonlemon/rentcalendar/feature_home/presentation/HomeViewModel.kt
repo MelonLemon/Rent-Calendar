@@ -10,6 +10,7 @@ import com.melonlemon.rentcalendar.core.presentation.util.SendMessage
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingUiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -32,8 +33,8 @@ class HomeViewModel @Inject constructor(
     private val _independentState = MutableStateFlow(IndependentState())
     val independentState  = _independentState.asStateFlow()
 
-    private val _messageState = MutableStateFlow(SendMessage())
-    val messageState  = _messageState.asStateFlow()
+    private val _onHomeUiEvents = MutableSharedFlow<HomeUiEvents>()
+    val onHomeUiEvents  = _onHomeUiEvents.asSharedFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _monthlyCatExpenses = filterState.flatMapLatest{ filterState ->
@@ -93,18 +94,6 @@ class HomeViewModel @Inject constructor(
         DependState()
     )
 
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    private val _dependState = filterState.flatMapLatest{ filterState ->
-//
-//    }
-//
-//    val dependState  = _dependState.stateIn(
-//        viewModelScope,
-//        SharingStarted.WhileSubscribed(5000),
-//        DependState()
-//    )
-
-
     init {
         viewModelScope.launch {
 
@@ -120,27 +109,18 @@ class HomeViewModel @Inject constructor(
                 )
             )
 
+            _onHomeUiEvents.emit(HomeUiEvents.ScrollFinancialResults)
 
         }
     }
 
     fun homeScreenEvents(event: HomeScreenEvents){
         when(event) {
-
             is HomeScreenEvents.SendMessage -> {
-                _messageState.value = messageState.value.copy(
-                    send = true,
-                    message = event.message
-                )
+                viewModelScope.launch {
+                    _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(event.message))
+                }
             }
-
-            is HomeScreenEvents.CloseMessage -> {
-                _messageState.value = messageState.value.copy(
-                    send = false,
-                    message = R.string.err_msg_base_error
-                )
-            }
-
 
             is HomeScreenEvents.OnYearMonthChange -> {
                 _filterState.value = filterState.value.copy(
@@ -153,7 +133,11 @@ class HomeViewModel @Inject constructor(
                     newFlat = event.name
                 )
                 _independentState.value = independentState.value.copy(
-                    flatState = newFlatState
+                    flatState = newFlatState,
+                    newBookedState = independentState.value.newBookedState.copy(
+                        startDate = null,
+                        endDate = null
+                    )
                 )
 
             }
@@ -174,10 +158,7 @@ class HomeViewModel @Inject constructor(
                             flatState = newFlatState
                         )
                     }
-                    _messageState.value = messageState.value.copy(
-                        send = true,
-                        message = status.message
-                    )
+                    _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(status.message))
 
                 }
             }
@@ -196,10 +177,7 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     val result = useCases.updatePaidStatus(id = event.id, isPaid = event.isPaid)
                     if(result != SimpleStatusOperation.OperationSuccess){
-                        _messageState.value = messageState.value.copy(
-                            send = true,
-                            message = R.string.err_msg_unknown_error
-                        )
+                        _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(R.string.err_msg_unknown_error))
                     }
                 }
             }
@@ -216,6 +194,9 @@ class HomeViewModel @Inject constructor(
                 _filterState.value = filterState.value.copy(
                     yearMonth = YearMonth.of(filterState.value.yearMonth.year, event.monthInt)
                 )
+                viewModelScope.launch {
+                    _onHomeUiEvents.emit(HomeUiEvents.ScrollFinancialResults)
+                }
             }
 
             is HomeScreenEvents.OnNewNameExpCatChanged -> {
@@ -258,10 +239,7 @@ class HomeViewModel @Inject constructor(
                             expCategoriesState = newState
                         )
                     }
-                    _messageState.value = messageState.value.copy(
-                        send = true,
-                        message = status.message
-                    )
+                    _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(status.message))
 
                 }
             }
@@ -302,10 +280,7 @@ class HomeViewModel @Inject constructor(
                     )
 
                     if(result != SimpleStatusOperation.OperationSuccess) {
-                        _messageState.value = messageState.value.copy(
-                            send = true,
-                            message = R.string.err_msg_unknown_error
-                        )
+                        _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(R.string.err_msg_unknown_error))
                     }
 
 
@@ -318,11 +293,16 @@ class HomeViewModel @Inject constructor(
                     val result = useCases.updateCategories(
                         categories = event.listChangedCategories
                     )
-                    if(result != SimpleStatusOperation.OperationSuccess){
-                        _messageState.value = messageState.value.copy(
-                            send = true,
-                            message = R.string.err_msg_unknown_error
+                    val categories = useCases.getExpCategories()
+                    _independentState.value = independentState.value.copy(
+                        expCategoriesState = independentState.value.expCategoriesState.copy(
+                            monthlyExpCategories = categories.monthlyExpCategories,
+                            irregularExpCategories = categories.irregularExpCategories
                         )
+                    )
+                    if(result != SimpleStatusOperation.OperationSuccess){
+                        _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(R.string.err_msg_unknown_error))
+
                     }
                 }
 
@@ -340,10 +320,7 @@ class HomeViewModel @Inject constructor(
                     )
 
                     if(result != SimpleStatusOperation.OperationSuccess) {
-                        _messageState.value = messageState.value.copy(
-                            send = true,
-                            message = R.string.err_msg_unknown_error
-                        )
+                        _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(R.string.err_msg_unknown_error))
                     }
                 }
 
@@ -368,11 +345,7 @@ class HomeViewModel @Inject constructor(
             }
             is HomeScreenEvents.SetCalendarState -> {
                 viewModelScope.launch {
-                    if(filterState.value.selectedFlatId == -1) {
-                        _filterState.value = filterState.value.copy(
-                            selectedFlatId = independentState.value.flatState.listOfFlats[0].id
-                        )
-                    }
+
                     val bookedDays = useCases.getBookedDays(year=event.year, flatId = filterState.value.selectedFlatId)
                     val newStartDate = if((independentState.value.newBookedState.startDate?.year ?: 0) == event.year)
                         independentState.value.newBookedState.startDate else null
@@ -387,6 +360,7 @@ class HomeViewModel @Inject constructor(
                     _independentState.value = independentState.value.copy(
                         calendarState = newState
                     )
+                    _onHomeUiEvents.emit(HomeUiEvents.OpenCalendar)
                 }
 
             }
@@ -446,10 +420,8 @@ class HomeViewModel @Inject constructor(
                             newBookedState = newState
                         )
                     }
-                    _messageState.value = messageState.value.copy(
-                        send = true,
-                        message = result.message
-                    )
+                    _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(result.message))
+
                 }
             }
 

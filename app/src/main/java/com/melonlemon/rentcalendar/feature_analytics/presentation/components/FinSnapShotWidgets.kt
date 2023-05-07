@@ -25,6 +25,9 @@ fun FinSnapShotContainer(
 ) {
     OutlinedCard(
         modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(5.dp)
+        ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(

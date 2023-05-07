@@ -18,7 +18,7 @@ fun MonthHeader(
     modifier: Modifier = Modifier,
     month: String,
     height: Dp = 16.dp,
-    color: Color = MaterialTheme.colorScheme.onSurface
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Column {
         Spacer(modifier = Modifier.height(height))

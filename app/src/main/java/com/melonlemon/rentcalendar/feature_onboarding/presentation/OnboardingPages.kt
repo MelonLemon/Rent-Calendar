@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
@@ -41,7 +42,9 @@ fun WelcomePage(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text= stringResource(R.string.welcome_app),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    lineBreak = LineBreak.Heading
+                ),
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
@@ -68,13 +71,23 @@ fun IntroduceFlatPage(
     ){
 
         item{
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text= stringResource(R.string.welcome_add_flat),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Image(
+                    bitmap = ImageBitmap.imageResource(id = R.drawable.building),
+                    contentDescription = null)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text= stringResource(R.string.welcome_add_flat),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center
+                )
+            }
+
         }
         item{
             NameInputPlus(
@@ -82,7 +95,8 @@ fun IntroduceFlatPage(
                 onNameChanged = { name ->
                     onNameChanged(name)
                 },
-                onAddButtonClicked = onNewFlatAdd
+                onAddButtonClicked = onNewFlatAdd,
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
             )
         }
 
@@ -96,13 +110,62 @@ fun IntroduceFlatPage(
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     unfocusedBorderColor = if(isDuplicate) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.outlineVariant
+                    else MaterialTheme.colorScheme.outlineVariant,
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                    textColor = MaterialTheme.colorScheme.onSurface
                 ),
-                supportingText = {Text(
-                    text=if(isDuplicate) stringResource(R.string.duplicate) else "")},
+                supportingText = {
+                    if(isDuplicate){
+                        Text(text= stringResource(R.string.duplicate))
+                    }},
                 placeholder = { Text(text= stringResource(R.string.name)) },
             )
         }
+    }
+}
+
+@Composable
+fun ExpCategoriesInfo(
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.Start
+    ){
+
+
+        item{
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Image(
+                    bitmap = ImageBitmap.imageResource(id = R.drawable.balance),
+                    contentDescription = null)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text= stringResource(R.string.welcome_add_categories),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+        }
+        item{
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text= stringResource(R.string.welcome_categories_desc),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
+
+
+
     }
 }
 
@@ -130,9 +193,9 @@ fun IntroduceExpCategoriesPage(
         item{
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text= stringResource(R.string.welcome_categories_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                text= stringResource(R.string.welcome_add_exp_cat),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
         }
@@ -157,7 +220,8 @@ fun IntroduceExpCategoriesPage(
                 onNameChanged = { name ->
                     onNewNameChange(name)
                 },
-                onAddButtonClicked = onNewCatAdd
+                onAddButtonClicked = onNewCatAdd,
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
             )
         }
 
@@ -193,27 +257,41 @@ fun InputCategories(
     Row(
         modifier = modifier
             .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ){
         OutlinedTextField(
             value = name,
             onValueChange = onNameChanged,
-            placeholder = { Text(text= stringResource(R.string.name)) },
-            modifier = Modifier.weight(1f),
+            placeholder = { Text(text= stringResource(R.string.name), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            modifier = Modifier.weight(2f),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 unfocusedBorderColor = if(isDuplicate) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.outlineVariant
+                else MaterialTheme.colorScheme.outlineVariant,
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                textColor = MaterialTheme.colorScheme.onSurface
             ),
-            supportingText = {Text(
-                text=if(isDuplicate) stringResource(R.string.duplicate) else "")},
+            supportingText = {
+                if(isDuplicate){
+                    Text(text= stringResource(R.string.duplicate))
+                }},
+
         )
         OutlinedTextField(
             value = if(amount==0) "" else "$amount",
             onValueChange = onAmountChanged,
-            placeholder = { Text(text= stringResource(R.string.number_placeholder)) },
+            placeholder = { Text(text= stringResource(R.string.number_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                textColor = MaterialTheme.colorScheme.onSurface
+            ),
+            supportingText = {
+                if(isDuplicate){
+                    Text(text= "")
+                }}
         )
     }
 }

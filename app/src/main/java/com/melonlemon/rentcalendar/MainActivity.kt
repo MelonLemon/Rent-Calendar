@@ -17,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -31,6 +32,7 @@ import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsScree
 import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsViewModel
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeScreen
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeViewModel
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.InitialSettings
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingScreen
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingViewModel
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.SplashViewModel
@@ -86,7 +88,9 @@ class MainActivity : ComponentActivity() {
                                             icon = { Icon(
                                                 iconsList[index],
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                tint = if(currentDestination?.hierarchy?.any { it.route == screen.route } == true)
+                                                    MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant
                                             ) },
                                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                                             onClick = {
@@ -120,6 +124,8 @@ class MainActivity : ComponentActivity() {
                     ){
 
                         composable(route = Screens.OnBoardingScreen.route){
+
+
                             val viewModel = hiltViewModel<OnBoardingViewModel>()
                             OnBoardingScreen(
                                 onFinish = {

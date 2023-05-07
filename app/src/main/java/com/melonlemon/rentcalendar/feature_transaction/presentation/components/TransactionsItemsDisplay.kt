@@ -9,8 +9,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionListItem
+import java.time.Month
+import java.time.format.TextStyle
+import java.util.*
 
 
 fun LazyListScope.transactionDay(
@@ -29,16 +34,19 @@ fun LazyListScope.transactionDay(
             item.id
         }
     ){ index, item ->
+        val category = if(item.amount>0) stringResource(R.string.rent) else item.category
+        val comment = if(item.amount>0) item.comment + " " + stringResource(R.string.days) else
+            Month.of(item.comment.toInt()).getDisplayName(TextStyle.FULL, Locale.getDefault())
         TransactionRow(
-            textFirstR = item.category,
-            textSecondR = item.comment,
+            textFirstR = category,
+            textSecondR = comment,
             amount = item.amount,
             currencySign = item.currencySign
         )
         if(index<listOfItems.lastIndex){
             Divider(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                thickness = 2.dp
+                color = MaterialTheme.colorScheme.outlineVariant,
+                thickness = 1.dp
             )
         }
     }
@@ -77,7 +85,7 @@ fun TransactionRow(
             )
         }
         Text(
-            text = if (amount > 0) "+$amount$currencySign" else "-$amount$currencySign",
+            text = if (amount > 0) "+$amount$currencySign" else "$amount$currencySign",
             color = if (amount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1

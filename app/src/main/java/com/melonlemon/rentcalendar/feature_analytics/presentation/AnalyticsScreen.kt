@@ -36,7 +36,7 @@ fun AnalyticsScreen(
 
     Scaffold {
         LazyColumn(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(it).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ){
             item{
@@ -126,7 +126,9 @@ fun AnalyticsScreen(
             item{
                 LazyRow(
                     modifier = Modifier,
-                    contentPadding = PaddingValues(horizontal = 8.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ){
                     items(
                         items = analyticsIndependentState.listOfYears,
@@ -151,7 +153,9 @@ fun AnalyticsScreen(
                 item{
                     LazyRow(
                         modifier = Modifier,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ){
                         items(
                             items = analyticsDependState.incomeStatementState,
@@ -181,7 +185,9 @@ fun AnalyticsScreen(
                 item{
                     LazyRow(
                         modifier = Modifier,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ){
                         items(
                             items = analyticsDependState.cashFlowState,

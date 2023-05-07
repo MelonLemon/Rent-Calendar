@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -31,7 +32,13 @@ fun OnBoardingScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val initialSettings = InitialSettings()
+    val settingsInfo = initialSettings.getInitialSettings(context)
 
+    val initSettings = remember { mutableStateOf(false) }
+    if(!initSettings.value){
+        viewModel.onBoardingScreenEvents(OnBoardingEvents.InitSettings(settingsInfo))
+    }
     LaunchedEffect(key1 = true){
         viewModel.onBoardingUiEvents.collectLatest { event ->
             when(event) {
@@ -44,6 +51,9 @@ fun OnBoardingScreen(
                 is OnBoardingUiEvents.FinishOnBoarding -> {
                     onFinish()
                 }
+                is OnBoardingUiEvents.FinishInitSettings -> {
+                    initSettings.value = true
+                }
             }
         }
 
@@ -54,7 +64,8 @@ fun OnBoardingScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState)
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { it ->
         Column(
             modifier = Modifier
@@ -62,8 +73,8 @@ fun OnBoardingScreen(
                 .padding(it),
         ){
             HorizontalPager(
-                modifier = Modifier.weight(10f),
-                count = 3,
+                modifier = Modifier.weight(10f).padding(16.dp),
+                count = 4,
                 state = pagerState,
                 verticalAlignment = Alignment.Top
             ) { position ->
@@ -91,6 +102,9 @@ fun OnBoardingScreen(
                     )
                 }
                 if(position==2){
+                    ExpCategoriesInfo()
+                }
+                if(position==3){
                     IntroduceExpCategoriesPage(
                         isMonthCat=onBoardingState.isMonthCat,
                         onSegmentBtnClick={ isMonthCatChosen ->
@@ -141,7 +155,7 @@ fun OnBoardingScreen(
 
             AnimatedVisibility(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                visible = pagerState.currentPage==2
+                visible = pagerState.currentPage==3
             ) {
                 SectionButton(
                     modifier = Modifier.fillMaxWidth(),

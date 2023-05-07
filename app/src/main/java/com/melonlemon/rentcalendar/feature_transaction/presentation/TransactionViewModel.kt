@@ -59,7 +59,6 @@ class TransactionViewModel @Inject constructor(
         )
 
 
-
     init {
         viewModelScope.launch {
             val flats = coreUseCases.getAllFlats()

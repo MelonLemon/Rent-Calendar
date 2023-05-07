@@ -2,12 +2,10 @@ package com.melonlemon.rentcalendar.feature_home.presentation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
@@ -31,10 +29,13 @@ import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
 import com.melonlemon.rentcalendar.feature_home.presentation.components.*
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 import java.time.LocalDate
-
+import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingUiEvents
+import kotlinx.coroutines.flow.collectLatest
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel
@@ -43,22 +44,10 @@ fun HomeScreen(
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val dependState by viewModel.dependState.collectAsStateWithLifecycle()
     val independentState by viewModel.independentState.collectAsStateWithLifecycle()
-    val messageState by viewModel.messageState.collectAsStateWithLifecycle()
-
 
     val snackbarHostState = remember { SnackbarHostState() }
 
     val context = LocalContext.current
-
-    if(messageState.send){
-        LaunchedEffect(messageState.message){
-            snackbarHostState.showSnackbar(
-                message = context.resources.getString(messageState.message),
-                actionLabel = null
-            )
-            viewModel.homeScreenEvents(HomeScreenEvents.CloseMessage)
-        }
-    }
 
     val currencyDialog = remember{ mutableStateOf(false) }
     val changeExpensesDialog = remember{ mutableStateOf(false)}
@@ -97,6 +86,31 @@ fun HomeScreen(
 
     } }
 
+    val financeResultsState = rememberLazyListState()
+
+
+    val snappingLayout = remember(financeResultsState) { SnapLayoutInfoProvider(financeResultsState) }
+    val flingBehavior = rememberSnapFlingBehavior(snappingLayout)
+
+    LaunchedEffect(key1 = true){
+        viewModel.onHomeUiEvents.collectLatest { event ->
+            when(event) {
+                is HomeUiEvents.ShowMessage -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.resources.getString(event.message),
+                        actionLabel = null
+                    )
+                }
+                is HomeUiEvents.OpenCalendar -> {
+                    calendarDialog.value = true
+                }
+                is HomeUiEvents.ScrollFinancialResults -> {
+                    financeResultsState.scrollToItem(filterState.yearMonth.monthValue-1)
+                }
+            }
+        }
+
+    }
 
     Scaffold(
         snackbarHost = {
@@ -104,17 +118,33 @@ fun HomeScreen(
         }
     ) { it ->
 
+
+
         LazyColumn(
             modifier = Modifier
-                .padding(it),
+                .padding(it).padding(start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.Start
         ) {
 
             item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(top=16.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ){
+                    Button(
+                        onClick = {
+                            currencyDialog.value = true
+                        }) {
+                        Text(text = stringResource(R.string.currency_sign) + " ${independentState.currencySign}")
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(
+                    state = financeResultsState,
+                    flingBehavior = flingBehavior,
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
                         items = dependState.finResultsDisplay,
@@ -123,7 +153,9 @@ fun HomeScreen(
                         }
                     ) { monthResults ->
                         FinanceResultWidget(
-                            modifier = Modifier.fillParentMaxWidth(),
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .fillMaxHeight(),
                             flatName = if (filterState.selectedFlatId == -1) stringResource(R.string.all)
                             else flatName.value,
                             month = monthResults.yearMonth,
@@ -135,14 +167,10 @@ fun HomeScreen(
                     }
 
                 }
+
+
             }
-            item {
-                Button(onClick = {
-                    currencyDialog.value = true
-                }) {
-                    Text(text = stringResource(R.string.currency_sign))
-                }
-            }
+
 
             item {
                 InputContainer(
@@ -167,7 +195,6 @@ fun HomeScreen(
 
             item {
                 LazyRow(
-                    modifier = Modifier,
                     contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     item {
@@ -200,7 +227,6 @@ fun HomeScreen(
 
             item {
                 YearMonthRow(
-                    modifier = Modifier.fillMaxWidth(),
                     yearMonth = filterState.yearMonth,
                     onYearChange = { yearString ->
                         viewModel.homeScreenEvents(
@@ -215,12 +241,12 @@ fun HomeScreen(
                                 monthInt = monthInt
                             )
                         )
+
                     }
                 )
             }
             item {
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -259,29 +285,54 @@ fun HomeScreen(
 
             //SCHEDULE PAGE
             if (homeScreenState.value == HomePages.SchedulePage) {
-                items(
-                    items = dependState.schedulePageState.rentInfo,
-                    key = { rent ->
-                        rent.id
-                    }
-                ) { rent ->
-                    RentCard(
-                        name = rent.name,
-                        description = rent.description,
-                        periodStart = rent.periodStart,
-                        periodEnd = rent.periodEnd,
-                        amount = rent.amount,
-                        isPaid = rent.isPaid,
-                        onPaidChange = { isPaid ->
-                            viewModel.homeScreenEvents(
-                                HomeScreenEvents.OnRentPaidChange(
-                                    id = rent.id,
-                                    isPaid = isPaid
-                                )
+                if(dependState.schedulePageState.rentInfo.isEmpty()){
+                    item {
+                        Column(
+                            modifier = Modifier.padding(top=32.dp, bottom = 32.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ){
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Image(
+                                bitmap = ImageBitmap.imageResource(id = R.drawable.categories),
+                                contentDescription = null)
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = stringResource(R.string.no_schedule),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                textAlign = TextAlign.Center
                             )
+
                         }
-                    )
+
+                    }
+                } else {
+                    items(
+                        items = dependState.schedulePageState.rentInfo,
+                        key = { rent ->
+                            rent.id
+                        }
+                    ) { rent ->
+                        RentCard(
+                            name = rent.name,
+                            description = rent.description,
+                            periodStart = rent.periodStart,
+                            periodEnd = rent.periodEnd,
+                            amount = rent.amount,
+                            isPaid = rent.isPaid,
+                            onPaidChange = { isPaid ->
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.OnRentPaidChange(
+                                        id = rent.id,
+                                        isPaid = isPaid
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
+
             }
 
             //EXPENSES PAGE
@@ -383,7 +434,6 @@ fun HomeScreen(
                             InputInfoCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 textFirstR = category.name,
-                                textSecondR = { Text(category.subHeader) },
                                 inputNumber = if (category.amount != 0) category.amount.toString() else "",
                                 onNumberChanged = { numberString ->
                                     viewModel.homeScreenEvents(
@@ -430,7 +480,6 @@ fun HomeScreen(
                         InputInfoCard(
                             modifier = Modifier.fillMaxWidth(),
                             textFirstR = category.name,
-                            textSecondR = { Text(category.subHeader) },
                             inputNumber = if (category.amount != 0) category.amount.toString() else "",
                             onNumberChanged = { numberString ->
                                 viewModel.homeScreenEvents(
@@ -496,8 +545,17 @@ fun HomeScreen(
                         startDate = independentState.newBookedState.startDate,
                         endDate = independentState.newBookedState.endDate,
                         onCalendarBtnClick = {
-                            viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(filterState.yearMonth.year))
-                            calendarDialog.value = true
+                            if(filterState.selectedFlatId!=-1){
+                                viewModel.homeScreenEvents(HomeScreenEvents.SetCalendarState(filterState.yearMonth.year))
+                            } else {
+                                viewModel.homeScreenEvents(
+                                    HomeScreenEvents.SendMessage(
+                                        message = R.string.err_msg_choose_flat
+                                    )
+                                )
+
+                            }
+
                         }
                     )
                 }

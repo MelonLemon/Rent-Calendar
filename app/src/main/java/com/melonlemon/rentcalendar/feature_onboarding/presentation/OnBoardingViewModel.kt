@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnBoardingViewModel @Inject constructor(
-    private val coreUseCases: CoreRentUseCases
+    private val coreUseCases: CoreRentUseCases,
 ): ViewModel() {
 
     private val _onBoardingState = MutableStateFlow(OnBoardingState())
@@ -26,10 +26,21 @@ class OnBoardingViewModel @Inject constructor(
     private val _onBoardingUiEvents = MutableSharedFlow<OnBoardingUiEvents>()
     val onBoardingUiEvents  = _onBoardingUiEvents.asSharedFlow()
 
-
-
     fun onBoardingScreenEvents(event: OnBoardingEvents){
         when(event){
+
+            is OnBoardingEvents.InitSettings -> {
+                val newOnBoardingState = OnBoardingState(
+                    tempFlats = event.settingsInfo.flats,
+                    tempMonthlyExpCat = event.settingsInfo.monthlyExpCat,
+                    tempIrregularExpCat = event.settingsInfo.irregularExpCat
+                )
+                _onBoardingState.value = newOnBoardingState
+                viewModelScope.launch {
+                    _onBoardingUiEvents.emit(OnBoardingUiEvents.FinishInitSettings)
+                }
+
+            }
             is OnBoardingEvents.OnSaveBaseOptionClick -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val result = coreUseCases.saveBaseOption(

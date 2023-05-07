@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
@@ -17,8 +19,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -34,33 +39,44 @@ fun DateRange(
 ) {
     val pattern = "dd.MM.yyyy"
     val format = DateTimeFormatter.ofPattern(pattern)
-    Row(
+    LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        BasicCardIcon(
-            modifier = Modifier
-                .size(56.dp)
-                .clickable {
-                    onCalendarBtnClick()
-                },
-            icon = Icons.Filled.DateRange
-        )
-        OutlinedTextField(
-            value = startDate?.format(format) ?: pattern,
-            onValueChange = { },
-            readOnly = true,
-            placeholder = { Text(text= pattern) },
-            modifier = Modifier.weight(1f)
-        )
-        OutlinedTextField(
-            value = endDate?.format(format) ?: pattern,
-            onValueChange = { },
-            readOnly = true,
-            placeholder = { Text(text= pattern) },
-            modifier = Modifier.weight(1f)
-        )
+        item{
+            BasicCardIcon(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clickable {
+                        onCalendarBtnClick()
+                    },
+                icon = Icons.Filled.DateRange
+            )
+        }
+        item {
+            OutlinedTextField(
+                value = startDate?.format(format) ?: pattern,
+                onValueChange = { },
+                readOnly = true,
+                placeholder = { Text(text= pattern) },
+                maxLines = 1,
+                modifier = Modifier.width(110.dp),
+                textStyle = MaterialTheme.typography.titleSmall
+            )
+        }
+        item {
+            OutlinedTextField(
+                value = endDate?.format(format) ?: pattern,
+                onValueChange = { },
+                readOnly = true,
+                placeholder = { Text(text= pattern) },
+                maxLines = 1,
+                modifier = Modifier.width(110.dp),
+                textStyle = MaterialTheme.typography.titleSmall
+            )
+        }
+
 
     }
 }
@@ -78,9 +94,18 @@ fun YearMonthRow(
     var showEdit by remember { mutableStateOf(false) }
     var tempYear by remember{ mutableStateOf(yearMonth.year.toString()) }
     val density = LocalDensity.current
+    val listState = rememberLazyListState()
+    val scrollToItem = remember{ mutableStateOf(false) }
+    val correctYear = remember{ mutableStateOf((tempYear.take(1) == "2" || tempYear.take(1) == "1") && tempYear.length == 4) }
+
+    if(scrollToItem.value){
+        LaunchedEffect(scrollToItem.value){
+            listState.scrollToItem(yearMonth.monthValue-1)
+        }
+        scrollToItem.value = false
+    }
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.Start
     ){
 
@@ -89,7 +114,8 @@ fun YearMonthRow(
                 .fillMaxWidth()
                 .clickable {
                     showEdit = !showEdit
-                },
+                }
+                .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ){
@@ -114,11 +140,17 @@ fun YearMonthRow(
             exit = slideOutVertically() + shrinkVertically() + fadeOut()
         ){
             Column {
-                Row() {
+                Row(
+                    modifier = Modifier,
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     val limitNum = 4
                     OutlinedTextField(
                         value = if (tempYear == "0") "" else tempYear,
-                        onValueChange = { tempYear = it.take(limitNum) },
+                        onValueChange = {
+                            tempYear = it.take(limitNum)
+                            correctYear.value = (tempYear.take(1) == "2" || tempYear.take(1) == "1") && tempYear.length == 4 },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
@@ -129,27 +161,37 @@ fun YearMonthRow(
                         ),
                         modifier = Modifier.width(90.dp),
                         supportingText = {
-                            Text(
-                                text = if (tempYear.length != 4 || (tempYear.take(1) != "2" && tempYear.take(
-                                        1
-                                    ) != "1")
+                            if (!correctYear.value){
+                                Text(
+                                    text = stringResource(R.string.not_correct_year),
+                                    overflow = TextOverflow.Visible
                                 )
-                                    stringResource(R.string.not_correct_year) else ""
-                            )
+                            }
+
+
+
                         }
                     )
-                    Spacer(modifier = Modifier.width(32.dp))
-                    IconButton(onClick = {
-                        if ((tempYear.take(1) == "2" || tempYear.take(1) == "1") && tempYear.length == 4) {
+                    IconButton(
+                        onClick = {
+                        if (correctYear.value) {
                             onYearChange(tempYear)
-                        }
-
-                    }) {
-                        Icons.Filled.Done
-
+                        }},
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = if(correctYear.value) MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp) else
+                                MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Done,
+                            contentDescription = null,
+                            tint = if(correctYear.value) MaterialTheme.colorScheme.primary  else
+                                MaterialTheme.colorScheme.outlineVariant
+                        )
                     }
                 }
                 LazyRow(
+                    state = listState,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     val monthList = (1..12).toList()
@@ -165,13 +207,29 @@ fun YearMonthRow(
                             isSelected = monthNum == yearMonth.monthValue,
                             onBtnClick = { onMonthClick(monthNum) }
                         )
-
                     }
+
                 }
+                scrollToItem.value = true
             }
 
         }
 
     }
 
+}
+
+
+
+
+@Preview(showBackground = true)
+@Composable
+fun DateRangePreview() {
+    RentCalendarTheme {
+        DateRange(
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(3),
+            onCalendarBtnClick = { }
+        )
+    }
 }

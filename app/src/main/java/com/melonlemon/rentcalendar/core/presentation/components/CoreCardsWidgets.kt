@@ -12,8 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun BasicCardIcon(
@@ -42,11 +46,10 @@ fun BasicCardIcon(
 fun InputInfoCard(
     modifier: Modifier = Modifier,
     textFirstR: String = "",
-    textSecondR: @Composable () -> Unit,
     inputNumber: String = "",
     onNumberChanged: (String) -> Unit,
     onAddButtonClicked: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit = { }
 ) {
     OutlinedCard(
         modifier = modifier
@@ -63,27 +66,21 @@ fun InputInfoCard(
             horizontalArrangement = Arrangement.SpaceBetween
 
         ){
-            Column(
+            Text(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = textFirstR,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleMedium,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                textSecondR()
-
-            }
-            Spacer(modifier = Modifier.width(16.dp))
+                text = textFirstR,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 3
+            )
+            Spacer(modifier = Modifier.width(2.dp))
             NameInputPlus(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.widthIn(min = 100.dp, max = 150.dp),
                 name = inputNumber,
                 onNameChanged = onNumberChanged,
-                onAddButtonClicked = onAddButtonClicked
+                onAddButtonClicked = onAddButtonClicked,
+                placeholder = stringResource(R.string.number_placeholder)
             )
         }
 
@@ -134,3 +131,15 @@ fun DisplayInfoCard(
 
 
 
+@Preview(showBackground = true)
+@Composable
+fun InputInfoCardPreview() {
+    RentCalendarTheme {
+        InputInfoCard(
+            textFirstR = "Housing and communal services",
+            onNumberChanged = { },
+            inputNumber = "",
+            onAddButtonClicked = { }
+        )
+    }
+}
