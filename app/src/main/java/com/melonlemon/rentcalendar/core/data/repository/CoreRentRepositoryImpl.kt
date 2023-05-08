@@ -24,4 +24,5 @@ class CoreRentRepositoryImpl(
     override suspend fun addCategoryType(categoryType: CategoryType) {
         dao.addCategoryType(categoryType)
     }
+
 }

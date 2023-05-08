@@ -1,11 +1,14 @@
 package com.melonlemon.rentcalendar.feature_transaction.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,12 +34,12 @@ fun LazyListScope.transactionDay(
     itemsIndexed(
         items = listOfItems,
         key =  { _, item ->
-            item.id
+            "TR"+item.id
         }
     ){ index, item ->
         val category = if(item.amount>0) stringResource(R.string.rent) else item.category
         val comment = if(item.amount>0) item.comment + " " + stringResource(R.string.days) else
-            Month.of(item.comment.toInt()).getDisplayName(TextStyle.FULL, Locale.getDefault())
+            Month.of(item.comment.toInt()).getDisplayName(TextStyle.FULL, Locale.UK)
         TransactionRow(
             textFirstR = category,
             textSecondR = comment,
@@ -67,6 +70,27 @@ fun TransactionRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .aspectRatio(1f)
+                .background(
+                    color = if (amount > 0) MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                    else MaterialTheme.colorScheme.secondaryContainer,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+
+        ){
+            Icon(
+                imageVector = if(amount > 0) Icons.Filled.Home
+                else Icons.Filled.ShoppingCart,
+                contentDescription = null,
+                tint = if(amount > 0)  MaterialTheme.colorScheme.onSurface
+                else MaterialTheme.colorScheme.onSecondaryContainer
+            )
+
+        }
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top

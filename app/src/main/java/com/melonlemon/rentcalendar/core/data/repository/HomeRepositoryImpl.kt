@@ -93,12 +93,20 @@ class HomeRepositoryImpl(
                 IRREGULAR_EXP
             }
         }
-        return dao.getExpensesByTypeId(
-            flatId = flatId,
-            year = yearMonth.year,
-            month = yearMonth.monthValue,
-            typeId = typeId
-        )
+        return if(flatId==-1){
+            dao.getAllExpensesByTypeId(
+                year = yearMonth.year,
+                month = yearMonth.monthValue,
+                typeId = typeId
+            )
+        } else {
+            dao.getExpensesByTypeId(
+                flatId = flatId,
+                year = yearMonth.year,
+                month = yearMonth.monthValue,
+                typeId = typeId
+            )
+        }
     }
 
     override suspend fun updateExpenses(id: Int, amount: Int) {

@@ -5,29 +5,21 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.core.presentation.components.SFilterButton
 import com.melonlemon.rentcalendar.feature_home.domain.model.SelectedWeekInfo
-import org.w3c.dom.Text
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
@@ -42,17 +34,18 @@ fun CustomCalendar(
     selectedDays: Map<Int, SelectedWeekInfo>,
     cellSize: Size,
     bookedDays: Map<Int, List<LocalDate>>?=null,
-    onYearChanged: (Int) -> Unit,
     onDayClick: (LocalDate) -> Unit,
+    onYearChanged: (Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     year: Int
 ) {
-    val tempYear by remember{ mutableStateOf(year) }
+    val hideShowYears = remember{ mutableStateOf(false) }
     val density = LocalDensity.current
     val listState = rememberLazyListState()
     val firstScroll = remember{ mutableStateOf(true) }
     val scrollToItem = remember{ mutableStateOf(false) }
-
+    val currentYear = LocalDate.now().year
+    val listYears = (currentYear-1..currentYear+7).toList()
     val firstWeekOfCurrentMonth = YearMonth.now().atDay(1)[WeekFields.ISO.weekOfYear()]
 
     if(scrollToItem.value){
@@ -64,7 +57,7 @@ fun CustomCalendar(
     }
 
     Column(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)),
+        modifier = modifier.background(Color.Transparent),
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalAlignment = Alignment.Start
     ) {
@@ -73,24 +66,62 @@ fun CustomCalendar(
         val dateEnd = if(tempEndDate!= null)
             "${tempEndDate.month.name} ${tempEndDate.dayOfMonth}" else ""
 
-        if(dateStart.isNotBlank() || dateEnd.isNotBlank()){
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text="$dateStart - $dateEnd",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
-            )
-        } else {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text= stringResource(R.string.choose_dates),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
-            )
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
+            if(dateStart.isNotBlank() || dateEnd.isNotBlank()){
+                Text(
+
+                    text="$dateStart - $dateEnd",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            } else {
+                Text(
+                    text= stringResource(R.string.choose_dates),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Button(
+                onClick = {
+                    hideShowYears.value = !hideShowYears.value
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent
+                ),
+            ){
+                Text(
+                    text= "$year",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
 
+        if(hideShowYears.value){
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ){
+                items(
+                    items = listYears,
+                    key = { year ->
+                        "YEAR$year"
+                    }
+                ){ currentYear ->
+                    SFilterButton(
+                        text = "$currentYear",
+                        isSelected = currentYear==year,
+                        onBtnClick = {
+                            onYearChanged(currentYear)
+                        }
+                    )
+                }
+            }
+        }
         Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
         HeaderWeekView(modifier = Modifier
@@ -101,7 +132,7 @@ fun CustomCalendar(
             state = listState,
             modifier = modifier
                 .consumeWindowInsets(contentPadding)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)),
+                .background(Color.Transparent),
             contentPadding = contentPadding,
         ){
             val contentModifier = Modifier
@@ -162,7 +193,7 @@ private fun LazyListScope.itemsCalendarMonth(
     ){ index, week ->
         Box(
             modifier = contentModifier
-                .background(MaterialTheme.colorScheme.surface)
+                .background(Color.Transparent)
                 .size(width = (cellSize.width * 7).dp, cellSize.height.dp),
 
         ) {

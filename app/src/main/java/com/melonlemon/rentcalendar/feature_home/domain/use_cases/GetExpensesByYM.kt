@@ -13,6 +13,7 @@ class GetExpensesByYM(
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(yearMonth: YearMonth, flatId: Int, moneyFlowCategory: MoneyFlowCategory): Flow<List<ExpensesInfo>> {
+        //if flatId = -1 condition is done in Repository
         val expensesReg = repository.getExpensesByYM(
             moneyFlowCategory = moneyFlowCategory,
             yearMonth = yearMonth,

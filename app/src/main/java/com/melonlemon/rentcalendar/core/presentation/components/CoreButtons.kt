@@ -70,11 +70,11 @@ fun FilterButton(
 }
 
 @Composable
-fun SearchFilterButton(
+fun SFilterButton(
     modifier: Modifier = Modifier,
     text: String,
     isSelected: Boolean,
-    onBtnClick: (Boolean) -> Unit
+    onBtnClick: (Boolean) -> Unit = { }
 ) {
     Button(
         modifier = modifier,
@@ -91,7 +91,8 @@ fun SearchFilterButton(
     ) {
         Text(
             text=text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

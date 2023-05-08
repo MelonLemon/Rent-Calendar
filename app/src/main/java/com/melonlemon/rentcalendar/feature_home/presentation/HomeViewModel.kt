@@ -99,6 +99,7 @@ class HomeViewModel @Inject constructor(
 
             val allFlats = coreUseCases.getAllFlats()
             val categories = useCases.getExpCategories()
+            //get currency from dataStore
             _independentState.value = independentState.value.copy(
                 flatState = independentState.value.flatState.copy(
                     listOfFlats = allFlats
@@ -427,6 +428,7 @@ class HomeViewModel @Inject constructor(
 
             //Currency dialog
             is HomeScreenEvents.OnCurrencySignChanged -> {
+                //update currency in dataStore
                 _independentState.value = independentState.value.copy(
                     currencySign = event.sign
                 )

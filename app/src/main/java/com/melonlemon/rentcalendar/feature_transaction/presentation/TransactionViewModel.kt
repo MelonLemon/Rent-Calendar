@@ -68,7 +68,8 @@ class TransactionViewModel @Inject constructor(
                 years = years,
                 selectedYearId = years[0].id,
                 selectedFlatsId = listOf(flats[0].id),
-                transFilterInit = true
+                transFilterInit = true,
+                currency = "$" // get currency
             )
         }
 

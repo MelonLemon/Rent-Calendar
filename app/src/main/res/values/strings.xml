@@ -102,4 +102,5 @@
     <string name="rent">Rent</string>
     <string name="welcome_add_exp_cat">Let\'s Add Expenses Categories!</string>
     <string name="choose_dates">Choose dates!</string>
+    <string name="transactions">Transactions</string>
 </resources>

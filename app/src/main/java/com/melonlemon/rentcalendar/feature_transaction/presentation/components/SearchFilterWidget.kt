@@ -1,6 +1,5 @@
 package com.melonlemon.rentcalendar.feature_transaction.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,16 +18,13 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
-import com.melonlemon.rentcalendar.core.presentation.components.SearchFilterButton
+import com.melonlemon.rentcalendar.core.presentation.components.SFilterButton
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
 
 @Composable
-fun SearchFilterWidget(
+fun FilterWidget(
     modifier: Modifier = Modifier,
-    searchText: String,
-    onSearchTextChanged: (String) -> Unit,
-    onCancelClicked: () -> Unit,
     transactionType: TransactionType,
     onTransactionTypeClick: (TransactionType) -> Unit,
     flats: List<CategoryInfo>,
@@ -42,46 +38,55 @@ fun SearchFilterWidget(
     onYearClick: (Int) -> Unit,
     onMonthClick: (Int) -> Unit
 ) {
-    SearchFilterContainer(
+    Column(
         modifier = modifier,
-        searchText =  searchText,
-        onSearchTextChanged = onSearchTextChanged,
-        onCancelClicked = onCancelClicked
     ) {
-        Row(
+        LazyRow(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ){
-            SearchFilterButton(
-                text = stringResource(R.string.all),
-                isSelected = transactionType == TransactionType.AllTransaction,
-                onBtnClick = { onTransactionTypeClick(TransactionType.AllTransaction) }
-            )
-            SearchFilterButton(
-                text = stringResource(R.string.expenses),
-                isSelected = transactionType == TransactionType.ExpensesTransaction,
-                onBtnClick = { onTransactionTypeClick(TransactionType.ExpensesTransaction) }
-            )
-            SearchFilterButton(
-                text = stringResource(R.string.income),
-                isSelected = transactionType == TransactionType.IncomeTransaction,
-                onBtnClick = { onTransactionTypeClick(TransactionType.IncomeTransaction) }
-            )
+            item{
+                SFilterButton(
+                    text = stringResource(TransactionType.AllTransaction.name),
+                    isSelected = transactionType == TransactionType.AllTransaction,
+                    onBtnClick = { onTransactionTypeClick(TransactionType.AllTransaction) }
+                )
+            }
+            item{
+                SFilterButton(
+                    text = stringResource(TransactionType.ExpensesTransaction.name),
+                    isSelected = transactionType == TransactionType.ExpensesTransaction,
+                    onBtnClick = { onTransactionTypeClick(TransactionType.ExpensesTransaction) }
+                )
+            }
+            item{
+                SFilterButton(
+                    text = stringResource(TransactionType.IncomeTransaction.name),
+                    isSelected = transactionType == TransactionType.IncomeTransaction,
+                    onBtnClick = { onTransactionTypeClick(TransactionType.IncomeTransaction) }
+                )
+            }
+
         }
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ){
             item{
-                SearchFilterButton(
+                SFilterButton(
                     text = stringResource(R.string.all),
                     isSelected = -1 in selectedFlatsId,
                     onBtnClick = { onFlatsClick(-1) }
                 )
             }
-            itemsIndexed(flats){ _, flat ->
-                SearchFilterButton(
+            itemsIndexed(
+                items = flats,
+                key = { index, flat ->
+                    "FL${flat.id}$index"
+                }
+            ){ _, flat ->
+                SFilterButton(
                     text = flat.name,
                     isSelected = flat.id in selectedFlatsId,
                     onBtnClick = { onFlatsClick(flat.id) }
@@ -93,12 +98,12 @@ fun SearchFilterWidget(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ){
-            SearchFilterButton(
+            SFilterButton(
                 text = stringResource(R.string.year),
                 isSelected = chosenPeriod== TransactionPeriod.YearPeriod,
                 onBtnClick = { onYearMonthClick(TransactionPeriod.YearPeriod) }
             )
-            SearchFilterButton(
+            SFilterButton(
                 text = stringResource(R.string.month),
                 isSelected = chosenPeriod== TransactionPeriod.MonthsPeriod,
                 onBtnClick = { onYearMonthClick(TransactionPeriod.MonthsPeriod) }
@@ -120,7 +125,7 @@ fun SearchFilterWidget(
                 items = years,
                 key = { year -> year.id }
             ){ year ->
-                SearchFilterButton(
+                SFilterButton(
                     text = year.name,
                     isSelected = year.id==selectedYearId,
                     onBtnClick = { onYearClick(year.id) }
@@ -140,7 +145,7 @@ fun SearchFilterWidget(
                         java.time.Month.of(monthNum).name + monthNum
                     }
                 ){monthNum ->
-                    SearchFilterButton(
+                    SFilterButton(
                         text = java.time.Month.of(monthNum).name,
                         isSelected = monthNum in chosenMonthsNum,
                         onBtnClick = { onMonthClick(monthNum) }
@@ -154,70 +159,22 @@ fun SearchFilterWidget(
 }
 
 
-@Composable
-fun SearchFilterContainer(
-    modifier: Modifier = Modifier,
-    searchText: String,
-    onSearchTextChanged: (String) -> Unit,
-    onCancelClicked: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    var selected by remember { mutableStateOf(false) }
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ){
-            SearchInput(
-                text = searchText,
-                onTextChanged = onSearchTextChanged,
-                onCancelClicked = onCancelClicked
-            )
-            OutlinedButton(
-                modifier = Modifier
-                    .size(56.dp),
-                onClick = { selected = !selected },
-                shape = MaterialTheme.shapes.large,
-                contentPadding = PaddingValues(4.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = if(selected) MaterialTheme.colorScheme.secondaryContainer
-                    else MaterialTheme.colorScheme.surface
-                ),
-                border = BorderStroke(width = 1.dp,  color = if(selected) MaterialTheme.colorScheme.secondaryContainer
-                else MaterialTheme.colorScheme.outline)
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_filter_list_24),
-                    tint = if(selected) MaterialTheme.colorScheme.onSecondaryContainer
-                    else MaterialTheme.colorScheme.onBackground,
-                    contentDescription = "Filter" )
-            }
-        }
-        if(selected){
-            content()
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchInput(
+    modifier:Modifier = Modifier,
     text: String = "",
     onTextChanged: (String) -> Unit,
     onCancelClicked: () -> Unit
 ) {
     OutlinedTextField(
+        modifier = modifier,
         value = text,
         onValueChange = onTextChanged,
         shape = MaterialTheme.shapes.small,
         placeholder = { Text(
-            text= stringResource(R.string.search)
+            text= stringResource(R.string.search),
+            color = MaterialTheme.colorScheme.outline
         ) },
         leadingIcon = {
             Icon(
@@ -241,7 +198,8 @@ fun SearchInput(
         },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             containerColor = MaterialTheme.colorScheme.surface,
-            textColor = MaterialTheme.colorScheme.onSurface
+            textColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
         )
     )
 }

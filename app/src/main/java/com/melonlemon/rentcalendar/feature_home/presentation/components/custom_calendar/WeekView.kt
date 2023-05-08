@@ -31,7 +31,7 @@ internal fun HeaderWeekView(modifier: Modifier = Modifier, cellSize: Size) {
             DayOfWeekHeading(
                 day = day.name.take(1),
                 cellSize = cellSize,
-                backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp)
+                backgroundColor = Color.Transparent
             )
         }
     }
@@ -55,7 +55,7 @@ fun WeekView(
 
     Box(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
+            .background(Color.Transparent)
             .size(width = (cellSize.width * 7).dp, cellSize.height.dp)) {
         Row(modifier = Modifier) {
             for (i in 0..6) {
@@ -77,7 +77,7 @@ fun WeekView(
                     Box(
                         modifier = Modifier
                             .size(width = cellSize.width.dp, height = cellSize.height.dp)
-                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
+                            .background(Color.Transparent)
                     )
                 }
                 currentDay = currentDay.plusDays(1)
@@ -121,7 +121,7 @@ fun SelectedWeekView(
                     Box(
                         modifier = Modifier
                             .size(width = cellSize.width.dp, height = cellSize.height.dp)
-                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(11.dp))
+                            .background(Color.Transparent)
                     )
                 }
 

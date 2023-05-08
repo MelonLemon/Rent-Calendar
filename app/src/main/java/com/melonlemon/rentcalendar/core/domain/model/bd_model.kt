@@ -13,6 +13,7 @@ data class Flats(
 
 @Entity
 data class Currency(
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "currency_id", index = true) val id: Int,
     val currency: String
 )
 

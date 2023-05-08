@@ -130,9 +130,9 @@ fun ExpensesDialog(
                     modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 )
                 OutlinedTextField(
-                    value = if(amount!=0) amount.toString() else "",
+                    value = if(tempAmount!=0) tempAmount.toString() else "",
                     onValueChange = { amount ->
-                        tempAmount =  amount.toInt()
+                        tempAmount =  amount.toIntOrNull()?:0
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number
@@ -162,7 +162,9 @@ fun ExpensesDialog(
                         text = stringResource(R.string.agree),
                         isSelected = true,
                         onBtnClick = {
-                            onAgree(tempAmount)
+                            if(tempAmount!=0){
+                                onAgree(tempAmount)
+                            }
                         }
 
                     )
@@ -483,8 +485,8 @@ fun CustomCalendarDialog(
                 },
                 bookedDays = bookedDays,
                 year = year,
-                onYearChanged = onYearChanged,
-                selectedDays = selectedWeeks
+                selectedDays = selectedWeeks,
+                onYearChanged=onYearChanged
             )
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f),

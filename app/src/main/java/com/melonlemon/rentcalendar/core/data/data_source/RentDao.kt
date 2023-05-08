@@ -247,15 +247,17 @@ interface RentDao {
     @Query("SELECT year, month, SUM(amount) AS amount FROM expenses WHERE year=:year GROUP BY year, month ORDER BY month ASC")
     suspend fun getAllExpensesGroupByMY(year: Int):List<AmountGroupBy>
 
-
-
-
     //TRANSACTIONS
 
     //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID - !TEST PASSED!
     @Query( "SELECT * FROM expenses " +
             "WHERE flat_id=:flatId AND year=:year AND month=:month AND category_id IN (SELECT category_id FROM category WHERE type_id=:typeId)")
     fun getExpensesByTypeId(flatId: Int, year: Int, month: Int, typeId: Int):Flow<List<Expenses>>
+
+    //GET EXPENSES TRANSACTIONS BY PAYMENT DAY, MONTH, FLAT ID - !TEST PASSED!
+    @Query( "SELECT * FROM expenses " +
+            "WHERE year=:year AND month=:month AND category_id IN (SELECT category_id FROM category WHERE type_id=:typeId)")
+    fun getAllExpensesByTypeId(year: Int, month: Int, typeId: Int):Flow<List<Expenses>>
 
     //GET INCOME TRANSACTIONS BY PAYMENT DAY
     @MapInfo(keyColumn = "month")

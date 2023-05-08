@@ -1,15 +1,20 @@
 package com.melonlemon.rentcalendar.feature_analytics.presentation
 
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,7 +29,7 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AnalyticsScreen(
     viewModel: AnalyticsViewModel
@@ -33,6 +38,9 @@ fun AnalyticsScreen(
     val analyticsDependState by viewModel.analyticsDependState.collectAsStateWithLifecycle()
     val analyticsIndependentState by viewModel.analyticsIndependentState.collectAsStateWithLifecycle()
 
+    val financeResultsState = rememberLazyListState()
+    val snappingLayout = remember(financeResultsState) { SnapLayoutInfoProvider(financeResultsState) }
+    val flingBehavior = rememberSnapFlingBehavior(snappingLayout)
 
     Scaffold {
         LazyColumn(
@@ -42,7 +50,10 @@ fun AnalyticsScreen(
             item{
                 LazyRow(
                     modifier = Modifier,
-                    contentPadding = PaddingValues(horizontal = 8.dp)
+                    state = financeResultsState,
+                    flingBehavior = flingBehavior,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ){
                     item{
                         FilterButton(
@@ -91,8 +102,8 @@ fun AnalyticsScreen(
 
             item{
                 LazyRow(
-                    modifier = Modifier,
-                    contentPadding = PaddingValues(horizontal = 8.dp)
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ){
                     item{
                         FilterButton(
@@ -152,10 +163,11 @@ fun AnalyticsScreen(
             if(analyticsIndependentState.chosenReport == Reports.IncomeStatement){
                 item{
                     LazyRow(
+                        state = financeResultsState,
+                        flingBehavior = flingBehavior,
                         modifier = Modifier,
-                        contentPadding = PaddingValues(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ){
                         items(
                             items = analyticsDependState.incomeStatementState,
@@ -184,10 +196,11 @@ fun AnalyticsScreen(
             if(analyticsIndependentState.chosenReport == Reports.CashFlow){
                 item{
                     LazyRow(
+                        state = financeResultsState,
+                        flingBehavior = flingBehavior,
                         modifier = Modifier,
-                        contentPadding = PaddingValues(horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ){
                         items(
                             items = analyticsDependState.cashFlowState,
@@ -233,9 +246,11 @@ fun AnalyticsScreen(
             if(analyticsIndependentState.chosenReport == Reports.InvestmentReturn){
                 item{
                     LazyRow(
+                        state = financeResultsState,
+                        flingBehavior = flingBehavior,
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ){
                         item{
                             FinSnapShotContainer(
