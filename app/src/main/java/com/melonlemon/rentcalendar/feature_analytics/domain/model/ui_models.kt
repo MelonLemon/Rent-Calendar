@@ -17,15 +17,6 @@ data class ChartItem(
     val value: Int
 )
 
-data class BarchartData(
-    val name: String,
-    val color: Color,
-    val values: List<Int>
-) {
-    fun barchartItem(index: Int):ChartItem{
-        return ChartItem(name = name, color = color, value = values.getOrNull(index)?:0)
-    }
-}
 data class CashFlowInfo(
     val quarter: Int,
     val netCashFlow: Int,

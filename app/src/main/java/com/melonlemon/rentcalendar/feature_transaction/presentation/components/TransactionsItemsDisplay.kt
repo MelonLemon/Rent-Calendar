@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.feature_transaction.domain.model.TransactionListItem
@@ -33,8 +34,8 @@ fun LazyListScope.transactionDay(
     }
     itemsIndexed(
         items = listOfItems,
-        key =  { _, item ->
-            "TR"+item.id
+        key =  { index, item ->
+            "title"+index+item.id
         }
     ){ index, item ->
         val category = if(item.amount>0) stringResource(R.string.rent) else item.category
@@ -66,8 +67,8 @@ fun TransactionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(end = 16.dp, top = 8.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -92,6 +93,7 @@ fun TransactionRow(
 
         }
         Column(
+            modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
@@ -99,20 +101,21 @@ fun TransactionRow(
                 text = textFirstR,
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = textSecondR,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
         Text(
             text = if (amount > 0) "+$amount$currencySign" else "$amount$currencySign",
             color = if (amount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodyLarge,
-            maxLines = 1
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 

@@ -15,9 +15,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import com.melonlemon.rentcalendar.R
-import org.w3c.dom.Text
 import java.time.YearMonth
 
 @RequiresApi(Build.VERSION_CODES.O)

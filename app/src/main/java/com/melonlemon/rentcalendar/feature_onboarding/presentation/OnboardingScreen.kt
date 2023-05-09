@@ -16,7 +16,9 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.*
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.InitialSettings
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.OnBoardingEvents
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.OnBoardingUiEvents
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -74,7 +76,7 @@ fun OnBoardingScreen(
         ){
             HorizontalPager(
                 modifier = Modifier.weight(10f).padding(16.dp),
-                count = 4,
+                count = 5,
                 state = pagerState,
                 verticalAlignment = Alignment.Top
             ) { position ->
@@ -144,6 +146,28 @@ fun OnBoardingScreen(
                         }
                     )
                 }
+
+                if(position==4){
+                    CurrencyPage(
+                        listCurrency = onBoardingState.filteredListCurrency,
+                        textSearch = onBoardingState.textSearch,
+                        onTextChanged = { text ->
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnTextSearchChanged(text))
+                        },
+                        onCancel = {
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnTextSearchCancel)
+
+                        },
+                        selectedCurrency = onBoardingState.selectedCurrency,
+                        onCurrencyClick = { currency ->
+                            viewModel.onBoardingScreenEvents(
+                                OnBoardingEvents.OnCurrencyClick(currency))
+
+                        }
+                    )
+                }
             }
 
             HorizontalPagerIndicator(
@@ -155,7 +179,7 @@ fun OnBoardingScreen(
 
             AnimatedVisibility(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                visible = pagerState.currentPage==3
+                visible = pagerState.currentPage==4
             ) {
                 SectionButton(
                     modifier = Modifier.fillMaxWidth(),

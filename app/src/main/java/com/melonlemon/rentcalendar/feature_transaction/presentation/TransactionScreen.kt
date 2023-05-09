@@ -8,8 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.melonlemon.rentcalendar.core.presentation.components.SearchInput
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.*
-import com.melonlemon.rentcalendar.feature_transaction.presentation.components.SearchInput
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.TotalAmountTransactions
 import com.melonlemon.rentcalendar.feature_transaction.presentation.components.transactionDay
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
@@ -21,10 +21,13 @@ import java.time.format.DateTimeFormatter
 fun TransactionScreen(
     viewModel: TransactionViewModel
 ) {
+    //STATES
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
     val transFilterState by viewModel.transFilterState.collectAsStateWithLifecycle()
     val transactionsByMonth by viewModel.transactionsByMonth.collectAsStateWithLifecycle()
     val isDownloading by viewModel.isDownloading.collectAsStateWithLifecycle()
+
+    //FOR TOTAL SUM WIDGET
     val totalSum = remember(transactionsByMonth, transFilterState.chosenMonthsNum, transFilterState.chosenPeriod){
         mutableStateOf(if(transactionsByMonth.isNotEmpty()){
 

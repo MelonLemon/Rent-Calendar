@@ -6,8 +6,7 @@ import com.melonlemon.rentcalendar.feature_home.presentation.util.SchedulePageIn
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-class GetSchedulePageInfo(
-) {
+class GetSchedulePageInfo {
      operator fun invoke(rentList: List<RentInfo>): SchedulePageInfo {
         if(rentList.isNotEmpty()){
             val currentYear = rentList[0].periodStart.year

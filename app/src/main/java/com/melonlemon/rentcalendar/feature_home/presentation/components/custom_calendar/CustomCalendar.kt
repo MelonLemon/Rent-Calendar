@@ -11,11 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.presentation.components.SFilterButton
@@ -40,7 +38,6 @@ fun CustomCalendar(
     year: Int
 ) {
     val hideShowYears = remember{ mutableStateOf(false) }
-    val density = LocalDensity.current
     val listState = rememberLazyListState()
     val firstScroll = remember{ mutableStateOf(true) }
     val scrollToItem = remember{ mutableStateOf(false) }
@@ -144,7 +141,6 @@ fun CustomCalendar(
                     cellSize = cellSize,
                     yearMonth = yearMonth,
                     contentModifier = contentModifier,
-                    density = density,
                     selectedDays = selectedDays
                 )
             }
@@ -164,8 +160,7 @@ private fun LazyListScope.itemsCalendarMonth(
     selectedDays: Map<Int, SelectedWeekInfo>,
     cellSize: Size,
     yearMonth: YearMonth,
-    contentModifier: Modifier = Modifier,
-    density: Density
+    contentModifier: Modifier = Modifier
 ) {
     println("Month: ${yearMonth.month.name}")
     item(yearMonth.month.name + yearMonth.year + "header") {

@@ -11,12 +11,6 @@ data class Flats(
     val active: Boolean
 )
 
-@Entity
-data class Currency(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "currency_id", index = true) val id: Int,
-    val currency: String
-)
-
 @Entity(
     tableName = "schedule",
     foreignKeys = [

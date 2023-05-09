@@ -10,19 +10,21 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -219,16 +221,49 @@ fun YearMonthRow(
 }
 
 
-
-
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateRangePreview() {
-    RentCalendarTheme {
-        DateRange(
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(3),
-            onCalendarBtnClick = { }
+fun SearchInput(
+    modifier:Modifier = Modifier,
+    text: String = "",
+    onTextChanged: (String) -> Unit,
+    onCancelClicked: () -> Unit
+) {
+    OutlinedTextField(
+        modifier = modifier,
+        value = text,
+        onValueChange = onTextChanged,
+        shape = MaterialTheme.shapes.small,
+        placeholder = { Text(
+            text= stringResource(R.string.search),
+            color = MaterialTheme.colorScheme.outline
+        ) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+        trailingIcon = {
+            if(text!=""){
+                IconButton(
+                    modifier = Modifier,
+                    onClick = onCancelClicked,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_cancel_24),
+                        contentDescription = "Cancel",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            textColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
         )
-    }
+    )
 }
+

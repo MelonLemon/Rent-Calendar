@@ -5,12 +5,11 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.core.data.repository.StoreCurrencyRepository
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
-import com.melonlemon.rentcalendar.core.presentation.util.SendMessage
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
 import com.melonlemon.rentcalendar.feature_home.domain.use_cases.HomeUseCases
 import com.melonlemon.rentcalendar.feature_home.presentation.util.*
-import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingUiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -23,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val useCases: HomeUseCases,
-    private val coreUseCases: CoreRentUseCases
+    private val coreUseCases: CoreRentUseCases,
+    private val storeCurrencyRepository: StoreCurrencyRepository
 ): ViewModel() {
 
 
@@ -99,7 +99,7 @@ class HomeViewModel @Inject constructor(
 
             val allFlats = coreUseCases.getAllFlats()
             val categories = useCases.getExpCategories()
-            //get currency from dataStore
+            val currency = storeCurrencyRepository.getCurrencySymbol().first()
             _independentState.value = independentState.value.copy(
                 flatState = independentState.value.flatState.copy(
                     listOfFlats = allFlats
@@ -107,7 +107,8 @@ class HomeViewModel @Inject constructor(
                 expCategoriesState = independentState.value.expCategoriesState.copy(
                     monthlyExpCategories = categories.monthlyExpCategories,
                     irregularExpCategories = categories.irregularExpCategories
-                )
+                ),
+                currencySign = currency
             )
 
             _onHomeUiEvents.emit(HomeUiEvents.ScrollFinancialResults)
@@ -424,14 +425,6 @@ class HomeViewModel @Inject constructor(
                     _onHomeUiEvents.emit(HomeUiEvents.ShowMessage(result.message))
 
                 }
-            }
-
-            //Currency dialog
-            is HomeScreenEvents.OnCurrencySignChanged -> {
-                //update currency in dataStore
-                _independentState.value = independentState.value.copy(
-                    currencySign = event.sign
-                )
             }
         }
     }

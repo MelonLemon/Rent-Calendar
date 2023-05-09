@@ -9,6 +9,7 @@ data class AnalyticsIndependentState(
     val listOfYears: List<CategoryInfo> = listOf(
         CategoryInfo(id=0, name = YearMonth.now().year.toString())
     ),
-    val totalPurchasePrice: Int = 0
+    val totalPurchasePrice: Int = 0,
+    val currencySign: String = ""
 
 )

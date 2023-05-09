@@ -31,7 +31,6 @@ import com.melonlemon.rentcalendar.feature_home.presentation.util.*
 import java.time.LocalDate
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingUiEvents
 import kotlinx.coroutines.flow.collectLatest
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -41,42 +40,34 @@ fun HomeScreen(
     viewModel: HomeViewModel
 ) {
 
+    //STATES
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val dependState by viewModel.dependState.collectAsStateWithLifecycle()
     val independentState by viewModel.independentState.collectAsStateWithLifecycle()
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    val context = LocalContext.current
-
-    val currencyDialog = remember{ mutableStateOf(false) }
+    //FOR DIALOG
     val changeExpensesDialog = remember{ mutableStateOf(false)}
     val allExpCategories = remember{ mutableStateOf(false) }
     val calendarDialog = remember{ mutableStateOf(false) }
-
     val homeScreenState = remember{ mutableStateOf<HomePages>(HomePages.SchedulePage) }
-
-
     val monthlyIrregularToggle = remember{ mutableStateOf(true) }
-
-    var listExpenses = remember { derivedStateOf {
-        if(monthlyIrregularToggle.value) dependState.expensesPageState.monthlyExpenses else
-            dependState.expensesPageState.irregularExpenses
-    }
-
-    }
-
     val selectedExpenses = remember{ mutableStateOf(
         ExpensesInfo(
-        id = -1,
-        categoryId = -1,
-        categoryName = "",
-        paymentDate = LocalDate.now(),
-        amount = 0)
+            id = -1,
+            categoryId = -1,
+            categoryName = "",
+            paymentDate = LocalDate.now(),
+            amount = 0)
     ) }
 
-    val allFlatsName = stringResource(R.string.all_flats)
+    val listExpenses = remember { derivedStateOf {
+        if(monthlyIrregularToggle.value) dependState.expensesPageState.monthlyExpenses else
+            dependState.expensesPageState.irregularExpenses
+    } }
 
+
+    //FOR FIN RESULT WIDGET
+    val allFlatsName = stringResource(R.string.all_flats)
     val flatName = remember { derivedStateOf {
         if(filterState.selectedFlatId==-1 || independentState.flatState.listOfFlats.isEmpty()){
             allFlatsName
@@ -85,12 +76,13 @@ fun HomeScreen(
         }
 
     } }
-
     val financeResultsState = rememberLazyListState()
-
-
     val snappingLayout = remember(financeResultsState) { SnapLayoutInfoProvider(financeResultsState) }
     val flingBehavior = rememberSnapFlingBehavior(snappingLayout)
+
+    //FOR LAUNCHED EFFECT
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(key1 = true){
         viewModel.onHomeUiEvents.collectLatest { event ->
@@ -117,9 +109,6 @@ fun HomeScreen(
             SnackbarHost(snackbarHostState)
         }
     ) { it ->
-
-
-
         LazyColumn(
             modifier = Modifier
                 .padding(it).padding(start = 16.dp, end = 16.dp),
@@ -128,17 +117,6 @@ fun HomeScreen(
         ) {
 
             item {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(top=16.dp),
-                    contentAlignment = Alignment.CenterEnd
-                ){
-                    Button(
-                        onClick = {
-                            currencyDialog.value = true
-                        }) {
-                        Text(text = stringResource(R.string.currency_sign) + " ${independentState.currencySign}")
-                    }
-                }
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(
                     state = financeResultsState,
@@ -622,19 +600,7 @@ fun HomeScreen(
             }
         }
 
-        if(currencyDialog.value){
-            CurrencyDialog(
-                currencySign = independentState.currencySign,
-                onCancel = {
-                    currencyDialog.value = false
-                },
-                onSave = { sign ->
-                    viewModel.homeScreenEvents(
-                        HomeScreenEvents.OnCurrencySignChanged(sign))
-                    currencyDialog.value = false
-                }
-            )
-        }
+
 
         if(allExpCategories.value){
             AllExpCategoriesDialog(

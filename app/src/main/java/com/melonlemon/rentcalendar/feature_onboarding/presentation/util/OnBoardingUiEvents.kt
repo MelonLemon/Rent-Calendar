@@ -1,4 +1,4 @@
-package com.melonlemon.rentcalendar.feature_onboarding.presentation
+package com.melonlemon.rentcalendar.feature_onboarding.presentation.util
 
 import androidx.annotation.StringRes
 

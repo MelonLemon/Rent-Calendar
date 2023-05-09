@@ -32,7 +32,7 @@ data class AllTransactionsDay(
 ) {
     fun queryMatch(textSearch: String): List<TransactionListItem> {
         return transactions.filter {
-            it.category.contains(textSearch) || it.comment.contains(textSearch)
+            it.category.contains(textSearch, ignoreCase = true) || it.comment.contains(textSearch, ignoreCase = true)
         }
     }
     fun getSumOfTransactions(): Int {

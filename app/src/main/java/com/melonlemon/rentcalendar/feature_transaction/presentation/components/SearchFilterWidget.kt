@@ -1,20 +1,16 @@
 package com.melonlemon.rentcalendar.feature_transaction.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
@@ -159,50 +155,7 @@ fun FilterWidget(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchInput(
-    modifier:Modifier = Modifier,
-    text: String = "",
-    onTextChanged: (String) -> Unit,
-    onCancelClicked: () -> Unit
-) {
-    OutlinedTextField(
-        modifier = modifier,
-        value = text,
-        onValueChange = onTextChanged,
-        shape = MaterialTheme.shapes.small,
-        placeholder = { Text(
-            text= stringResource(R.string.search),
-            color = MaterialTheme.colorScheme.outline
-        ) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant) },
-        trailingIcon = {
-            if(text!=""){
-                IconButton(
-                    modifier = Modifier.background(
-                        MaterialTheme.colorScheme.surface
-                    ),
-                    onClick = onCancelClicked
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_cancel_24),
-                        contentDescription = "Cancel",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            textColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-        )
-    )
-}
+
 
 //@Preview(showBackground = true)
 //@Composable

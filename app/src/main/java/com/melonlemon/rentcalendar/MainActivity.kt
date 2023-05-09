@@ -17,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -32,7 +31,6 @@ import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsScree
 import com.melonlemon.rentcalendar.feature_analytics.presentation.AnalyticsViewModel
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeScreen
 import com.melonlemon.rentcalendar.feature_home.presentation.HomeViewModel
-import com.melonlemon.rentcalendar.feature_onboarding.presentation.InitialSettings
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingScreen
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.OnBoardingViewModel
 import com.melonlemon.rentcalendar.feature_onboarding.presentation.SplashViewModel
@@ -41,10 +39,10 @@ import com.melonlemon.rentcalendar.feature_transaction.presentation.TransactionV
 import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-
 
     private val splashViewModel: SplashViewModel by viewModels()
 
@@ -61,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
                 val startScreen by splashViewModel.startDestination.collectAsState()
 
-                val items = listOf<Screens>(
+                val items = listOf(
                     Screens.HomeScreen,
                     Screens.TransactionsScreen,
                     Screens.AnalyticsScreen
@@ -79,7 +77,7 @@ class MainActivity : ComponentActivity() {
                                     backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
                                 ) {
 
-                                    val iconsList = listOf<ImageVector>(
+                                    val iconsList = listOf(
                                         Icons.Filled.Home,
                                         ImageVector.vectorResource(id = R.drawable.ic_baseline_assignment_24),
                                         ImageVector.vectorResource(id = R.drawable.ic_baseline_assessment_24))
@@ -88,11 +86,11 @@ class MainActivity : ComponentActivity() {
                                             icon = { Icon(
                                                 iconsList[index],
                                                 contentDescription = null,
-                                                tint = if(currentDestination?.hierarchy?.any { it.route == screen.route } == true)
+                                                tint = if(currentDestination.hierarchy.any { it.route == screen.route })
                                                     MaterialTheme.colorScheme.primary
                                                     else MaterialTheme.colorScheme.onSurfaceVariant
                                             ) },
-                                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                            selected = currentDestination.hierarchy.any { it.route == screen.route },
                                             onClick = {
                                                 navController.navigate(screen.route) {
                                                     // Pop up to the start destination of the graph to

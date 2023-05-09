@@ -3,9 +3,13 @@ package com.melonlemon.rentcalendar.feature_onboarding.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.melonlemon.rentcalendar.R
+import com.melonlemon.rentcalendar.core.data.repository.StoreCurrencyRepository
 import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.OnBoardingEvents
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.OnBoardingState
+import com.melonlemon.rentcalendar.feature_onboarding.presentation.util.OnBoardingUiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -13,11 +17,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class OnBoardingViewModel @Inject constructor(
     private val coreUseCases: CoreRentUseCases,
+    private val storeCurrencyRepository: StoreCurrencyRepository
 ): ViewModel() {
 
     private val _onBoardingState = MutableStateFlow(OnBoardingState())
@@ -49,6 +55,7 @@ class OnBoardingViewModel @Inject constructor(
                         irregExpCat = onBoardingState.value.tempIrregularExpCat
                     )
                     if(result == SimpleStatusOperation.OperationSuccess){
+                        storeCurrencyRepository.updateCurrency(onBoardingState.value.selectedCurrency)
                         _onBoardingUiEvents.emit(OnBoardingUiEvents.FinishOnBoarding)
                     } else {
                         _onBoardingUiEvents.emit(OnBoardingUiEvents.ShowErrorMessage(R.string.err_msg_onboarding))
@@ -85,6 +92,8 @@ class OnBoardingViewModel @Inject constructor(
                     tempFlats = newList
                 )
             }
+
+            //EXPENSES CATEGORIES PAGE
             is OnBoardingEvents.OnSegmentBtnClick -> {
                 _onBoardingState.value = onBoardingState.value.copy(
                     isMonthCat = event.isMonthCatChosen
@@ -161,6 +170,28 @@ class OnBoardingViewModel @Inject constructor(
                     )
                 }
 
+            }
+
+            //CURRENCY PAGE
+            is OnBoardingEvents.OnTextSearchChanged -> {
+                val newFilteredList = if(event.text.isNotBlank())
+                    onBoardingState.value.listCurrency.filter { it.getDisplayName(Locale.ENGLISH).contains(event.text, ignoreCase = true) }
+                else onBoardingState.value.listCurrency
+                _onBoardingState.value = onBoardingState.value.copy(
+                    textSearch = event.text,
+                    filteredListCurrency = newFilteredList
+                )
+            }
+            is OnBoardingEvents.OnTextSearchCancel -> {
+                _onBoardingState.value = onBoardingState.value.copy(
+                    textSearch = "",
+                    filteredListCurrency = onBoardingState.value.listCurrency
+                )
+            }
+            is OnBoardingEvents.OnCurrencyClick -> {
+                _onBoardingState.value = onBoardingState.value.copy(
+                    selectedCurrency = event.currency
+                )
             }
 
 

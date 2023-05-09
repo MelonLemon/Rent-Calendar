@@ -2,6 +2,7 @@ package com.melonlemon.rentcalendar.feature_transaction.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.melonlemon.rentcalendar.core.data.repository.StoreCurrencyRepository
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
 import com.melonlemon.rentcalendar.feature_transaction.domain.use_cases.TransactionsUseCases
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransFilterState
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
     private val coreUseCases: CoreRentUseCases,
-    private val useCases: TransactionsUseCases
+    private val useCases: TransactionsUseCases,
+    private val storeCurrencyRepository: StoreCurrencyRepository
 ): ViewModel() {
 
     private val _searchText = MutableStateFlow("")
@@ -63,13 +65,14 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             val flats = coreUseCases.getAllFlats()
             val years = coreUseCases.getActiveYears()
+            val currency = storeCurrencyRepository.getCurrencySymbol().first()
             _transFilterState.value = transFilterState.value.copy(
                 flats = flats,
                 years = years,
                 selectedYearId = years[0].id,
                 selectedFlatsId = listOf(flats[0].id),
                 transFilterInit = true,
-                currency = "$" // get currency
+                currency = currency
             )
         }
 

@@ -3,7 +3,7 @@
     <string name="name">Name</string>
     <string name="booked">Booked</string>
     <string name="new_flat">New Flat</string>
-    <string name="number_placeholder">1,2,3...</string>
+    <string name="number_placeholder">1,2,3…</string>
     <string name="err_msg_empty">Name can\'t be empty!</string>
     <string name="err_msg_duplicate_name">Duplicate name!</string>
     <string name="msg_success_status">Success!</string>
@@ -103,4 +103,6 @@
     <string name="welcome_add_exp_cat">Let\'s Add Expenses Categories!</string>
     <string name="choose_dates">Choose dates!</string>
     <string name="transactions">Transactions</string>
+    <string name="currency_msg">Choose Currency for display!</string>
+    <string name="current">Current:</string>
 </resources>

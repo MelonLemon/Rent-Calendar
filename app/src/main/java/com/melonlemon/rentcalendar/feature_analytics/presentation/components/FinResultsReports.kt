@@ -20,7 +20,8 @@ fun IncomeStatementReport(
     netIncome: Int,
     revenue: Int,
     monthlyCost: Int,
-    irregularCost: Int
+    irregularCost: Int,
+    currencySign: String
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -39,7 +40,7 @@ fun IncomeStatementReport(
             Spacer(modifier = Modifier.height(8.dp))
             TitleAmountRow(
                 title = stringResource(R.string.revenue),
-                valueString = "+$revenue",
+                valueString = "+$revenue$currencySign",
                 isPos = true
             )
             Column(
@@ -49,11 +50,11 @@ fun IncomeStatementReport(
             ) {
                 TitleAmountRow(
                     title = stringResource(R.string.monthly_exp),
-                    valueString = "-$monthlyCost",
+                    valueString = "-$monthlyCost$currencySign",
                 )
                 TitleAmountRow(
                     title = stringResource(R.string.irreg_exp),
-                    valueString = "-$irregularCost",
+                    valueString = "-$irregularCost$currencySign",
                 )
             }
         }
@@ -80,7 +81,8 @@ fun CashFlowReport(
     modifier: Modifier=Modifier,
     netCashFlow: Int,
     rent: Int,
-    listOfExpenses: List<DisplayInfo>
+    listOfExpenses: List<DisplayInfo>,
+    currencySign: String
 ){
     var expended by remember { mutableStateOf(false) }
     Column(
@@ -94,7 +96,7 @@ fun CashFlowReport(
         Spacer(modifier = Modifier.height(8.dp))
         TitleAmountRow(
             title = stringResource(R.string.revenue),
-            valueString = "+$rent",
+            valueString = "+$rent$currencySign",
             isPos = true
         )
         Column(
@@ -103,7 +105,8 @@ fun CashFlowReport(
             horizontalAlignment = Alignment.Start
         ) {
             val sizeList = listOfExpenses.size
-            if(expended){
+
+            if(expended || sizeList<4){
                 repeat(sizeList){ index ->
                     TitleAmountRow(
                         title = listOfExpenses[index].name,
@@ -111,7 +114,7 @@ fun CashFlowReport(
                     )
                 }
             } else {
-                repeat(if(sizeList<3) sizeList else 3){ index ->
+                repeat(3){ index ->
                     TitleAmountRow(
                         title = listOfExpenses[index].name,
                         valueString = "-${listOfExpenses[index].amount}",
@@ -123,18 +126,21 @@ fun CashFlowReport(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                
+
             }
-            Button(
-                onClick = { expended = !expended },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Icon(imageVector = if(expended) ImageVector.vectorResource(id = R.drawable.ic_baseline_expand_less_24)
-                    else ImageVector.vectorResource(id = R.drawable.ic_baseline_expand_more_24), 
-                    contentDescription = null)
+            if(sizeList>=4){
+                Button(
+                    onClick = { expended = !expended },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Icon(imageVector = if(expended) ImageVector.vectorResource(id = R.drawable.ic_baseline_expand_less_24)
+                    else ImageVector.vectorResource(id = R.drawable.ic_baseline_expand_more_24),
+                        contentDescription = null)
+                }
             }
+
         }
     }
 }
@@ -147,7 +153,8 @@ fun BookedReport(
     mostBookedMonth: String,
     mostBookedMonthPercent: Int,
     mostIncomeMonth: String,
-    mostIncomeMonthAmount: Int
+    mostIncomeMonthAmount: Int,
+    currencySign: String
 ){
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -163,10 +170,8 @@ fun BookedReport(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.average_booked),
                 style =  MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             TitleAmountRow(
@@ -175,16 +180,12 @@ fun BookedReport(
                 isPos = true
             )
             Text(
-                modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.highest_booked_month) + mostBookedMonth + " - "  + "$mostBookedMonthPercent%",
                 style =  MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
             )
             Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.highest_income) + mostIncomeMonth + " - "  + "$mostIncomeMonthAmount",
+                text = stringResource(R.string.highest_income) + mostIncomeMonth + " - "  + "$mostIncomeMonthAmount$currencySign",
                 style =  MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
             )
         }
 

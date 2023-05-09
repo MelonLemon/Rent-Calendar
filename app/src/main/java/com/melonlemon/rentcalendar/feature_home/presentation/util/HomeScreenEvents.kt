@@ -2,7 +2,6 @@ package com.melonlemon.rentcalendar.feature_home.presentation.util
 
 import androidx.annotation.StringRes
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -35,6 +34,5 @@ sealed class HomeScreenEvents{
     object OnAddNewBookedBtnClick: HomeScreenEvents()
     data class SetCalendarState(val year: Int): HomeScreenEvents()
     //Dialogs
-    data class OnCurrencySignChanged(val sign: String): HomeScreenEvents()
     data class OnExpensesAmountChange(val expensesId: Int, val amount: Int): HomeScreenEvents()
 }

@@ -28,75 +28,6 @@ import com.melonlemon.rentcalendar.feature_home.presentation.components.custom_c
 import java.time.LocalDate
 import java.time.temporal.ChronoField
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CurrencyDialog(
-    modifier: Modifier = Modifier,
-    currencySign: String,
-    onCancel: () -> Unit,
-    onSave: (String) -> Unit
-) {
-    var newCurrencySign by remember{ mutableStateOf(currencySign) }
-    Dialog(
-        onDismissRequest = onCancel
-    ) {
-        Card(
-            modifier = modifier.padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        ){
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text= stringResource(R.string.currency_dialog_title),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                )
-                OutlinedTextField(
-                    value = newCurrencySign,
-                    onValueChange = { sign ->
-                        newCurrencySign =  sign
-                    },
-                    placeholder = { Text(text= stringResource(R.string.currency_sign)) },
-                    textStyle = MaterialTheme.typography.titleMedium,
-                    prefix = { Text(text="~") },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        textColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
-
-                ){
-                    FilterButton(
-                        text = stringResource(R.string.cancel),
-                        isSelected = false,
-                        onBtnClick = {
-                            onCancel()
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    FilterButton(
-                        text = stringResource(R.string.save),
-                        isSelected = true,
-                        onBtnClick = {
-                            onSave(newCurrencySign)
-                        }
-
-                    )
-                }
-            }
-        }
-
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -407,7 +338,6 @@ fun CategoryListItem(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomCalendarDialog(
     modifier: Modifier = Modifier,
@@ -449,8 +379,7 @@ fun CustomCalendarDialog(
                 onDayClick = { date ->
                     if(tempStartDate==null || tempEndDate != null){
                         tempStartDate = date
-                        tempEndDate = null
-                        selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = tempEndDate)
+                        selectedWeeks = getSelectedDatesList(startDate = tempStartDate, endDate = null)
                     } else {
                         val newTempStartDate = if(date.isBefore(tempStartDate)) date else tempStartDate
                         val newTempEndDate = if(date.isAfter(tempStartDate)) date else tempStartDate

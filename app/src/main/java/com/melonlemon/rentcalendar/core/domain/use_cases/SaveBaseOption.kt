@@ -8,7 +8,6 @@ import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
 import com.melonlemon.rentcalendar.core.domain.model.Flats
 import com.melonlemon.rentcalendar.core.domain.repository.CoreRentRepository
 import com.melonlemon.rentcalendar.core.presentation.util.SimpleStatusOperation
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
 
 class SaveBaseOption(
     private val repository: CoreRentRepository

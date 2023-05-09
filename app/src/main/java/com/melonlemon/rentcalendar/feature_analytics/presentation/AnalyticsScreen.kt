@@ -34,10 +34,12 @@ import java.util.*
 fun AnalyticsScreen(
     viewModel: AnalyticsViewModel
 ) {
+    //STATES
     val analyticsFilterState by viewModel.analyticsFilterState.collectAsStateWithLifecycle()
     val analyticsDependState by viewModel.analyticsDependState.collectAsStateWithLifecycle()
     val analyticsIndependentState by viewModel.analyticsIndependentState.collectAsStateWithLifecycle()
 
+    //FOR SNAPPING
     val financeResultsState = rememberLazyListState()
     val snappingLayout = remember(financeResultsState) { SnapLayoutInfoProvider(financeResultsState) }
     val flingBehavior = rememberSnapFlingBehavior(snappingLayout)
@@ -50,8 +52,6 @@ fun AnalyticsScreen(
             item{
                 LazyRow(
                     modifier = Modifier,
-                    state = financeResultsState,
-                    flingBehavior = flingBehavior,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ){
@@ -184,7 +184,8 @@ fun AnalyticsScreen(
                                     netIncome = incomeStatement.netIncome,
                                     revenue = incomeStatement.revenue,
                                     monthlyCost = incomeStatement.monthlyExp,
-                                    irregularCost = incomeStatement.irregularExp
+                                    irregularCost = incomeStatement.irregularExp,
+                                    currencySign = analyticsIndependentState.currencySign
                                 )
                             }
                         }
@@ -216,7 +217,8 @@ fun AnalyticsScreen(
                                 CashFlowReport(
                                     netCashFlow = cashFlow.netCashFlow,
                                     rent = cashFlow.rent,
-                                    listOfExpenses = cashFlow.expenses
+                                    listOfExpenses = cashFlow.expenses,
+                                    currencySign = analyticsIndependentState.currencySign
                                 )
                             }
                         }
@@ -238,7 +240,8 @@ fun AnalyticsScreen(
                             mostBookedMonthPercent = analyticsDependState.bookedReportState.mostBookedMonthPercent,
                             mostIncomeMonth = Month.of(analyticsDependState.bookedReportState.mostIncomeMonth).getDisplayName(
                                 TextStyle.FULL_STANDALONE, Locale.getDefault()),
-                            mostIncomeMonthAmount = analyticsDependState.bookedReportState.mostIncomeMonthAmount
+                            mostIncomeMonthAmount = analyticsDependState.bookedReportState.mostIncomeMonthAmount,
+                            currencySign = analyticsIndependentState.currencySign
                         )
                     }
                 }

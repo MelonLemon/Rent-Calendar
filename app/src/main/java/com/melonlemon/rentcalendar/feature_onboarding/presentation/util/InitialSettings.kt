@@ -1,4 +1,4 @@
-package com.melonlemon.rentcalendar.feature_onboarding.presentation
+package com.melonlemon.rentcalendar.feature_onboarding.presentation.util
 
 import android.content.Context
 import com.melonlemon.rentcalendar.R
@@ -9,7 +9,7 @@ class InitialSettings {
     private val listMonthlyExpCat = listOf(R.string.monthly_cat_housing)
     private val listIrregularExpCat = listOf(R.string.cleaning, R.string.exp_cat_disposable, R.string.exp_cat_renovation)
 
-    fun getInitialSettings(context: Context): SettingsInfo{
+    fun getInitialSettings(context: Context): SettingsInfo {
         val flats = listBaseFlat.map { flatId ->
             context.getString(flatId)
         }

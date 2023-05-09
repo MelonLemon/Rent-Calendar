@@ -2,23 +2,21 @@ package com.melonlemon.rentcalendar.feature_analytics.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
+import com.melonlemon.rentcalendar.core.data.repository.StoreCurrencyRepository
 import com.melonlemon.rentcalendar.core.domain.use_cases.CoreRentUseCases
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.CashFlowInfo
-import com.melonlemon.rentcalendar.feature_analytics.domain.model.IncomeStatementInfo
 import com.melonlemon.rentcalendar.feature_analytics.domain.use_cases.AnalyticsUseCases
 import com.melonlemon.rentcalendar.feature_analytics.presentation.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.YearMonth
 import javax.inject.Inject
 
 @HiltViewModel
 class AnalyticsViewModel @Inject constructor(
     private val coreUseCases: CoreRentUseCases,
-    private  val useCases: AnalyticsUseCases
+    private  val useCases: AnalyticsUseCases,
+    private val storeCurrencyRepository: StoreCurrencyRepository
 ): ViewModel() {
 
     private val _analyticsFilterState = MutableStateFlow(AnalyticsFilterState())
@@ -55,9 +53,11 @@ class AnalyticsViewModel @Inject constructor(
         viewModelScope.launch {
             val listOfFlats  = coreUseCases.getAllFlats()
             val listOfYears  = coreUseCases.getActiveYears()
+            val currency = storeCurrencyRepository.getCurrencySymbol().first()
             _analyticsIndependentState.value = analyticsIndependentState.value.copy(
                 listOfFlats=listOfFlats,
-                listOfYears=listOfYears
+                listOfYears=listOfYears,
+                currencySign = currency
             )
             _analyticsFilterState.value = analyticsFilterState.value.copy(
                 selectedYearId = analyticsIndependentState.value.listOfYears[0].id

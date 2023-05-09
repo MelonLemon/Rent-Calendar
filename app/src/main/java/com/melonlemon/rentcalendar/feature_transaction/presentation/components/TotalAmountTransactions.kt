@@ -11,14 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.model.CategoryInfo
 import com.melonlemon.rentcalendar.core.presentation.components.SFilterButton
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionPeriod
 import com.melonlemon.rentcalendar.feature_transaction.presentation.util.TransactionType
-import com.melonlemon.rentcalendar.ui.theme.RentCalendarTheme
 
 @Composable
 fun TotalAmountTransactions(

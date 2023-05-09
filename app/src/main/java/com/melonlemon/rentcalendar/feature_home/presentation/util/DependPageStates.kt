@@ -1,6 +1,6 @@
 package com.melonlemon.rentcalendar.feature_home.presentation.util
 
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+
 import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesInfo
 import com.melonlemon.rentcalendar.feature_home.domain.model.RentInfo
 import java.time.LocalDate

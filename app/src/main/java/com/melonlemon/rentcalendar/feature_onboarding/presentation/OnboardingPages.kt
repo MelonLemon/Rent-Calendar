@@ -1,6 +1,9 @@
 package com.melonlemon.rentcalendar.feature_onboarding.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,13 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.melonlemon.rentcalendar.R
 import com.melonlemon.rentcalendar.core.domain.model.DisplayInfo
-import com.melonlemon.rentcalendar.core.presentation.components.NameInputPlus
-import com.melonlemon.rentcalendar.core.presentation.components.NameValueInputPlus
-import com.melonlemon.rentcalendar.core.presentation.components.SegmentedTwoBtns
-import com.melonlemon.rentcalendar.feature_home.domain.model.ExpensesCategoryInfo
+import com.melonlemon.rentcalendar.core.presentation.components.*
+import java.util.*
 
 @Composable
 fun WelcomePage(
@@ -297,10 +299,107 @@ fun InputCategories(
 }
 
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WelcomePagePreview() {
-//    RentCalendarTheme {
-//        WelcomePage()
-//    }
-//}
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun CurrencyPage(
+    modifier: Modifier = Modifier,
+    listCurrency: List<Currency>,
+    textSearch: String,
+    onTextChanged: (String) -> Unit,
+    onCancel: () -> Unit,
+    selectedCurrency: Currency,
+    onCurrencyClick: (Currency) -> Unit
+) {
+    Column(
+        modifier=modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.Start
+    ){
+        Text(text= stringResource(R.string.currency_msg))
+        AnimatedContent(targetState = selectedCurrency){
+            SFilterButton(
+                text = stringResource(R.string.current) + " ${selectedCurrency.getDisplayName(Locale.ENGLISH)} - ${selectedCurrency.symbol}",
+                isSelected = true)
+        }
+
+        SearchInput(
+            text = textSearch,
+            onTextChanged = { text->
+                onTextChanged(text)
+            },
+            onCancelClicked = {
+                onCancel()
+            }
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalAlignment = Alignment.Start
+        ){
+            itemsIndexed(
+                items = listCurrency,
+                key = { index, currency ->
+                    "$index" + currency.displayName }
+            ){ index, currency ->
+                CurrencyRow(
+                    currency = currency,
+                    isSelected = currency == selectedCurrency,
+                    onSelectClick = {
+                        if(currency != selectedCurrency){
+                            onCurrencyClick(currency)
+                        }
+                    }
+                )
+
+            }
+        }
+    }
+
+}
+
+@Composable
+fun CurrencyRow(
+    modifier: Modifier = Modifier,
+    currency: Currency,
+    isSelected: Boolean,
+    onSelectClick: (Boolean) -> Unit = { }
+) {
+    Card(
+        modifier = modifier.clickable {
+            onSelectClick(!isSelected)
+        },
+        colors = CardDefaults.cardColors(
+            containerColor = if(isSelected) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Text(
+                modifier = Modifier.weight(3f),
+                text = currency.getDisplayName(Locale.ENGLISH),
+                color =  if(isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                else MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.headlineSmall,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                modifier = Modifier.weight(2f),
+                text = currency.symbol,
+                color = if(isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                else MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
+            )
+        }
+    }
+
+}
