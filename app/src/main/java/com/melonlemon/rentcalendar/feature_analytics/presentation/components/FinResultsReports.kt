@@ -68,7 +68,7 @@ fun IncomeStatementReport(
             SegmentedBarchart(
                 modifier = Modifier
                     .width(40.dp)
-                    .fillMaxHeight(),
+                    .height(300.dp),
                 listSegments = listSegments
             )
         }

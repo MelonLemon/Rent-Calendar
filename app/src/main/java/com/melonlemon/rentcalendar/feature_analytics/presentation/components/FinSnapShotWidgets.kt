@@ -242,6 +242,7 @@ fun TitleAmountRow(
         verticalAlignment = Alignment.CenterVertically
     ){
         Text(
+            modifier = Modifier.weight(1f),
             text = title.uppercase(),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
